@@ -12,10 +12,14 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def run(data):
+def run(data, keep_min=True):
     d = tempfile.mkdtemp()
     shutil.copy(os.path.join(HERE, "build.py"), d)
-    shutil.copy(os.path.join(HERE, "products.json"), d)
+    pj = json.load(open(os.path.join(HERE, "products.json"), encoding="utf-8"))
+    if not keep_min:  # 公開判定のテストは min（大袋の下限）を外して数える
+        for g in pj["groups"]:
+            g.pop("min", None)
+    json.dump(pj, open(os.path.join(d, "products.json"), "w", encoding="utf-8"), ensure_ascii=False)
     os.makedirs(os.path.join(d, "data"))
     with open(os.path.join(d, "data", "prices.json"), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)
@@ -51,7 +55,7 @@ class T(unittest.TestCase):
         d, p = run(data)
         self.assertEqual(p.returncode, 0, p.stderr)
         pages = [f for f in os.listdir(os.path.join(d, "site")) if f.endswith(".html")]
-        self.assertEqual(len(pages), 21)  # 20カテゴリ＋index
+        self.assertEqual(len(pages), 26)  # 20カテゴリ＋ペット5＋index
 
     def test_trust_display(self):
         data = json.load(open(os.path.join(HERE, "data", "sample_prices.json"), encoding="utf-8"))
@@ -62,13 +66,14 @@ class T(unittest.TestCase):
             h = open(os.path.join(site, g["slug"] + ".html"), encoding="utf-8").read()
             self.assertIn("税込価格 ÷ 内容量の合計", h, g["slug"])
             self.assertIn("価格取得日時:", h, g["slug"])
-            self.assertLess(h.index("class=trust"), h.index("<table>"), g["slug"])  # 式は表の上
+            self.assertLess(h.index('class="best"'), h.index("class=trust"), g["slug"])  # いちばん安い商品が先
             self.assertIn('class="ship ', h, g["slug"])
         litter = open(os.path.join(site, "cat-litter-tofu.html"), encoding="utf-8").read()
         self.assertIn('<span class="ship free">送料無料</span>', litter)
         self.assertIn('<span class="ship paid">送料別</span>', litter)
-        self.assertIn("42L<br><small class=dt>7L×6袋</small>", litter)  # 合計＝式の分母、内訳を併記
-        self.assertIn("118.6円", litter)  # 4980÷42
+        self.assertIn("内容量 42L（7L×6袋）", litter)  # 合計＝式の分母、内訳を併記
+        self.assertIn("119<small>円", litter)  # 4980÷42＝118.6（100円以上は整数表示）
+        self.assertIn('rel="sponsored nofollow"', litter)
         sheet = open(os.path.join(site, "dog-pee-sheet-regular.html"), encoding="utf-8").read()
         self.assertIn('<span class="ship cond">条件付き送料無料</span>', sheet)
         deo = open(os.path.join(site, "pet-deodorizer-refill.html"), encoding="utf-8").read()
@@ -84,7 +89,7 @@ class T(unittest.TestCase):
         self.assertIn("税込価格 ÷ 内容量の合計", idx)
 
     def test_prod_gate(self):
-        d, p = run(prod_data())
+        d, p = run(prod_data(), keep_min=False)
         self.assertEqual(p.returncode, 0, p.stderr)
         site = os.path.join(d, "site")
         self.assertFalse(os.path.exists(os.path.join(site, "cat-litter-tofu.html")))
@@ -92,13 +97,18 @@ class T(unittest.TestCase):
         self.assertIn("不公開 cat-litter-tofu: 解析率57% < 70%", p.stdout)
         self.assertIn("不公開 goldfish-food: 表示2件 < 3件", p.stdout)
         idx = open(os.path.join(site, "index.html"), encoding="utf-8").read()
-        self.assertNotIn("cat-litter-tofu.html", idx)
         self.assertNotIn("【サンプル表示】", idx)
         self.assertIn("2026-11-02 06:00 JST", idx)
-        hrefs = re.findall(r'href="([a-z-]+)\.html"', idx.split("<ul class=list>")[1])
-        pr1 = {"dog-food-large", "dog-pee-sheet-regular", "cat-toilet-sheet", "cat-dry-food-large", "pet-deodorizer-refill"}
-        self.assertEqual(set(hrefs[:5]), pr1)  # priority 1 が先頭（猫砂は不公開）
-        self.assertEqual(len(hrefs), 18)
+        cats = set()
+        for f in os.listdir(site):
+            if f.startswith("pet-"):
+                h = open(os.path.join(site, f), encoding="utf-8").read()
+                cats |= set(re.findall(r'class="cat" href="([a-z-]+)\.html"', h))
+        self.assertNotIn("cat-litter-tofu", cats)
+        self.assertEqual(len(cats), 18)
+        dog = open(os.path.join(site, "pet-dog.html"), encoding="utf-8").read()
+        hrefs = re.findall(r'class="cat" href="([a-z-]+)\.html"', dog)
+        self.assertEqual(set(hrefs[:3]), {"dog-food-large", "dog-pee-sheet-regular", "pet-deodorizer-refill"})  # priority 1 が先頭
         sheet = open(os.path.join(site, "dog-pee-sheet-regular.html"), encoding="utf-8").read()
         self.assertIn("一部前回取得: 2026-11-01 06:00 JST", sheet)
         food = open(os.path.join(site, "dog-food-large.html"), encoding="utf-8").read()

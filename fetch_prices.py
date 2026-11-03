@@ -58,7 +58,12 @@ def _call(shop, url, params, headers=None):
             if attempt == 1 and (e.code == 429 or e.code >= 500):
                 time.sleep(3)
                 continue
-            raise
+            # 原因切り分け用に API の返したエラー本文（先頭200字）を付ける。キーは本文に含まれない
+            try:
+                body = e.read().decode("utf-8", "replace")[:200]
+            except Exception:
+                body = ""
+            raise RuntimeError(f"HTTP {e.code} {body}") from e
 
 
 def fetch_rakuten(group):

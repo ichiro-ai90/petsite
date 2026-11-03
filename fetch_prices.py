@@ -27,7 +27,7 @@ from datetime import datetime, timezone, timedelta
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 JST = timezone(timedelta(hours=9))
-RAKUTEN_URL = "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20220601"
+RAKUTEN_URL = os.environ.get("RAKUTEN_URL", "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401")  # 2026-11-03: 20220601 は新規アプリで「API Configuration not found」
 YAHOO_URL = "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch"
 SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "https://example.com")
 HITS = 20
@@ -77,6 +77,8 @@ def fetch_rakuten(group):
     if os.environ.get("RAKUTEN_AFFILIATE_ID"):
         p["affiliateId"] = os.environ["RAKUTEN_AFFILIATE_ID"]
     d = _call("rakuten", RAKUTEN_URL, p, {"Origin": SITE_ORIGIN})
+    if "Items" not in d:
+        raise RuntimeError(f"想定外の応答形式: keys={list(d)[:10]}")
     out = []
     for it in d.get("Items", []):
         out.append({

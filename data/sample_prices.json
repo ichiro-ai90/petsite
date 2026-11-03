@@ -1,9 +1,9 @@
 {
   "fetched_at": "SAMPLE（API キー未設定のため架空データ）",
   "items": [
-    {"group": "hamster-bedding-paper", "shop": "rakuten", "name": "【サンプル】紙の床材 ホワイト 7L×3袋", "price": 2480, "shipping": "送料無料", "url": "#", "image": ""},
-    {"group": "hamster-bedding-paper", "shop": "yahoo", "name": "【サンプル】ペーパー床材 30L", "price": 3980, "shipping": "条件付き送料無料", "url": "#", "image": ""},
-    {"group": "hamster-bedding-paper", "shop": "rakuten", "name": "【サンプル】小動物用 紙製マット 10L", "price": 1280, "shipping": "送料別", "url": "#", "image": ""},
+    {"group": "hamster-bedding-paper", "shop": "rakuten", "name": "【サンプル】紙の床材 ホワイト 500g×3袋", "price": 2480, "shipping": "送料無料", "url": "#", "image": ""},
+    {"group": "hamster-bedding-paper", "shop": "yahoo", "name": "【サンプル】ペーパー床材 2kg", "price": 3980, "shipping": "条件付き送料無料", "url": "#", "image": ""},
+    {"group": "hamster-bedding-paper", "shop": "rakuten", "name": "【サンプル】小動物用 紙製マット 800g", "price": 1280, "shipping": "送料別", "url": "#", "image": ""},
     {"group": "ferret-food", "shop": "yahoo", "name": "【サンプル】フェレットフード 1.5kg", "price": 2980, "shipping": "送料無料", "url": "#", "image": ""},
     {"group": "ferret-food", "shop": "rakuten", "name": "【サンプル】フェレット 総合栄養食 800g×2袋", "price": 3300, "shipping": "送料無料", "url": "#", "image": ""},
     {"group": "leopard-gecko-food", "shop": "rakuten", "name": "【サンプル】レオパ用フード 60g", "price": 1180, "shipping": "送料別", "url": "#", "image": ""},

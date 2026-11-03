@@ -1,0 +1,60 @@
+name: daily-price-update
+on:
+  schedule:
+    - cron: "17 20 * * *"   # 毎日 05:17 JST（UTC 20:17）。混雑を避けて分をずらす
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:            # 手動実行と定期実行が重なっても push が衝突しないように
+  group: daily-price-update
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}   # 楽天 API の Origin ヘッダー用＝ドメインだけ（https://ichiro-ai90.github.io、末尾スラッシュ・パスなし）
+      PETSITE_PROD: "1"                      # 本番。楽天 Secrets 未設定ならサンプルに落とさず失敗させる（11/02 失敗モード対策）
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: test amount()（内容量読み取りが壊れていたら公開しない）
+        run: python tests_amount.py && python tests_fetch.py
+      - name: fetch prices（失敗・0件のカテゴリは前回データを引き継ぐ。公開できるデータが無ければ失敗）
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
+          VC_AFFILIATE_ID: ${{ secrets.VC_AFFILIATE_ID }}
+        run: python fetch_prices.py
+      - name: guard（本番でサンプル・空データを公開しない）
+        run: |
+          python - <<'PY'
+          import json, sys
+          d = json.load(open("data/prices.json", encoding="utf-8"))
+          if str(d.get("fetched_at", "")).startswith("SAMPLE"):
+              sys.exit("::error::本番でサンプルデータが data/prices.json に入っています。公開を中止します")
+          if not d.get("items"):
+              sys.exit("::error::商品0件。公開を中止します")
+          print("guard ok:", d["fetched_at"], len(d["items"]), "件")
+          PY
+      - name: build（sitemap の URL はサイトの実 URL＝ドメイン＋/リポジトリ名。11/02 22:5x ランブック照合で修正）
+        env:
+          SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}/${{ github.event.repository.name }}
+        run: python build.py
+      - name: commit price snapshot（価格履歴を残す）
+        run: |
+          git config user.name "ichiro-bot"; git config user.email "ichiro-bot@users.noreply.github.com"
+          git add data/prices.json && git commit -m "prices $(date -u +%F)" || echo "no change"
+          git push
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: { name: github-pages }
+    steps:
+      - uses: actions/deploy-pages@v4

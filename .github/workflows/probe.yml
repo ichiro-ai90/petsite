@@ -21,7 +21,7 @@ jobs:
           print("RAW keys", list(d)[:20], "count", d.get("count"))
           for k, v in d.items():
               if isinstance(v, list) and v:
-                  print("RAW list", k, len(v), json.dumps(v[0], ensure_ascii=False)[:600])
+                  print("RAW list", k, len(v), {kk: (vv if not isinstance(vv,(str,)) else vv[:40]) for kk, vv in v[0].items() if kk not in ("productCaption",)})
           for grp in [x for x in g if x["slug"] in ("cat-litter-tofu", "dog-pee-sheet-regular", "cat-dry-food-large")]:
               try:
                   ps = f.search_products(grp)

@@ -89,7 +89,10 @@ def search_products(group):
             "productId": p.get("productId") or "", "name": name, "jan": str(p.get("productCode") or ""),
             "maker": p.get("makerName") or p.get("brandName") or "",
             "image": p.get("mediumImageUrl") or p.get("productImageUrl") or "",
-            "minPrice": int(p.get("minPrice") or 0), "itemCount": int(p.get("itemCount") or 0),
+            "minPrice": int(p.get("salesMinPrice") or p.get("minPrice") or 0),
+            "itemCount": int(p.get("salesItemCount") or p.get("itemCount") or 0),
+            "productUrl": p.get("affiliateUrl") or p.get("productUrlPC") or "",
+            "genre": p.get("genreName") or "",
             "reviewCount": int(p.get("reviewCount") or 0), "reviewAverage": float(p.get("reviewAverage") or 0),
         })
     out = [p for p in out if p["minPrice"] > 0]

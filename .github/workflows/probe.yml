@@ -17,6 +17,11 @@ jobs:
           python - <<'PY'
           import json, fetch_prices as f
           g = json.load(open("products.json", encoding="utf-8"))["groups"]
+          d = f._call(f.PRODUCT_URL, {"keyword": "猫砂 おから", "hits": 5})
+          print("RAW keys", list(d)[:20], "count", d.get("count"))
+          for k, v in d.items():
+              if isinstance(v, list) and v:
+                  print("RAW list", k, len(v), json.dumps(v[0], ensure_ascii=False)[:600])
           for grp in [x for x in g if x["slug"] in ("cat-litter-tofu", "dog-pee-sheet-regular", "cat-dry-food-large")]:
               try:
                   ps = f.search_products(grp)

@@ -142,7 +142,7 @@ def fetch_group(group):
         offers = search_offers(p)
         if not offers:
             continue
-        a = amount(p["name"], group["unit"]) or amount(offers[0]["name"], group["unit"])
+        a = amount(offers[0]["name"], group["unit"]) or amount(p["name"], group["unit"])  # 買う商品（最安ショップ）の内容量を優先
         if not a or (group.get("min") and a < group["min"]):
             continue  # 内容量が読めない（別ジャンルの商品が混ざることが多い）・大袋の下限未満は載せない
         p = dict(p, group=group["slug"], offers=offers, amount=a)

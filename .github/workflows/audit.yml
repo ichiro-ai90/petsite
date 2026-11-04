@@ -1,0 +1,46 @@
+name: chatgpt-audit
+# 開発（Claude）が PR を出す・更新するたびに、ChatGPT（OpenAI API）が UI/UX・PM の観点で監査し、PR にコメントする
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "監査する PR 番号"
+        required: true
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+concurrency:
+  group: audit-${{ github.event.pull_request.number || github.event.inputs.pr }}
+  cancel-in-progress: true
+jobs:
+  audit:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      AUDIT_MAX_ROUNDS: "3"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.inputs.pr) }}
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: build（PR の版のサイトを、main で取得済みの価格データで生成）
+        run: |
+          git fetch -q origin main
+          git show origin/main:data/prices.json > data/prices.json 2>/dev/null || python fetch_prices.py
+          python build.py
+      - name: playwright
+        run: pip install -q playwright && python -m playwright install --with-deps chromium
+      - name: audit
+        run: |
+          (cd site && python -m http.server 8000 >/dev/null 2>&1 &)
+          sleep 2
+          python audit/run_audit.py

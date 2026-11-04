@@ -340,7 +340,9 @@ def main():
                 continue
             if any(x in p["name"] for x in g.get("exclude", [])):
                 continue
-            a = p.get("amount") or amount(p["name"], g["unit"]) or amount(p["offers"][0]["name"], g["unit"])
+            # 内容量は「実際に買う最安ショップの商品名」を優先（製品名は1袋分、ショップはケース売りのことがある）
+            cheap = min(p["offers"], key=lambda o: o["price"])
+            a = amount(cheap["name"], g["unit"]) or amount(p["name"], g["unit"])
             if a and g.get("min") and a < g["min"]:
                 continue
             prods.append(dict(p, amount=a))

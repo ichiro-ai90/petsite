@@ -42,8 +42,10 @@ def history():
     if not (REPO and PR):
         return [], []
     cs = gh(f"issues/{PR}/comments?per_page=100")
-    audits = [c for c in cs if c["body"].startswith(MARK)]
+    # 回数に数えるのは実際に監査した回だけ（スキップ・エラー・上限の通知は数えない）
+    audits = [c for c in cs if c["body"].startswith(MARK) and re.match(MARK + r" round=\d+ verdict=(pass|changes|unparsed)", c["body"])]
     replies = [c for c in cs if not c["body"].startswith(MARK)]
+    replies += [c for c in cs if "verdict=limit" in c["body"][:60]]
     return audits, replies
 
 
@@ -114,7 +116,7 @@ def main():
     audits, replies = history()
     rnd = len(audits) + 1
     if rnd > MAX_ROUNDS:
-        if not any("上限" in c["body"] for c in audits[-1:]):
+        if not any("verdict=limit" in c["body"] for c in replies + audits):
             comment(f"{MARK} round={rnd} verdict=limit -->\n## 監査（ChatGPT）\nこの PR の監査は上限の {MAX_ROUNDS} 回に達したため、実行しませんでした。マージするかどうかは Takuさんの判断を待ちます。")
         return 0
     if not os.environ.get("OPENAI_API_KEY"):

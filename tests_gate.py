@@ -92,6 +92,18 @@ class T(unittest.TestCase):
         self.assertEqual(p.returncode, 1)
         self.assertFalse(os.path.exists(os.path.join(d, "site", "index.html")))
 
+    def test_savings(self):
+        ps = [prod("cat-litter-tofu", f"s{i}", f"おからの猫砂 7L 商品{i}", [offer("A店", 1000, name="猫砂 7L"), offer("B店", 1300, name="猫砂 7L"),
+                                                                   offer("C店", 5000, name="猫砂 7L×6袋")]) for i in range(3)]
+        ps.append(prod("cat-litter-tofu", "out", "おからの猫砂 7L 訳あり", [offer("D店", 500, name="【アウトレット】猫砂 7L"), offer("E店", 1200, name="猫砂 7L")]))
+        d, p = run({"fetched_at": "2026-11-05 05:17 JST", "products": ps})
+        self.assertEqual(p.returncode, 0, p.stderr)
+        item = open(os.path.join(d, "site", "item-s0.html"), encoding="utf-8").read()
+        self.assertIn("いちばん高いショップより <b>300円安い</b>", item)  # 同じ内容量（7L）だけで比べる。6袋のケースとは比べない
+        out = open(os.path.join(d, "site", "item-out.html"), encoding="utf-8").read()
+        self.assertNotIn('class="save"', out)  # 最安が訳あり品ならお得額を出さない
+        self.assertIn('class="outlet"', out)
+
     def test_points(self):
         sys.path.insert(0, HERE)
         from fetch_prices import points

@@ -30,6 +30,7 @@ import os
 import re
 import sys
 import unicodedata
+import urllib.parse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE_NAME = "ペット用品 単価くらべ（仮）"
@@ -228,10 +229,12 @@ def page(title, body, desc, sample, crumbs=()):
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">
-<link rel="stylesheet" href="style.css"></head><body>
+<link rel="stylesheet" href="style.css"><script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。</p>
 {band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk" aria-hidden="true">最安</span>{SITE}</a>
-<span class="hd-note">楽天市場の価格比較（非公式）</span></div></header>
+<span class="hd-note">楽天市場の価格比較（非公式）</span><a class="hd-fav" href="favorites.html">★ お気に入り<span id="favn"></span></a></div>
+<form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
+<input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">検索</button></form></header>
 <main>{bc}{body}</main>
 <footer><p>楽天市場の商品だけを比べています。当サイトは楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。価格・ポイント・送料・在庫は取得時点のもので、購入前に商品ページでご確認ください。ポイントはショップのポイント倍率から計算した目安で、SPU やキャンペーンは含みません。</p>
 <p>運営: 合同会社にこのて（価格の取得・ページ作成は AI〈一郎〉が自動で行っています）</p>
@@ -254,12 +257,14 @@ def product_row(p, g, fn):
     th = img(p.get("image"), 128)
     pic = f'<img src="{E(th)}" alt="" width="96" height="96" loading="lazy">' if th else '<span class="noimg" aria-hidden="true"></span>'
     upt = f'<span class="up">{LABEL[g["unit"]]} {up:,.0f}円</span>' if up and up >= 10 else (f'<span class="up">{LABEL[g["unit"]]} {up:,.1f}円</span>' if up else "")
+    buy = f'・購入単位 {fmt_amount(p["amount"], g["unit"])}' if p.get("amount") else ""
     return (f'<li data-pop="{p.get("reviewCount", 0)}" data-price="{o["price"]}" data-eff="{oe["effective"]}" data-unit="{up or 0:.4f}">'
+            f'<button type="button" class="fav mini" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false" aria-label="お気に入りに追加">☆</button>'
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
             f'<span class="nm">{E(show_name(p["name"]))}</span>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'<span class="pr"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</span>'
             f'<span class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）</span>'
-            f'<span class="meta">{len(p["offers"])}ショップ中の最安値{"・" + upt if upt else ""}</span></span></a></li>')
+            f'<span class="meta">{len(p["offers"])}ショップ中の最安値{buy}{"・" + upt if upt else ""}</span></span></a></li>')
 
 
 SORT_JS = ('<script>(function(){var b=document.querySelectorAll(".sort button"),l=document.getElementById("list");'
@@ -305,7 +310,9 @@ def item_body(p, g, fetched):
                 if p.get("productUrl") else "")
     return (f'<div class="item"><div class="item-pic">{pic}</div><div class="item-info">'
             f'<h1 class="ttl">{E(show_name(p["name"]))}</h1>'
-            f'<p class="mk2">{E(p.get("maker") or "")}</p>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
+            + (f'<p class="mk2"><a href="search.html?maker={urllib.parse.quote(p["maker"])}">{E(p["maker"])}の商品をもっと見る</a></p>' if p.get("maker") else "")
+            + f'{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
+            f'<button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">☆ お気に入り</button>'
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）　{E(o["shop"])}</p>'
@@ -332,7 +339,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     fetched = E(str(data.get("fetched_at", "不明")))
     gmap = {g["slug"]: g for g in groups}
-    published, files = [], []
+    published, files, index_rows = [], [], []
     for g in groups:
         prods = []
         for p in data.get("products", []):
@@ -360,6 +367,12 @@ def main():
         files.append(fn)
         for p in prods:
             ifn = f"item-{p['productId']}.html"
+            o, oe, up = best_offer(p), best_offer(p, "effective"), unit_price(p, g)
+            index_rows.append({"id": p["productId"], "n": show_name(p["name"]), "m": p.get("maker") or "", "c": g["slug"], "ct": g["title"],
+                               "pet": [pt[0] for pt in PETS if g["animal"] in pt[3]], "kw": g["keyword"] + " " + g.get("pkeyword", ""),
+                               "jan": p.get("jan") or "", "p": o["price"], "e": oe["effective"], "pt": o["points"], "r": o["pointRate"],
+                               "sh": o["shipping"], "s": len(p["offers"]), "u": round(up, 2) if up else 0, "ul": LABEL[g["unit"]],
+                               "img": img(p.get("image"), 128), "rv": p.get("reviewCount", 0), "ra": p.get("reviewAverage", 0)})
             open(os.path.join(out, ifn), "w", encoding="utf-8").write(
                 page(f"{show_name(p['name'])[:40]}の最安値｜{SITE}", item_body(p, g, fetched),
                      f"{show_name(p['name'])[:60]}を楽天市場で安く買えるショップ。", sample,
@@ -385,18 +398,39 @@ def main():
             cs.append(f'<li data-q="{E(g["title"] + " " + g["keyword"])}"><a class="cat" href="{g["slug"]}.html"><span class="pic">{pic}</span>'
                       f'<span class="info"><span class="nm">{E(g["title"])}</span><span class="meta">{len(ps)}商品を比較</span></span></a></li>')
         secs.append(f'<section class="pet-sec" id="{pid}"><h2 class="h2"><span aria-hidden="true">{icon}</span> {name}</h2><ul class="cats">{"".join(cs)}</ul></section>')
-    idx = ('<div class="search"><label for="q" class="sr">カテゴリを探す</label>'
-           '<input type="search" id="q" placeholder="カテゴリを探す（例: 猫砂、ペットシーツ）" autocomplete="off"></div>'
-           '<p class="lead">楽天市場の人気商品を、ショップごとの価格とポイントで比べます。ペットを選んでください。</p>'
-           f'<ul class="tabs">{"".join(tabs)}</ul>{"".join(secs)}'
-           '<p class="empty" id="empty" hidden>一致するカテゴリがありません。言葉を短くして探してください。</p>'
-           f'<div class="note"><p>価格取得日時: {fetched}</p></div>'
-           '<script>(function(){var q=document.getElementById("q"),l=document.querySelectorAll(".cats li"),s=document.querySelectorAll(".pet-sec"),e=document.getElementById("empty");'
-           'q.addEventListener("input",function(){var v=q.value.trim(),n=0;l.forEach(function(x){var m=!v||x.dataset.q.indexOf(v)>-1;x.hidden=!m;if(m)n++;});'
-           's.forEach(function(x){x.hidden=!x.querySelector("li:not([hidden])")});e.hidden=n>0;});})();</script>')
+    from collections import Counter
+    makers = [m for m, n in Counter(r["m"] for r in index_rows if r["m"]).most_common(10) if n >= 2]
+    mk = "".join(f'<li><a href="search.html?maker={urllib.parse.quote(m)}">{E(m)}</a></li>' for m in makers)
+    idx = ('<p class="lead">楽天市場の人気商品を、ショップごとの価格とポイントで比べます。いつも買っている商品は「☆ お気に入り」に入れておくと、次から値段をすぐ確かめられます。</p>'
+           f'<ul class="tabs">{"".join(tabs)}</ul>'
+           + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
+           + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
     open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(
         page(f"{SITE}｜楽天市場のペット用品を最安値・ポイントで比較", idx, "楽天市場のペット用品を、ショップごとの最安値とポイントで比較", sample))
     open(os.path.join(out, "style.css"), "w", encoding="utf-8").write(CSS)
+    open(os.path.join(out, "app.js"), "w", encoding="utf-8").write(APP_JS)
+    json.dump({"fetched_at": str(data.get("fetched_at", "")), "pets": [[p[0], p[1]] for p in PETS],
+               "cats": [[g["slug"], g["title"]] for g, _ in published], "items": index_rows},
+              open(os.path.join(out, "search.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    open(os.path.join(out, "search.html"), "w", encoding="utf-8").write(page(
+        f"商品を探す｜{SITE}", '<h1 class="ttl">商品を探す</h1>'
+        '<form class="filters" id="sf"><label class="sr" for="q">キーワード</label>'
+        '<input type="search" id="q" name="q" placeholder="商品名・メーカー・カテゴリ・JANコード" autocomplete="off">'
+        '<div class="fl-row"><label>ペット<select name="pet" id="pet"><option value="">すべて</option></select></label>'
+        '<label>カテゴリ<select name="cat" id="cat"><option value="">すべて</option></select></label>'
+        '<label>メーカー<select name="maker" id="maker"><option value="">すべて</option></select></label>'
+        '<label>並べ替え<select name="sort" id="sort"><option value="pop">人気順</option><option value="price">安い順</option>'
+        '<option value="eff">ポイント込みで安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
+        '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
+        f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
+        "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して最安値とポイントを比較", sample, (("商品を探す", None),)))
+    open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
+        f"お気に入り｜{SITE}", '<h1 class="ttl">お気に入り</h1>'
+        '<p class="lead">お気に入りはこのブラウザだけに保存されます（ログイン不要）。登録したときの価格と、いまの最安値を比べられます。</p>'
+        '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「☆」を押すとここに入ります。</p>'
+        f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
+        "お気に入りに入れた商品の最安値", sample, (("お気に入り", None),)))
+    files += ["search.html"]
     robots = "User-agent: *\nAllow: /\n"
     if origin:
         today = datetime.date.today().isoformat()
@@ -406,6 +440,58 @@ def main():
         robots += f"Sitemap: {origin}/sitemap.xml\n"
     open(os.path.join(out, "robots.txt"), "w", encoding="utf-8").write(robots)
     return 0
+
+
+APP_JS = r"""(function(){
+var KEY="petsite_fav_v1",mem={},DATA=null;
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return mem}}
+function save(v){mem=v;try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function norm(s){s=String(s||"");try{s=s.normalize("NFKC")}catch(e){}s=s.toLowerCase();
+ return s.replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)}).replace(/\s+/g," ")}
+function yen(n){return Number(n).toLocaleString("ja-JP")}
+function paint(){var f=load();document.querySelectorAll("[data-fav]").forEach(function(b){var on=!!f[b.dataset.fav];
+ b.setAttribute("aria-pressed",on);b.setAttribute("aria-label",on?"お気に入りから外す":"お気に入りに追加");
+ b.textContent=b.classList.contains("mini")?(on?"★":"☆"):(on?"★ お気に入り済み":"☆ お気に入り")});
+ var c=document.getElementById("favn");if(c){var n=Object.keys(f).length;c.textContent=n?"（"+n+"）":""}}
+document.addEventListener("click",function(e){var b=e.target.closest("[data-fav]");if(!b)return;e.preventDefault();
+ var f=load(),id=b.dataset.fav;if(f[id])delete f[id];else f[id]={p:+b.dataset.price||0,t:Date.now()};save(f);paint();
+ if(document.getElementById("favlist"))renderFav()});
+function data(cb){if(DATA)return cb(DATA);fetch("search.json").then(function(r){return r.json()}).then(function(d){DATA=d;cb(d)})
+ .catch(function(){var c=document.getElementById("count")||document.getElementById("favempty");if(c){c.hidden=false;c.textContent="商品データを読み込めませんでした。ページを再読み込みしてください。"}})}
+function unit(x){return x.u?x.ul+" "+(x.u>=10?yen(Math.round(x.u)):x.u.toFixed(1))+"円":""}
+function row(x,extra){var st=x.rv?'<span class="rv"><span class="st" style="--r:'+(Math.min(x.ra,5)/5).toFixed(2)+'" aria-hidden="true">★★★★★</span>'+Number(x.ra).toFixed(1)+'<span class="rvn">（'+yen(x.rv)+'件）</span></span>':"";
+ return '<li><button type="button" class="fav mini" data-fav="'+esc(x.id)+'" data-price="'+x.p+'" aria-pressed="false">☆</button>'+
+ '<a class="row" href="item-'+esc(x.id)+'.html"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
+ '<span class="nm">'+esc(x.n)+'</span><span class="meta">'+esc(x.m)+(x.m?"・":"")+esc(x.ct)+'</span>'+st+
+ '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh==="送料無料"?" free":"")+'">'+esc(x.sh)+'</span></span>'+
+ '<span class="pt">'+yen(x.pt)+'ポイント（'+x.r+'倍）・ポイント込み '+yen(x.e)+'円</span>'+
+ '<span class="meta">'+x.s+'ショップ中の最安値'+(unit(x)?"・"+unit(x):"")+'</span>'+(extra||"")+'</span></a></li>'}
+function fill(sel,opts,val){var el=document.getElementById(sel);opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];el.appendChild(op)});el.value=val||""}
+function search(){var f=document.getElementById("sf");if(!f)return;var u=new URLSearchParams(location.search);
+ data(function(d){var mk={};d.items.forEach(function(x){if(x.m)mk[x.m]=(mk[x.m]||0)+1});
+  var makers=Object.keys(mk).sort(function(a,b){return mk[b]-mk[a]||a.localeCompare(b,"ja")}).map(function(m){return[m,m+"（"+mk[m]+"）"]});
+  fill("pet",d.pets,u.get("pet"));fill("cat",d.cats,u.get("cat"));fill("maker",makers,u.get("maker"));
+  document.getElementById("q").value=u.get("q")||"";document.getElementById("sort").value=u.get("sort")||"pop";
+  d.items.forEach(function(x){x._h=norm([x.n,x.m,x.ct,x.kw,x.jan].join(" "))});
+  function run(){var q=norm(document.getElementById("q").value).trim(),pet=f.pet.value,cat=f.cat.value,m=f.maker.value,s=f.sort.value;
+   var t=q?q.split(" "):[],r=d.items.filter(function(x){return(!pet||x.pet.indexOf(pet)>-1)&&(!cat||x.c===cat)&&(!m||x.m===m)&&t.every(function(w){return x._h.indexOf(w)>-1})});
+   r.sort(function(a,b){return s==="price"?a.p-b.p:s==="eff"?a.e-b.e:s==="unit"?((a.u||1e12)-(b.u||1e12)):b.rv-a.rv});
+   document.getElementById("results").innerHTML=r.map(function(x){return row(x)}).join("");
+   document.getElementById("count").textContent=r.length?r.length+"件の商品":"見つかりませんでした。言葉を短くするか、条件を「すべて」に戻してください。";
+   var p=new URLSearchParams();["q","pet","cat","maker","sort"].forEach(function(k){var v=f[k].value;if(v&&!(k==="sort"&&v==="pop"))p.set(k,v)});
+   history.replaceState(null,"",location.pathname+(p.toString()?"?"+p:""));paint()}
+  f.addEventListener("input",run);f.addEventListener("change",run);f.addEventListener("submit",function(e){e.preventDefault();run()});run()})}
+function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
+ var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
+ l.innerHTML=ids.map(function(id){var x=by[id],s=f[id].p;if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
+  var diff=s?x.p-s:0,msg=!s||!diff?"登録時と同じ価格です":diff<0?"登録時（"+yen(s)+"円）より <b>"+yen(-diff)+"円安く</b>なっています":"登録時（"+yen(s)+"円）より "+yen(diff)+"円高くなっています";
+  return row(x,'<span class="diff'+(diff<0?" down":"")+'">'+msg+'</span>')}).join("");
+ document.getElementById("favempty").hidden=ids.length>0;paint()})}
+function init(){var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+ paint();search();renderFav()}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
+"""
 
 
 CSS = """:root{--txt:#333;--sub:#666;--line:#e5e5e5;--bg:#f4f4f4;--red:#bf0000;--btn:#bf0000;--link:#0b5db3}
@@ -419,7 +505,28 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 .hd-in{max-width:960px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .logo{font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px}
 .mk{background:var(--red);color:#fff;font-size:11px;padding:3px 5px;border-radius:3px;line-height:1}
-.hd-note{font-size:11px;color:var(--sub)}
+.hd-note{font-size:11px;color:var(--sub);margin-left:auto}
+.hd-fav{font-size:12px;color:var(--txt);white-space:nowrap;border:1px solid var(--line);border-radius:3px;padding:4px 8px}
+.hd-search{max-width:960px;margin:0 auto;padding:0 12px 10px;display:flex}
+.hd-search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--red);border-right:0;border-radius:4px 0 0 4px}
+.hd-search button{font:inherit;font-size:14px;font-weight:700;background:var(--red);color:#fff;border:0;border-radius:0 4px 4px 0;padding:0 16px;cursor:pointer}
+.list li{position:relative}
+.fav{font:inherit;font-size:13px;background:#fff;border:1px solid #ccc;border-radius:3px;padding:5px 10px;cursor:pointer;color:var(--txt);margin-top:6px}
+.fav[aria-pressed="true"]{color:#c58a00;border-color:#e8b500;background:#fffaf0}
+.fav.mini{position:absolute;right:8px;top:8px;margin:0;width:34px;height:34px;padding:0;font-size:18px;line-height:1;color:#c58a00;z-index:1}
+.list .row{padding-right:48px}
+.chips{list-style:none;margin:0;padding:10px 12px;background:#fff;display:flex;flex-wrap:wrap;gap:6px}
+.chips a{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:4px 10px;font-size:13px;color:var(--link)}
+.mk-sec{margin-top:10px}
+.filters{background:#fff;padding:10px 12px;border-bottom:1px solid var(--line);margin-top:8px}
+.filters input{width:100%;font:inherit;font-size:16px;padding:8px 10px;border:1px solid #bbb;border-radius:4px}
+.fl-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px}
+.fl-row label{display:flex;flex-direction:column;font-size:11px;color:var(--sub);gap:2px}
+.fl-row select{font:inherit;font-size:14px;padding:6px;border:1px solid #bbb;border-radius:4px;background:#fff;color:var(--txt)}
+.count{font-size:13px;margin:8px 12px}
+.diff{font-size:12px;color:var(--sub);margin-top:4px}.diff.down{color:var(--red)}
+.gone{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;font-size:13px;color:var(--sub)}
+.gone .fav{position:static;margin:0}
 main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .bc{font-size:12px;color:var(--sub);padding:8px 12px}.bc a{color:var(--link)}
 .search{background:#fff;padding:10px 12px;border-bottom:1px solid var(--line)}

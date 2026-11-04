@@ -79,6 +79,13 @@ class T(unittest.TestCase):
         self.assertEqual(item.count('rel="sponsored nofollow"'), 4)  # 最安ボタン＋ショップ2件＋全ショップ
         self.assertIn("1Lあたり", item)
         self.assertNotIn("最安値挑戦", item)
+        sj = json.load(open(os.path.join(site, "search.json"), encoding="utf-8"))  # 検索・お気に入り用データ
+        self.assertEqual(len(sj["items"]), 3)
+        self.assertEqual({k for k in ("id", "n", "m", "c", "p", "e", "pt") if k in sj["items"][0]}, {"id", "n", "m", "c", "p", "e", "pt"})
+        for f in ("search.html", "favorites.html", "app.js"):
+            self.assertTrue(os.path.exists(os.path.join(site, f)), f)
+        self.assertIn('data-fav="lit1"', item)
+        self.assertIn('action="search.html"', idx)
 
     def test_prod_all_fail(self):
         d, p = run({"fetched_at": "2026-11-04 05:17 JST", "products": [prod("goldfish-food", "g", "金魚 200g", [offer("A", 1)])]})

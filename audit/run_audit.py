@@ -102,10 +102,21 @@ def ask(prompt, images):
     body = {"model": MODEL, "input": [{"role": "user", "content": content}],
             "text": {"format": {"type": "json_schema", "name": "audit", "schema": schema, "strict": True}},
             "reasoning": {"effort": os.environ.get("OPENAI_REASONING") or "low"}}  # 第3回が300秒でタイムアウトしたため
-    req = urllib.request.Request("https://api.openai.com/v1/responses", data=json.dumps(body).encode(), method="POST",
-                                 headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}", "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=600) as r:
+    # 応答に5分以上かかり接続が切れたため（第3回）、background モードで投げて状態を取りに行く
+    body.update({"background": True, "store": True})
+    hdr = {"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}", "Content-Type": "application/json"}
+    req = urllib.request.Request("https://api.openai.com/v1/responses", data=json.dumps(body).encode(), method="POST", headers=hdr)
+    with urllib.request.urlopen(req, timeout=120) as r:
         d = json.load(r)
+    import time
+    for _ in range(90):  # 最大15分
+        if d.get("status") in ("completed", "failed", "cancelled", "incomplete"):
+            break
+        time.sleep(10)
+        with urllib.request.urlopen(urllib.request.Request(f"https://api.openai.com/v1/responses/{d['id']}", headers=hdr), timeout=60) as r:
+            d = json.load(r)
+    if d.get("status") != "completed":
+        raise RuntimeError(f"status={d.get('status')} {json.dumps(d.get('error') or d.get('incomplete_details'), ensure_ascii=False)[:200]}")
     text = d.get("output_text") or "".join(c.get("text", "") for o in d.get("output", []) if o.get("type") == "message"
                                           for c in o.get("content", []))
     return text, d.get("usage", {})

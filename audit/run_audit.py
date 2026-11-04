@@ -100,10 +100,11 @@ def ask(prompt, images):
         "next": {"type": "array", "items": {"type": "string"}}}}
     # JSON を必ず正しい形で返させる（第1回は文中の引用符で JSON が壊れた）
     body = {"model": MODEL, "input": [{"role": "user", "content": content}],
-            "text": {"format": {"type": "json_schema", "name": "audit", "schema": schema, "strict": True}}}
+            "text": {"format": {"type": "json_schema", "name": "audit", "schema": schema, "strict": True}},
+            "reasoning": {"effort": os.environ.get("OPENAI_REASONING") or "low"}}  # 第3回が300秒でタイムアウトしたため
     req = urllib.request.Request("https://api.openai.com/v1/responses", data=json.dumps(body).encode(), method="POST",
                                  headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}", "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=300) as r:
+    with urllib.request.urlopen(req, timeout=600) as r:
         d = json.load(r)
     text = d.get("output_text") or "".join(c.get("text", "") for o in d.get("output", []) if o.get("type") == "message"
                                           for c in o.get("content", []))

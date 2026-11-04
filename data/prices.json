@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-11-04 09:21 JST",
+ "fetched_at": "2026-11-04 09:27 JST",
  "products": [
   {
    "productId": "0ff2c21d875474853fcd42d7d9648791",
@@ -55,7 +55,7 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/utopia/cabinet/img001/200811_pb_02.jpg?_ex=128x128"
     }
    ],
-   "amount": 6.0
+   "amount": 48.0
   },
   {
    "productId": "c938d9a8133c8f75be06cf0d08d8048b",
@@ -967,7 +967,7 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/enetroom/cabinet/11375185/7246862.jpg?_ex=128x128"
     }
    ],
-   "amount": 7.0
+   "amount": 28.0
   },
   {
    "productId": "a3de17e7cdf383bb527e45da9882afa9",
@@ -5223,17 +5223,17 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/mydog/cabinet/8-prestige/kton8kg.jpg?_ex=128x128"
     },
     {
-     "shop": "Mathy Mathy",
-     "name": "【猫】PRESTIGE プレスティージ キトン with フィッシュ 8kg 子猫 総合栄養食 ドライフード",
+     "shop": "ペットフードマルシェピーチ",
+     "name": "【お取り寄せ】プレスティージ 猫用 キトン with フィッシュ 8kg 全猫種 キャットフード 無添加 ペット先進国のフランス産 総合栄養食 国内正規品［正規販売店］【送料無料 但し、北海道・沖縄県・離島除く】",
      "price": 17600,
-     "pointRate": 1,
-     "points": 160,
-     "effective": 17440,
-     "shipping": "送料別",
-     "url": "https://hb.afl.rakuten.co.jp/hgc/g00pt3po.q0v96212.g00pt3po.q0v97a3e/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmathy-mathy%2Fpet-3269878270800-0%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fmathy-mathy%2Fi%2F10226833%2F&rafcid=wsc_i_is_588b1119-47c8-4dd0-82b7-0b6a661d11d6",
+     "pointRate": 10,
+     "points": 1600,
+     "effective": 16000,
+     "shipping": "送料無料",
+     "url": "https://hb.afl.rakuten.co.jp/hgc/g00twggo.q0v96075.g00twggo.q0v97f0d/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fpetfoodmarchepeach%2Fprestigekitten%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fpetfoodmarchepeach%2Fi%2F10000779%2F&rafcid=wsc_i_is_588b1119-47c8-4dd0-82b7-0b6a661d11d6",
      "reviewCount": 0,
      "reviewAverage": 0.0,
-     "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/mathy-mathy/cabinet/pet/prestige/3269878270800_1.jpg?_ex=128x128"
+     "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/petfoodmarchepeach/cabinet/prestige/imgrc0110682806.jpg?_ex=128x128"
     },
     {
      "shop": "Buy 1. Love 2 楽天市場店",
@@ -5327,17 +5327,17 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/logos-pet/cabinet/food/mrku/3269878270800_r.jpg?_ex=128x128"
     },
     {
-     "shop": "ペットフードマルシェピーチ",
-     "name": "【お取り寄せ】プレスティージ 猫用 キトン with フィッシュ 8kg 全猫種 キャットフード 無添加 ペット先進国のフランス産 総合栄養食 国内正規品［正規販売店］【送料無料 但し、北海道・沖縄県・離島除く】",
+     "shop": "Mathy Mathy",
+     "name": "【猫】PRESTIGE プレスティージ キトン with フィッシュ 8kg 子猫 総合栄養食 ドライフード",
      "price": 17600,
-     "pointRate": 10,
-     "points": 1600,
-     "effective": 16000,
-     "shipping": "送料無料",
-     "url": "https://hb.afl.rakuten.co.jp/hgc/g00twggo.q0v96075.g00twggo.q0v97f0d/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fpetfoodmarchepeach%2Fprestigekitten%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fpetfoodmarchepeach%2Fi%2F10000779%2F&rafcid=wsc_i_is_588b1119-47c8-4dd0-82b7-0b6a661d11d6",
+     "pointRate": 1,
+     "points": 160,
+     "effective": 17440,
+     "shipping": "送料別",
+     "url": "https://hb.afl.rakuten.co.jp/hgc/g00pt3po.q0v96212.g00pt3po.q0v97a3e/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fmathy-mathy%2Fpet-3269878270800-0%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fmathy-mathy%2Fi%2F10226833%2F&rafcid=wsc_i_is_588b1119-47c8-4dd0-82b7-0b6a661d11d6",
      "reviewCount": 0,
      "reviewAverage": 0.0,
-     "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/petfoodmarchepeach/cabinet/prestige/imgrc0110682806.jpg?_ex=128x128"
+     "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/mathy-mathy/cabinet/pet/prestige/3269878270800_1.jpg?_ex=128x128"
     }
    ],
    "amount": 8.0
@@ -5443,7 +5443,7 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/cat-land/cabinet/eigyou/11675859/209233sku.jpg?_ex=128x128"
     }
    ],
-   "amount": 1.0
+   "amount": 3.0
   },
   {
    "productId": "69b71df8566b6abf090c78603d304432",
@@ -8617,7 +8617,7 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/kurosu/cabinet/rakulogo/rakulogo20/r1853_00037.jpg?_ex=128x128"
     }
    ],
-   "amount": 70.0
+   "amount": 210.0
   },
   {
    "productId": "9fa9de029beef5a9f701b61bec2c7451",
@@ -9973,7 +9973,7 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/minimal/cabinet/hipet/4977007037017_set2.jpg?_ex=128x128"
     }
    ],
-   "amount": 0.5
+   "amount": 0.43
   },
   {
    "productId": "72406094d9f892d913656cbabe7da614",
@@ -10556,7 +10556,7 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/minimal/cabinet/hipet/4977007037017_set2.jpg?_ex=128x128"
     }
    ],
-   "amount": 0.5
+   "amount": 0.43
   },
   {
    "productId": "b5feef119205888578808cf6b0a4da78",
@@ -12674,7 +12674,7 @@
      "image": "https://thumbnail.image.rakuten.co.jp/@0_mall/chanet3980/cabinet/2847/284273-1.jpg?_ex=128x128"
     }
    ],
-   "amount": 0.8999999999999999
+   "amount": 0.9
   },
   {
    "productId": "facbe422eb5ccc3b6fb1a9cc835c8eed",

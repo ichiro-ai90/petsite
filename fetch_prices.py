@@ -1,23 +1,21 @@
-"""価格取得スクリプト（楽天市場商品検索API／Yahoo!ショッピング商品検索API v3）。
+"""価格取得スクリプト（楽天市場だけ。2026-11-04 v2: 商品ごとの最安値とポイント）。
 
-- 環境変数が未設定なら API を呼ばず data/sample_prices.json をそのまま使う（開発時のみ。外部通信なし）。
-- 設定済みなら products.json の各グループを検索し data/prices.json に保存する。
-  RAKUTEN_APP_ID, RAKUTEN_ACCESS_KEY, RAKUTEN_AFFILIATE_ID
-  YAHOO_APP_ID, VC_AFFILIATE_ID（バリューコマース。未設定ならアフィリエイトなしの URL）
-- 楽天の新エンドポイント（openapi.rakuten.co.jp, 20220601 版, accessKey 必須）は
-  Referer ではなく Origin ヘッダーが必要という報告あり（要・本番キーで確認）。
+流れ（カテゴリごと）:
+  1. 楽天の製品検索API（Product/Search）でカテゴリの「製品」を探す（同じ商品を売るショップをまとめた単位）。
+  2. 人気（レビュー件数）の多い順に最大 MAX_PRODUCTS 件を選び、JANコードで楽天市場の商品検索API（IchibaItem/Search）を
+     価格の安い順に引いて、その商品を売っているショップの価格・ポイント倍率・送料・アフィリエイトURLを集める。
+  3. data/prices.json に products（製品ごとのショップ一覧）として保存する。
 
-2026-11-02 失敗モード対策（Actions で空サイト・架空データを公開しない）:
-- 本番判定: 環境変数 PETSITE_PROD=1（update.yml で設定）。
-- 本番で楽天 Secrets（RAKUTEN_APP_ID / RAKUTEN_ACCESS_KEY）が未設定 → 明示エラーで終了（exit 2）。サンプルに落とさない。
-- API は店ごとに 1.1 秒以上の間隔を空ける（楽天・Yahoo とも 1req/秒の目安）。HTTP 429/5xx は 1 回だけ待って再試行。
-- カテゴリ単位で失敗・0件なら、前回 data/prices.json の同カテゴリの商品を引き継ぐ（carried に記録）。
-- 全体で新規取得 0 件 → 前回の本番データがあればそのまま残して exit 0（サイトは前回データで再生成）、
-  前回が無い／サンプルなら exit 1（公開しない）。
-- 終了コード: 0=正常（引き継ぎ含む） 1=公開できるデータなし 2=本番の設定不備
+- 環境変数: RAKUTEN_APP_ID, RAKUTEN_ACCESS_KEY, RAKUTEN_AFFILIATE_ID, SITE_ORIGIN（Origin ヘッダー）, PETSITE_PROD=1（本番）
+- キー未設定かつ非本番なら data/sample_prices.json を使う（外部通信なし）。本番でキー未設定は exit 2。
+- 1req/秒を守る（INTERVAL）。429・5xx は1回だけ再試行。エラー本文（先頭200字）をログに出す。
+- カテゴリ単位で失敗・0件なら前回 data/prices.json の同カテゴリを引き継ぐ（carried）。全体で新規0件なら、前回の本番データが
+  あれば残して exit 0、無ければ exit 1（公開しない）。
+- ポイントは「ショップのポイント倍率 × 税抜価格の1%」の目安（SPU・キャンペーンは含まない）。
 """
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -27,19 +25,21 @@ from datetime import datetime, timezone, timedelta
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 JST = timezone(timedelta(hours=9))
-RAKUTEN_URL = os.environ.get("RAKUTEN_URL", "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401")  # 2026-11-03: 20220601 は新規アプリで「API Configuration not found」
-YAHOO_URL = "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch"
+HOST = "https://openapi.rakuten.co.jp"
+ITEM_URL = HOST + "/ichibams/api/IchibaItem/Search/20260401"
+PRODUCT_URL = HOST + "/ichibaproduct/api/Product/Search/20250801"
 SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "https://example.com")
-HITS = 30  # 2026-11-04: 価格の安い順20件だとお試し・おやつの小袋ばかりになるため、標準順（関連度）30件に変更
-INTERVAL = 1.1  # 秒。店ごとの最小リクエスト間隔
-_last = {}
+MAX_PRODUCTS = 8      # カテゴリあたりの製品数
+MAX_OFFERS = 10       # 製品あたりに残すショップ数（安い順）
+INTERVAL = 1.1        # 秒
+_last = {"t": -1e9}
 
 
-def _throttle(shop):
-    wait = INTERVAL - (time.monotonic() - _last.get(shop, -1e9))
+def _throttle():
+    wait = INTERVAL - (time.monotonic() - _last["t"])
     if wait > 0:
         time.sleep(wait)
-    _last[shop] = time.monotonic()
+    _last["t"] = time.monotonic()
 
 
 def _get(url, params, headers=None):
@@ -48,17 +48,19 @@ def _get(url, params, headers=None):
         return json.load(r)
 
 
-def _call(shop, url, params, headers=None):
-    """1req/秒を守って呼ぶ。429・5xx だけ 1 回再試行（認証エラー等は即失敗）。"""
+def _call(url, params):
+    p = dict(params, applicationId=os.environ["RAKUTEN_APP_ID"], accessKey=os.environ["RAKUTEN_ACCESS_KEY"],
+             format="json", formatVersion=2)
+    if os.environ.get("RAKUTEN_AFFILIATE_ID"):
+        p["affiliateId"] = os.environ["RAKUTEN_AFFILIATE_ID"]
     for attempt in (1, 2):
-        _throttle(shop)
+        _throttle()
         try:
-            return _get(url, params, headers)
+            return _get(url, p, {"Origin": SITE_ORIGIN})
         except urllib.error.HTTPError as e:
             if attempt == 1 and (e.code == 429 or e.code >= 500):
                 time.sleep(3)
                 continue
-            # 原因切り分け用に API の返したエラー本文（先頭200字）を付ける。キーは本文に含まれない
             try:
                 body = e.read().decode("utf-8", "replace")[:200]
             except Exception:
@@ -66,112 +68,129 @@ def _call(shop, url, params, headers=None):
             raise RuntimeError(f"HTTP {e.code} {body}") from e
 
 
-def fetch_rakuten(group):
-    p = {
-        "format": "json", "formatVersion": 2,
-        "applicationId": os.environ["RAKUTEN_APP_ID"],
-        "accessKey": os.environ["RAKUTEN_ACCESS_KEY"],
-        "keyword": group["keyword"], "hits": HITS, "sort": "standard",
-        "availability": 1,
-    }
-    if os.environ.get("RAKUTEN_AFFILIATE_ID"):
-        p["affiliateId"] = os.environ["RAKUTEN_AFFILIATE_ID"]
-    d = _call("rakuten", RAKUTEN_URL, p, {"Origin": SITE_ORIGIN})
+def points(price, rate):
+    """ショップのポイント倍率から計算した目安（税抜価格の1%×倍率、切り捨て）。"""
+    return int(int(price / 1.1) * (rate or 1) // 100)
+
+
+def _prod(raw):
+    return raw.get("Product", raw) if isinstance(raw, dict) else {}
+
+
+def search_products(group):
+    d = _call(PRODUCT_URL, {"keyword": group["keyword"], "hits": 30})
+    out = []
+    for raw in d.get("Products", []):
+        p = _prod(raw)
+        name = p.get("productName") or ""
+        if not name or any(x in name for x in group.get("exclude", [])):
+            continue
+        out.append({
+            "productId": p.get("productId") or "", "name": name, "jan": str(p.get("productCode") or ""),
+            "maker": p.get("makerName") or p.get("brandName") or "",
+            "image": p.get("mediumImageUrl") or p.get("productImageUrl") or "",
+            "minPrice": int(p.get("minPrice") or 0), "itemCount": int(p.get("itemCount") or 0),
+            "reviewCount": int(p.get("reviewCount") or 0), "reviewAverage": float(p.get("reviewAverage") or 0),
+        })
+    out = [p for p in out if p["minPrice"] > 0]
+    out.sort(key=lambda p: (-p["reviewCount"], -p["itemCount"]))
+    return out[:MAX_PRODUCTS]
+
+
+def search_offers(product):
+    """JAN があれば JAN、無ければ製品名で、楽天市場の商品を価格の安い順に。"""
+    kw = product["jan"] if re.fullmatch(r"\d{8,14}", product["jan"]) else product["name"]
+    d = _call(ITEM_URL, {"keyword": kw, "hits": 30, "sort": "+itemPrice", "availability": 1})
     if "Items" not in d:
         raise RuntimeError(f"想定外の応答形式: keys={list(d)[:10]}")
-    out = []
-    for it in d.get("Items", []):
-        out.append({
-            "group": group["slug"], "shop": "rakuten", "name": it.get("itemName", ""),
-            "price": int(it.get("itemPrice", 0)),
+    lo = product["minPrice"] * 0.7  # 製品の最安値より大幅に安いものは別商品（付属品など）とみなす
+    offers = []
+    for it in d["Items"]:
+        price = int(it.get("itemPrice") or 0)
+        url = it.get("affiliateUrl") or it.get("itemUrl") or ""
+        if price <= 0 or not url or price < lo:
+            continue
+        rate = int(it.get("pointRate") or 1)
+        pt = points(price, rate)
+        offers.append({
+            "shop": it.get("shopName") or "", "name": it.get("itemName") or "", "price": price,
+            "pointRate": rate, "points": pt, "effective": price - pt,
             "shipping": "送料無料" if it.get("postageFlag") == 0 else "送料別",
-            "url": it.get("affiliateUrl") or it.get("itemUrl", ""),
-            "image": (it.get("mediumImageUrls") or [""])[0],
+            "url": url, "reviewCount": int(it.get("reviewCount") or 0),
+            "reviewAverage": float(it.get("reviewAverage") or 0),
+            "image": (it.get("mediumImageUrls") or [""])[0] if isinstance((it.get("mediumImageUrls") or [""])[0], str)
+            else ((it.get("mediumImageUrls") or [{}])[0].get("imageUrl", "")),
         })
-    return out
+    # 同じショップは一番安い1件だけ
+    best = {}
+    for o in sorted(offers, key=lambda o: o["price"]):
+        best.setdefault(o["shop"], o)
+    return sorted(best.values(), key=lambda o: o["price"])[:MAX_OFFERS]
 
 
-def fetch_yahoo(group):
-    p = {"appid": os.environ["YAHOO_APP_ID"], "query": group["keyword"],
-         "results": HITS, "sort": "+price", "in_stock": "true"}
-    if os.environ.get("VC_AFFILIATE_ID"):
-        p.update({"affiliate_type": "vc", "affiliate_id": os.environ["VC_AFFILIATE_ID"]})
-    d = _call("yahoo", YAHOO_URL, p)
-    ship = {"1": "送料別", "2": "送料無料", "3": "条件付き送料無料"}
-    out = []
-    for it in d.get("hits", []):
-        out.append({
-            "group": group["slug"], "shop": "yahoo", "name": it.get("name", ""),
-            "price": int(it.get("price", 0)),
-            "shipping": ship.get(str((it.get("shipping") or {}).get("code")), "不明"),
-            "url": it.get("url", ""),
-            "image": (it.get("image") or {}).get("medium", ""),
-        })
-    return out
+def fetch_group(group):
+    prods = []
+    for p in search_products(group):
+        offers = search_offers(p)
+        if not offers:
+            continue
+        p = dict(p, group=group["slug"], offers=offers)
+        if not p["image"]:
+            p["image"] = offers[0]["image"]
+        prods.append(p)
+    return prods
 
 
 def _load_prev(dst):
-    """前回の本番データ（サンプルでないもの）を返す。無ければ None。"""
     try:
         d = json.load(open(dst, encoding="utf-8"))
     except (OSError, ValueError):
         return None
-    if str(d.get("fetched_at", "")).startswith("SAMPLE") or not d.get("items"):
+    if str(d.get("fetched_at", "")).startswith("SAMPLE") or not d.get("products"):
         return None
     return d
-
-
-def _valid(it):
-    return it.get("name") and it.get("url") and isinstance(it.get("price"), int) and it["price"] > 0
 
 
 def main():
     groups = json.load(open(os.path.join(ROOT, "products.json"), encoding="utf-8"))["groups"]
     prod = os.environ.get("PETSITE_PROD") == "1"
-    use_r = all(os.environ.get(k) for k in ("RAKUTEN_APP_ID", "RAKUTEN_ACCESS_KEY"))
-    use_y = bool(os.environ.get("YAHOO_APP_ID"))
+    has_key = all(os.environ.get(k) for k in ("RAKUTEN_APP_ID", "RAKUTEN_ACCESS_KEY"))
     dst = os.path.join(ROOT, "data", "prices.json")
-    if prod and not use_r:
+    if prod and not has_key:
         missing = [k for k in ("RAKUTEN_APP_ID", "RAKUTEN_ACCESS_KEY") if not os.environ.get(k)]
-        print(f"::error::本番実行なのに楽天 Secrets が未設定: {', '.join(missing)}。"
-              "リポジトリの Settings → Secrets and variables → Actions に登録してください（サンプルでは公開しません）",
-              file=sys.stderr)
+        print(f"::error::本番実行なのに楽天 Secrets が未設定: {', '.join(missing)}（サンプルでは公開しません）", file=sys.stderr)
         return 2
-    if not (use_r or use_y):
+    if not has_key:
         src = os.path.join(ROOT, "data", "sample_prices.json")
         json.dump(json.load(open(src, encoding="utf-8")), open(dst, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print("API キー未設定: サンプルデータを使用（開発用。本番では使われない）")
         return 0
     prev = _load_prev(dst)
-    items, errors, carried = [], [], []
+    products, errors, carried = [], [], []
     for g in groups:
         got = []
-        for ok, fn, name in ((use_r, fetch_rakuten, "rakuten"), (use_y, fetch_yahoo, "yahoo")):
-            if not ok:
-                continue
-            try:
-                got += [it for it in fn(g) if _valid(it)]
-            except Exception as e:  # 1グループの失敗で全体を止めない
-                errors.append(f"{name}/{g['slug']}: {type(e).__name__}: {e}")
+        try:
+            got = fetch_group(g)
+        except Exception as e:  # 1カテゴリの失敗で全体を止めない
+            errors.append(f"{g['slug']}: {type(e).__name__}: {e}")
         if not got and prev:
-            old = [it for it in prev["items"] if it.get("group") == g["slug"]]
+            old = [p for p in prev["products"] if p.get("group") == g["slug"]]
             if old:
                 carried.append(g["slug"])
-                # 引き継いだ商品には元の取得日時を残す（新しい日時で上書きしない）
-                got = [dict(it, fetched_at=it.get("fetched_at") or prev.get("fetched_at")) for it in old]
-        items += got
-    new_count = sum(1 for g in groups if g["slug"] not in carried and any(it["group"] == g["slug"] for it in items))
+                got = [dict(p, fetched_at=p.get("fetched_at") or prev.get("fetched_at")) for p in old]
+        products += got
+    new_count = sum(1 for g in groups if g["slug"] not in carried and any(p["group"] == g["slug"] for p in products))
     if new_count == 0:
         if prev:
-            print(f"::warning::新規取得 0 件。前回データ（{prev.get('fetched_at')}）を残して再生成します",
-                  errors[:5], file=sys.stderr)
+            print(f"::warning::新規取得 0 件。前回データ（{prev.get('fetched_at')}）を残して再生成します", errors[:5], file=sys.stderr)
             return 0
         print("::error::取得 0 件かつ前回の本番データなし。公開しません", errors[:5], file=sys.stderr)
         return 1
-    json.dump({"fetched_at": datetime.now(JST).strftime("%Y-%m-%d %H:%M JST"), "items": items,
+    json.dump({"fetched_at": datetime.now(JST).strftime("%Y-%m-%d %H:%M JST"), "products": products,
                "errors": errors, "carried": carried},
               open(dst, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print(f"{len(items)} 件（新規取得 {new_count} カテゴリ／前回引き継ぎ {len(carried)} カテゴリ）、エラー {len(errors)} 件")
+    offers = sum(len(p["offers"]) for p in products)
+    print(f"製品 {len(products)} 件・ショップ {offers} 件（新規取得 {new_count} カテゴリ／前回引き継ぎ {len(carried)} カテゴリ）、エラー {len(errors)} 件")
     for e in errors[:10]:
         print("  ", e, file=sys.stderr)
     return 0

@@ -232,7 +232,7 @@ def page(title, body, desc, sample, crumbs=()):
 <link rel="stylesheet" href="style.css"><script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
 {band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk" aria-hidden="true">🐾</span>{SITE}</a>
-<span class="hd-note">楽天市場の価格比較（非公式）</span><a class="hd-fav" href="favorites.html">★ お気に入り<span id="favn"></span></a></div>
+<span class="hd-note">楽天市場の商品を、取得したショップの中で比較<br>楽天の公式サイトではありません</span><a class="hd-fav" href="favorites.html">★ お気に入り<span id="favn"></span></a></div>
 <form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
 <input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">検索</button></form></header>
 <main>{bc}{body}</main>
@@ -487,7 +487,7 @@ function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id],s=f[id].p;if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
   var diff=s?x.p-s:0,msg=!s||!diff?"登録時と同じ価格です":diff<0?"登録時（"+yen(s)+"円）より <b>"+yen(-diff)+"円安く</b>なっています":"登録時（"+yen(s)+"円）より "+yen(diff)+"円高くなっています";
-  return row(x,'<span class="diff'+(diff<0?" down":"")+'">'+msg+'</span>')}).join("");
+  return row(x,'<span class="diff'+(diff<0?" down":"")+'">'+msg+'（価格は '+esc(d.fetched_at)+' 時点）</span>')}).join("");
  document.getElementById("favempty").hidden=ids.length>0;paint()})}
 function init(){var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
@@ -495,7 +495,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 """
 
 
-CSS = """:root{--txt:#333;--sub:#666;--line:#e5e5e5;--bg:#f4f4f4;--red:#c4161c;--brand:#0f6b62;--btn:#0f6b62;--link:#0b5db3}
+CSS = """:root{--txt:#333;--sub:#666;--line:#e5e5e5;--bg:#eef4f2;--red:#c4161c;--price:#b45309;--brand:#0f6b62;--btn:#0f6b62;--link:#0b5db3}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;color:var(--txt);background:var(--bg);line-height:1.55;font-size:15px;-webkit-text-size-adjust:100%}
 a{color:var(--txt);text-decoration:none}
@@ -525,7 +525,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 .fl-row label{display:flex;flex-direction:column;font-size:11px;color:var(--sub);gap:2px}
 .fl-row select{font:inherit;font-size:14px;padding:6px;border:1px solid #bbb;border-radius:4px;background:#fff;color:var(--txt)}
 .count{font-size:13px;margin:8px 12px}
-.diff{font-size:12px;color:var(--sub);margin-top:4px}.diff.down{color:var(--red)}
+.diff{font-size:12px;color:var(--sub);margin-top:4px}.diff.down{color:var(--price);font-weight:700}
 .gone{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;font-size:13px;color:var(--sub)}
 .gone .fav{position:static;margin:0}
 main{max-width:960px;margin:0 auto;padding:0 0 16px}
@@ -539,8 +539,8 @@ main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .tabs .ic{font-size:18px}
 .h2{font-size:16px;margin:0;padding:12px;background:#fff;border-bottom:1px solid var(--line)}
 .pet-sec{margin-top:10px}
-.cats,.list,.shops{list-style:none;margin:0;padding:0;background:#fff}
-.cats li,.list li{border-bottom:1px solid var(--line)}
+.cats,.list,.shops{list-style:none;margin:0;padding:8px;display:grid;gap:8px}
+.cats li,.list li,.shops li{background:#fff;border-radius:12px;box-shadow:0 1px 0 rgba(15,107,98,.12);border:1px solid #e3ece9}
 .cat,.row{display:flex;gap:12px;padding:10px 12px;align-items:flex-start}
 .cat{align-items:center}
 .pic img,.noimg{display:block;width:96px;height:96px;object-fit:contain;background:#fff}
@@ -553,19 +553,19 @@ main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .rv{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:3px}
 .st{position:relative;color:#ddd;letter-spacing:-1px;font-size:12px}
 .st::after{content:"★★★★★";position:absolute;left:0;top:0;width:calc(var(--r)*100%);overflow:hidden;color:#f5a623}
-.pr{color:var(--red);font-size:13px;margin:0}.pr b{font-size:19px}
+.pr{color:var(--price);font-size:13px;margin:0}.pr b{font-size:19px}
 .pr.big b{font-size:28px}
 .ship{display:inline-block;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:2px;padding:0 4px;margin-left:4px;vertical-align:2px;font-weight:400}
 .ship.free{color:var(--brand);border-color:var(--brand)}
-.pt{font-size:12px;color:var(--red);margin:0}
+.pt{font-size:12px;color:var(--brand);margin:0}
 .up{font-size:12px;color:var(--sub);margin:2px 0 0}
 .sort{display:flex;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5}
 .fresh{font-size:12px;color:var(--sub);margin:4px 12px 8px}
 .filters{position:sticky;top:0;z-index:5}
 .btn{border-radius:20px}
 .sort span{white-space:nowrap}
-.sort button{font:inherit;font-size:12px;white-space:nowrap;background:#fff;border:1px solid #ccc;border-radius:3px;padding:5px 10px;color:var(--txt);cursor:pointer}
-.sort button[aria-pressed="true"]{background:#333;color:#fff;border-color:#333}
+.sort button{font:inherit;font-size:12px;white-space:nowrap;background:#fff;border:1px solid #c8d8d4;border-radius:20px;min-height:36px;padding:5px 10px;color:var(--txt);cursor:pointer}
+.sort button[aria-pressed="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
 .ttl{font-size:18px;margin:0;padding:6px 12px 0;line-height:1.4}
 .item{background:#fff;padding:12px;display:grid;grid-template-columns:240px 1fr;gap:16px}
 .item .ttl{padding:0;font-size:17px}
@@ -583,7 +583,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .note{font-size:11px;color:var(--sub);padding:10px 12px}.note p{margin:2px 0}
 .empty{text-align:center;color:var(--sub);font-size:13px}
 footer{max-width:960px;margin:0 auto;padding:12px;font-size:11px;color:var(--sub)}footer a{color:var(--link)}
-@media (max-width:600px){.item{grid-template-columns:1fr}.item-pic img,.noimg.big{max-width:200px}.hd-note{display:none}}
+@media (max-width:600px){.item{grid-template-columns:1fr}.item-pic img,.noimg.big{max-width:200px}.hd-in{flex-wrap:wrap}.hd-note{order:3;width:100%;margin:2px 0 0;font-size:11px}.hd-note br{display:none}}
 """
 
 if __name__ == "__main__":

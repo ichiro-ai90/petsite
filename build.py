@@ -230,8 +230,8 @@ def page(title, body, desc, sample, crumbs=()):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">
 <link rel="stylesheet" href="style.css"><script src="app.js" defer></script></head><body>
-<p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。</p>
-{band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk" aria-hidden="true">最安</span>{SITE}</a>
+<p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
+{band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk" aria-hidden="true">🐾</span>{SITE}</a>
 <span class="hd-note">楽天市場の価格比較（非公式）</span><a class="hd-fav" href="favorites.html">★ お気に入り<span id="favn"></span></a></div>
 <form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
 <input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">検索</button></form></header>
@@ -279,10 +279,11 @@ def category_body(g, prods, pet, fetched, carried):
     cheapest = min(prods, key=lambda p: best_offer(p)["price"])
     return (f'<h1 class="ttl">{E(g["title"])}</h1>'
             f'<p class="lead">楽天市場で人気の{len(prods)}商品を比べています。商品を選ぶと、その商品をいちばん安く売っているショップが分かります。</p>'
+            f'<p class="fresh">価格は {fetched} 時点（1日1回更新）。最安値・ポイントは今回取得したショップの中での比較です。</p>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<button type="button" data-k="pop" aria-pressed="true">人気順</button>'
             f'<button type="button" data-k="price" aria-pressed="false">安い順</button>'
-            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button>'
+            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込み（目安）で安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
             f'<ul class="list" id="list">{rows}</ul>'
             f'<div class="note"><p>価格取得日時: {fetched}{carried}</p><p>「最安値」は今回取得したショップの中での最安です。'
@@ -313,15 +314,15 @@ def item_body(p, g, fetched):
             + (f'<p class="mk2"><a href="search.html?maker={urllib.parse.quote(p["maker"])}">{E(p["maker"])}の商品をもっと見る</a></p>' if p.get("maker") else "")
             + f'{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'<button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">☆ お気に入り</button>'
-            f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値</p>'
+            f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）　{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}）</p>' if up else "") +
-            f'<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">最安のショップで見る</a>{alt}</div></div></div>'
+            f'<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
             f'<h2 class="h2">この商品を売っているショップ</h2>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<button type="button" data-k="price" aria-pressed="true">安い順</button>'
-            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button></div>'
+            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込み（目安）で安い順</button></div>'
             f'<ul class="shops" id="list">{rows}</ul>{allshops}'
             f'<div class="note"><p>価格取得日時: {E(str(p.get("fetched_at") or fetched))}</p><p>ポイントはショップのポイント倍率から計算した目安です（税抜価格の1%×倍率。SPU・キャンペーン・クーポンは含みません）。</p></div>{SORT_JS}')
 
@@ -420,13 +421,13 @@ def main():
         '<label>カテゴリ<select name="cat" id="cat"><option value="">すべて</option></select></label>'
         '<label>メーカー<select name="maker" id="maker"><option value="">すべて</option></select></label>'
         '<label>並べ替え<select name="sort" id="sort"><option value="pop">人気順</option><option value="price">安い順</option>'
-        '<option value="eff">ポイント込みで安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
+        '<option value="eff">ポイント込み（目安）で安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
         '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
         f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
         "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して最安値とポイントを比較", sample, (("商品を探す", None),)))
     open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
         f"お気に入り｜{SITE}", '<h1 class="ttl">お気に入り</h1>'
-        '<p class="lead">お気に入りはこのブラウザだけに保存されます（ログイン不要）。登録したときの価格と、いまの最安値を比べられます。</p>'
+        '<p class="lead">お気に入りはこのブラウザだけに保存されます（ログイン不要）。ブラウザの履歴やサイトデータを消すと、お気に入りも消えます。別の端末には引き継がれません。登録したときの価格と、いまの最安値を比べられます。</p>'
         '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「☆」を押すとここに入ります。</p>'
         f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
         "お気に入りに入れた商品の最安値", sample, (("お気に入り", None),)))
@@ -494,27 +495,27 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 """
 
 
-CSS = """:root{--txt:#333;--sub:#666;--line:#e5e5e5;--bg:#f4f4f4;--red:#bf0000;--btn:#bf0000;--link:#0b5db3}
+CSS = """:root{--txt:#333;--sub:#666;--line:#e5e5e5;--bg:#f4f4f4;--red:#c4161c;--brand:#0f6b62;--btn:#0f6b62;--link:#0b5db3}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;color:var(--txt);background:var(--bg);line-height:1.55;font-size:15px;-webkit-text-size-adjust:100%}
 a{color:var(--txt);text-decoration:none}
 a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--link);outline-offset:2px}
-.promo{margin:0;padding:4px 12px;background:#fff;border-bottom:1px solid var(--line);color:var(--sub);font-size:11px;text-align:center}
+.promo{margin:0;padding:5px 12px;background:#2b2b2b;color:#fff;font-size:12px;text-align:center;line-height:1.5}
 .sample{margin:0;padding:6px 12px;background:#fff4d6;color:#7a5200;font-size:12px;text-align:center}
 .hd{background:#fff;border-bottom:1px solid var(--line)}
 .hd-in{max-width:960px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .logo{font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px}
-.mk{background:var(--red);color:#fff;font-size:11px;padding:3px 5px;border-radius:3px;line-height:1}
+.mk{background:var(--brand);color:#fff;font-size:14px;width:26px;height:26px;display:inline-grid;place-items:center;border-radius:50%;line-height:1}
 .hd-note{font-size:11px;color:var(--sub);margin-left:auto}
 .hd-fav{font-size:12px;color:var(--txt);white-space:nowrap;border:1px solid var(--line);border-radius:3px;padding:4px 8px}
 .hd-search{max-width:960px;margin:0 auto;padding:0 12px 10px;display:flex}
-.hd-search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--red);border-right:0;border-radius:4px 0 0 4px}
-.hd-search button{font:inherit;font-size:14px;font-weight:700;background:var(--red);color:#fff;border:0;border-radius:0 4px 4px 0;padding:0 16px;cursor:pointer}
+.hd-search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--brand);border-right:0;border-radius:20px 0 0 20px}
+.hd-search button{font:inherit;font-size:14px;font-weight:700;background:var(--brand);color:#fff;border:0;border-radius:0 20px 20px 0;padding:0 18px;cursor:pointer;min-height:44px}
 .list li{position:relative}
 .fav{font:inherit;font-size:13px;background:#fff;border:1px solid #ccc;border-radius:3px;padding:5px 10px;cursor:pointer;color:var(--txt);margin-top:6px}
 .fav[aria-pressed="true"]{color:#c58a00;border-color:#e8b500;background:#fffaf0}
-.fav.mini{position:absolute;right:8px;top:8px;margin:0;width:34px;height:34px;padding:0;font-size:18px;line-height:1;color:#c58a00;z-index:1}
-.list .row{padding-right:48px}
+.fav.mini{position:absolute;right:6px;top:6px;margin:0;width:44px;height:44px;padding:0;font-size:18px;line-height:1;color:#c58a00;z-index:1}
+.list .row{padding-right:56px}
 .chips{list-style:none;margin:0;padding:10px 12px;background:#fff;display:flex;flex-wrap:wrap;gap:6px}
 .chips a{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:4px 10px;font-size:13px;color:var(--link)}
 .mk-sec{margin-top:10px}
@@ -530,7 +531,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .bc{font-size:12px;color:var(--sub);padding:8px 12px}.bc a{color:var(--link)}
 .search{background:#fff;padding:10px 12px;border-bottom:1px solid var(--line)}
-.search input{width:100%;font:inherit;font-size:16px;padding:9px 12px;border:2px solid var(--red);border-radius:4px}
+.search input{width:100%;font:inherit;font-size:16px;padding:9px 12px;border:2px solid var(--brand);border-radius:4px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .lead{font-size:13px;color:var(--sub);margin:10px 12px}
 .tabs{list-style:none;margin:0;padding:0 8px 8px;display:flex;gap:6px;overflow-x:auto}
@@ -555,10 +556,13 @@ main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .pr{color:var(--red);font-size:13px;margin:0}.pr b{font-size:19px}
 .pr.big b{font-size:28px}
 .ship{display:inline-block;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:2px;padding:0 4px;margin-left:4px;vertical-align:2px;font-weight:400}
-.ship.free{color:var(--red);border-color:var(--red)}
+.ship.free{color:var(--brand);border-color:var(--brand)}
 .pt{font-size:12px;color:var(--red);margin:0}
 .up{font-size:12px;color:var(--sub);margin:2px 0 0}
-.sort{display:flex;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;font-size:12px;color:var(--sub)}
+.sort{display:flex;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5}
+.fresh{font-size:12px;color:var(--sub);margin:4px 12px 8px}
+.filters{position:sticky;top:0;z-index:5}
+.btn{border-radius:20px}
 .sort span{white-space:nowrap}
 .sort button{font:inherit;font-size:12px;white-space:nowrap;background:#fff;border:1px solid #ccc;border-radius:3px;padding:5px 10px;color:var(--txt);cursor:pointer}
 .sort button[aria-pressed="true"]{background:#333;color:#fff;border-color:#333}

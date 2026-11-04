@@ -90,7 +90,17 @@ def ask(prompt, images):
     for name, png in images:
         content.append({"type": "input_text", "text": f"↓ スクリーンショット: {name}（iPhone 13 幅）"})
         content.append({"type": "input_image", "image_url": "data:image/png;base64," + base64.b64encode(png).decode()})
-    body = {"model": MODEL, "input": [{"role": "user", "content": content}]}
+    schema = {"type": "object", "additionalProperties": False, "required": ["summary", "verdict", "findings", "next"], "properties": {
+        "summary": {"type": "string"}, "verdict": {"type": "string", "enum": ["pass", "changes"]},
+        "findings": {"type": "array", "items": {"type": "object", "additionalProperties": False,
+                     "required": ["severity", "screen", "problem", "evidence", "suggestion", "effort"],
+                     "properties": {"severity": {"type": "string", "enum": ["高", "中", "低"]}, "screen": {"type": "string"},
+                                    "problem": {"type": "string"}, "evidence": {"type": "string"}, "suggestion": {"type": "string"},
+                                    "effort": {"type": "string", "enum": ["小", "中", "大"]}}}},
+        "next": {"type": "array", "items": {"type": "string"}}}}
+    # JSON を必ず正しい形で返させる（第1回は文中の引用符で JSON が壊れた）
+    body = {"model": MODEL, "input": [{"role": "user", "content": content}],
+            "text": {"format": {"type": "json_schema", "name": "audit", "schema": schema, "strict": True}}}
     req = urllib.request.Request("https://api.openai.com/v1/responses", data=json.dumps(body).encode(), method="POST",
                                  headers={"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}", "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=300) as r:

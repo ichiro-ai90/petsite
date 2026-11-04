@@ -17,20 +17,10 @@ jobs:
           python - <<'PY'
           import json, fetch_prices as f
           g = json.load(open("products.json", encoding="utf-8"))["groups"]
-          d = f._call(f.PRODUCT_URL, {"keyword": "猫砂 おから", "hits": 5})
-          print("RAW keys", list(d)[:20], "count", d.get("count"))
-          for k, v in d.items():
-              if isinstance(v, list) and v:
-                  print("RAW list", k, len(v), {kk: (vv if not isinstance(vv,(str,)) else vv[:40]) for kk, vv in v[0].items() if kk not in ("productCaption",)})
-          for grp in [x for x in g if x["slug"] in ("cat-litter-tofu", "dog-pee-sheet-regular", "cat-dry-food-large")]:
+          for grp in g:
               try:
                   ps = f.search_products(grp)
-                  print("##", grp["slug"], "products", len(ps))
-                  for p in ps[:4]:
-                      o = f.search_offers(p)
-                      print(" P", p["minPrice"], p["itemCount"], p["reviewCount"], p["jan"], p["name"][:50], "| offers", len(o))
-                      for x in o[:3]:
-                          print("    O", x["price"], x["pointRate"], x["points"], x["shipping"], x["shop"][:20], "afl" if "hb.afl" in x["url"] else "noafl", x["name"][:40])
+                  print("##", grp["slug"], len(ps), " / ".join(f"{p['minPrice']}:{p['itemCount']}:{p['name'][:22]}" for p in ps[:4]))
               except Exception as e:
                   print("ERR", grp["slug"], e)
           PY

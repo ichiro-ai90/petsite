@@ -78,7 +78,7 @@ def _prod(raw):
 
 
 def search_products(group):
-    d = _call(PRODUCT_URL, {"keyword": group["keyword"], "hits": 30})
+    d = _call(PRODUCT_URL, {"keyword": group.get("pkeyword") or group["keyword"], "hits": 30})
     out = []
     for raw in d.get("Products", []):
         p = _prod(raw)
@@ -96,6 +96,9 @@ def search_products(group):
             "reviewCount": int(p.get("reviewCount") or 0), "reviewAverage": float(p.get("reviewAverage") or 0),
         })
     out = [p for p in out if p["minPrice"] > 0]
+    if group.get("min"):  # 大袋カテゴリにお試し・小袋を混ぜない（内容量が読めないものは残し、build で判定）
+        from build import amount
+        out = [p for p in out if not (amount(p["name"], group["unit"]) or 1e9) < group["min"]]
     out.sort(key=lambda p: (-p["reviewCount"], -p["itemCount"]))
     return out[:MAX_PRODUCTS]
 

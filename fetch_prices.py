@@ -29,7 +29,8 @@ HOST = "https://openapi.rakuten.co.jp"
 ITEM_URL = HOST + "/ichibams/api/IchibaItem/Search/20260401"
 PRODUCT_URL = HOST + "/ichibaproduct/api/Product/Search/20250801"
 SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "https://example.com")
-MAX_PRODUCTS = 8      # カテゴリあたりの製品数
+MAX_PRODUCTS = 10     # カテゴリあたりの製品数
+MAX_TRIES = 16        # カテゴリあたりにショップ検索する製品の上限（API 呼び出しを抑える）
 MAX_OFFERS = 10       # 製品あたりに残すショップ数（安い順）
 INTERVAL = 1.1        # 秒
 _last = {"t": -1e9}
@@ -70,7 +71,7 @@ def _call(url, params):
 
 def points(price, rate):
     """ショップのポイント倍率から計算した目安（税抜価格の1%×倍率、切り捨て）。"""
-    return int(int(price / 1.1) * (rate or 1) // 100)
+    return (price * 10 // 11) * (rate or 1) // 100
 
 
 def _prod(raw):
@@ -96,11 +97,8 @@ def search_products(group):
             "reviewCount": int(p.get("reviewCount") or 0), "reviewAverage": float(p.get("reviewAverage") or 0),
         })
     out = [p for p in out if p["minPrice"] > 0]
-    if group.get("min"):  # 大袋カテゴリにお試し・小袋を混ぜない（内容量が読めないものは残し、build で判定）
-        from build import amount
-        out = [p for p in out if not (amount(p["name"], group["unit"]) or 1e9) < group["min"]]
     out.sort(key=lambda p: (-p["reviewCount"], -p["itemCount"]))
-    return out[:MAX_PRODUCTS]
+    return out
 
 
 def search_offers(product):
@@ -135,12 +133,19 @@ def search_offers(product):
 
 
 def fetch_group(group):
+    """人気順に製品を見て、ショップが見つかり内容量が読めるものを最大 MAX_PRODUCTS 件。API 呼び出しは製品 MAX_TRIES 件まで。"""
+    from build import amount
     prods = []
-    for p in search_products(group):
+    for p in search_products(group)[:MAX_TRIES]:
+        if len(prods) >= MAX_PRODUCTS:
+            break
         offers = search_offers(p)
         if not offers:
             continue
-        p = dict(p, group=group["slug"], offers=offers)
+        a = amount(p["name"], group["unit"]) or amount(offers[0]["name"], group["unit"])
+        if not a or (group.get("min") and a < group["min"]):
+            continue  # 内容量が読めない（別ジャンルの商品が混ざることが多い）・大袋の下限未満は載せない
+        p = dict(p, group=group["slug"], offers=offers, amount=a)
         if not p["image"]:
             p["image"] = offers[0]["image"]
         prods.append(p)

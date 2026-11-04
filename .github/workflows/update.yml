@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - name: test amount()（内容量読み取りが壊れていたら公開しない）
-        run: python tests_amount.py && python tests_fetch.py
+        run: python tests_amount.py && python tests_fetch.py && python tests_gate.py
       - name: fetch prices（失敗・0件のカテゴリは前回データを引き継ぐ。公開できるデータが無ければ失敗）
         env:
           RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
@@ -37,9 +37,9 @@ jobs:
           d = json.load(open("data/prices.json", encoding="utf-8"))
           if str(d.get("fetched_at", "")).startswith("SAMPLE"):
               sys.exit("::error::本番でサンプルデータが data/prices.json に入っています。公開を中止します")
-          if not d.get("items"):
+          if not d.get("products"):
               sys.exit("::error::商品0件。公開を中止します")
-          print("guard ok:", d["fetched_at"], len(d["items"]), "件")
+          print("guard ok:", d["fetched_at"], len(d["products"]), "製品")
           PY
       - name: build（sitemap の URL はサイトの実 URL＝ドメイン＋/リポジトリ名。11/02 22:5x ランブック照合で修正）
         env:

@@ -1,0 +1,31 @@
+name: probe-v2
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
+      PETSITE_PROD: "1"
+      RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+      RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+      RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: |
+          python - <<'PY'
+          import json, fetch_prices as f
+          g = json.load(open("products.json", encoding="utf-8"))["groups"]
+          for grp in [x for x in g if x["slug"] in ("cat-litter-tofu", "dog-pee-sheet-regular", "cat-dry-food-large")]:
+              try:
+                  ps = f.search_products(grp)
+                  print("##", grp["slug"], "products", len(ps))
+                  for p in ps[:4]:
+                      o = f.search_offers(p)
+                      print(" P", p["minPrice"], p["itemCount"], p["reviewCount"], p["jan"], p["name"][:50], "| offers", len(o))
+                      for x in o[:3]:
+                          print("    O", x["price"], x["pointRate"], x["points"], x["shipping"], x["shop"][:20], "afl" if "hb.afl" in x["url"] else "noafl", x["name"][:40])
+              except Exception as e:
+                  print("ERR", grp["slug"], e)
+          PY

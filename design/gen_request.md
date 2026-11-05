@@ -4,3 +4,5 @@
 
 ICON_CANDIDATES=2
 ICON_QUALITY=medium
+
+再実行：2026-11-06 08:08 Taku がキーに Images 権限を追加

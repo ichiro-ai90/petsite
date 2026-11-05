@@ -84,6 +84,14 @@ def shots():
             png = pg.screenshot(full_page=full, clip=None if not full else {"x": 0, "y": 0, "width": 390, "height": 2400})
             text = pg.inner_text("body")[:2500]
             out.append((name, path, png, text))
+            if pg.query_selector("#freeonly"):  # 切り替え ON の状態も見せる（OFF の画面だけでは判断できないため）
+                pg.check("#freeonly")
+                pg.wait_for_timeout(400)
+                out.append((name + "（「送料無料のショップだけ」ON）", path, pg.screenshot(), pg.inner_text("body")[:1500]))
+            if "item-" in path and pg.query_selector(".pinfo summary"):  # ポイントの？を開いた状態
+                pg.click(".pinfo summary")
+                pg.wait_for_timeout(300)
+                out.append((name + "（ポイントの？を開いた状態）", path, pg.screenshot(), ""))
         b.close()
     return out
 

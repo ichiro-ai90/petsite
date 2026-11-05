@@ -38,15 +38,25 @@ def comment(body):
 
 
 def history():
-    """この PR の過去の監査（目印つき）と、それ以外のコメント（開発側の回答）を時系列で返す。"""
+    """この PR のコメントから (監査の回数, 開発側の回答一覧, 監査一覧, 再監査してよいか) を返す。
+    回数に数えるのは「開発側の回答コメントの後に実行された監査」だけ（同じ回答に対する push や merge で何度も走った分は数えない）。
+    開発側の回答が付く前の再実行は行わない（前回の監査結果がそのまま有効）。"""
     if not (REPO and PR):
-        return [], []
+        return 0, [], [], True
     cs = gh(f"issues/{PR}/comments?per_page=100")
-    # 回数に数えるのは実際に監査した回だけ（スキップ・エラー・上限の通知は数えない）
-    audits = [c for c in cs if c["body"].startswith(MARK) and re.match(MARK + r" round=\d+ verdict=(pass|changes|unparsed)", c["body"])]
-    replies = [c for c in cs if not c["body"].startswith(MARK)]
-    replies += [c for c in cs if "verdict=limit" in c["body"][:60]]
-    return audits, replies
+    is_audit = lambda c: bool(re.match(MARK + r" round=\d+ verdict=(pass|changes|unparsed)", c["body"]))
+    is_notice = lambda c: c["body"].startswith(MARK) and not is_audit(c)
+    audits, replies, rounds, awaiting = [], [], 0, True
+    for c in cs:
+        if is_audit(c):
+            audits.append(c)
+            if awaiting:
+                rounds += 1
+            awaiting = False
+        elif not is_notice(c):
+            replies.append(c)
+            awaiting = True
+    return rounds, replies, audits, awaiting
 
 
 def shots():
@@ -135,10 +145,13 @@ def esc(s):
 
 
 def main():
-    audits, replies = history()
-    rnd = len(audits) + 1
+    rounds, replies, audits, awaiting = history()
+    rnd = rounds + 1
+    if audits and not awaiting:
+        print("開発側の回答がまだ無いため再監査しません（前回の監査結果が有効）")
+        return 0
     if rnd > MAX_ROUNDS:
-        if not any("verdict=limit" in c["body"] for c in replies + audits):
+        if not any(c["body"].startswith(MARK + f" round={rnd} verdict=limit") for c in gh(f"issues/{PR}/comments?per_page=100")):
             comment(f"{MARK} round={rnd} verdict=limit -->\n## 監査（ChatGPT）\nこの PR の監査は上限の {MAX_ROUNDS} 回に達したため、実行しませんでした。マージするかどうかは Takuさんの判断を待ちます。")
         return 0
     if not os.environ.get("OPENAI_API_KEY"):

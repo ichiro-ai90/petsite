@@ -44,8 +44,13 @@ SUBJECTS = {
 def api(path, body):
     hdr = {"Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}", "Content-Type": "application/json"}
     req = urllib.request.Request("https://api.openai.com/v1/" + path, data=json.dumps(body).encode(), method="POST", headers=hdr)
-    with urllib.request.urlopen(req, timeout=300) as r:
-        return json.load(r)
+    try:
+        with urllib.request.urlopen(req, timeout=300) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        if path == "responses":  # 理由が分かるように本文を出す
+            raise RuntimeError(f"responses: HTTP {e.code} {e.read()[:400]!r}")
+        raise
 
 
 def generate(key, n):
@@ -60,6 +65,17 @@ def generate(key, n):
         except urllib.error.HTTPError as e:
             last = f"{m}: HTTP {e.code} {e.read()[:300]!r}"
             print("model fallback:", last)
+    # Images API の権限が無いキーでも、Responses API の画像生成ツール経由なら通る場合がある
+    out = []
+    for _ in range(n):
+        d = api("responses", {"model": os.environ.get("OPENAI_MODEL") or "gpt-5-mini",
+                              "input": STYLE + "\n\nSubject: " + SUBJECTS[key] + "\nGenerate exactly one image.",
+                              "tools": [{"type": "image_generation", "size": "1024x1024",
+                                         "quality": os.environ.get("ICON_QUALITY") or "medium"}],
+                              "tool_choice": {"type": "image_generation"}})
+        out += [base64.b64decode(o["result"]) for o in d.get("output", []) if o.get("type") == "image_generation_call" and o.get("result")]
+    if out:
+        return out, "responses+image_generation", {}
     raise RuntimeError(last)
 
 

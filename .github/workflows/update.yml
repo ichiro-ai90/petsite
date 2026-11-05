@@ -44,6 +44,7 @@ jobs:
       - name: build（sitemap の URL はサイトの実 URL＝ドメイン＋/リポジトリ名。11/02 22:5x ランブック照合で修正）
         env:
           SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}/${{ github.event.repository.name }}
+          GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}   # Google アナリティクス（未設定なら入れない）
         run: python build.py
       - name: commit price snapshot（価格履歴を残す）
         run: |

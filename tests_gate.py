@@ -119,10 +119,11 @@ class T(unittest.TestCase):
         self.assertTrue(t["is_low"] and not t["is_high"] and t["diff_prev"] == -100 and t["days"] == 7)
         self.assertIn("いちばん安い", build.trend_badge(t))
         self.assertIn("今日は過去7日でいちばん安い", build.trend_block("p", {"price": 1000}))
+        self.assertIn("根拠: 当サイトが毎日1回取得", build.trend_block("p", {"price": 1000}))
         self.assertIn("いちばん高い", build.trend_badge(build.trend("p", 1300)))
         self.assertEqual(build.trend_badge(build.trend("p", 1150)), "")
         build.HISTORY = {"p": [["2026-11-05", 1000, 1000, 3, None]]}
-        self.assertIn("記録を始めました（1日目）", build.trend_block("p", {"price": 1000}))
+        self.assertIn("記録を始めました（1日目", build.trend_block("p", {"price": 1000}))
         self.assertEqual(build.trend_badge(build.trend("p", 1000)), "")
         build.HISTORY = {}
 

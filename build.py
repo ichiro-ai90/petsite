@@ -323,7 +323,7 @@ def trend_block(pid, o):
     if t["days"] == 0:
         return ""
     if t["days"] < MIN_HISTORY_DAYS:
-        return (f'<p class="trend wait">価格の記録を始めました（{t["days"]}日目）。{MIN_HISTORY_DAYS}日分たまると、今が買い時かどうかが分かります。</p>')
+        return (f'<p class="trend wait">価格の記録を始めました（{t["days"]}日目・毎日1回、取得ショップ内の最安値を記録）。{MIN_HISTORY_DAYS}日分たまると、過去の価格と比べられます。</p>')
     if t["is_low"] and t["hi"] > t["lo"]:
         head = f'<b class="low">今日は過去{t["days"]}日でいちばん安い価格です</b>'
     elif t["is_high"]:
@@ -334,7 +334,7 @@ def trend_block(pid, o):
         head = f'過去{t["days"]}日の最安 {t["lo"]:,}円・最高 {t["hi"]:,}円（今日は最安より {o["price"] - t["lo"]:,}円高い）'
     prev = (f'　前回の取得より <b>{-t["diff_prev"]:,}円安く</b>なりました' if t["diff_prev"] < 0 else
             f'　前回の取得より {t["diff_prev"]:,}円上がりました' if t["diff_prev"] > 0 else "")
-    return f'<div class="trend">{sparkline(t["series"])}<p>{head}{prev}</p></div>'
+    return (f'<div class="trend">{sparkline(t["series"])}<p>{head}{prev}<br><small>根拠: 当サイトが毎日1回取得した、取得ショップ内の最安値（{t["series"][0][0]}〜{t["series"][-1][0]}）。それ以外の日・ショップの価格は含みません。</small></p></div>')
 
 
 def free_best(offers):
@@ -385,9 +385,9 @@ def product_row(p, g, fn):
             f'<button type="button" class="fav mini" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false" aria-label="お気に入りに追加">☆</button>'
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
             f'<span class="nm">{E(show_name(p["name"]))}</span>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
-            f'<span class="pr"><b class="pv">{o["price"]:,}</b>円 <span class="shipv">{ship(o["shipping"])}</span>{tbadge}</span>'
+            f'<span class="pr"><small class="scope">取得{len(p["offers"])}店中の最安</small><b class="pv">{o["price"]:,}</b>円 <span class="shipv">{ship(o["shipping"])}</span>{tbadge}</span>'
             f'<span class="pt"><span class="ptv">{o["points"]:,}ポイント（{o["pointRate"]}倍・目安）</span>{PT_INFO}</span>'
-            f'<span class="meta">取得した{len(p["offers"])}ショップの中で最安{buy}{"・" + upt + "（商品名の内容量から計算）" if upt else ""}</span>{gapt}</span></a></li>')
+            f'<span class="meta">{buy.lstrip("・")}{"・" + upt + "（商品名の内容量から計算）" if upt else ""}</span>{gapt}</span></a></li>')
 
 
 SORT_JS = ('<script>(function(){var b=document.querySelectorAll(".sort button"),l=document.getElementById("list");'
@@ -406,6 +406,7 @@ def category_body(g, prods, pet, fetched, carried):
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<label class="free-only"><input type="checkbox" id="freeonly"> 送料無料のショップだけ</label>'
             f'<button type="button" data-k="pop" aria-pressed="true">人気順</button>'
+            f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
             f'<button type="button" data-k="price" aria-pressed="false">安い順</button>'
             f'<button type="button" data-k="eff" aria-pressed="false">ポイント込み（目安）で安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
@@ -442,9 +443,10 @@ def item_body(p, g, fetched):
         shipnote = ('<p class="shipnote">この価格は送料別です。支払額は送料の分だけ増えます。'
                     + (f'送料無料で最安は <b>{E(fb["shop"])}</b> の {fb["price"]:,}円です。' if fb else "今回取得した中に送料無料のショップはありませんでした。") + '</p>')
     tr = trend_block(p["productId"], o)
-    share_text = f'{show_name(p["name"])[:50]}｜楽天{len(offers)}ショップの価格比較。取得した中で最安 {o["price"]:,}円' + (f'（同じ内容量で最大 {hi["price"] - o["price"]:,}円の差）' if save else "")
+    share_text = (f'{show_name(p["name"])[:50]}｜楽天{len(offers)}ショップの価格比較（{str(p.get("fetched_at") or fetched)[:10]} 取得分）。取得した中で最安 {o["price"]:,}円'
+                  + (f'（同じ内容量で最大 {hi["price"] - o["price"]:,}円の差）' if save else "") + '※価格・ポイントは取得時点の目安。PR（アフィリエイト）サイト')
     actions = (f'<div class="actions"><button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">☆ お気に入り</button>'
-               f'<button type="button" class="bought" data-bought="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">買った</button>'
+               f'<button type="button" class="bought" data-bought="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">買った日をメモ</button>'
                f'<button type="button" class="share" data-share="{E(share_text)}">この比較を送る</button></div>'
                f'<p class="bought-msg" id="bought-msg" hidden></p>')
     alt = ""
@@ -579,7 +581,7 @@ def main():
         f"お気に入り｜{SITE}", '<h1 class="ttl">お気に入り</h1>'
         '<p class="lead">お気に入りはこのブラウザだけに保存されます（ログイン不要）。ブラウザの履歴やサイトデータを消すと、お気に入りも消えます。別の端末には引き継がれません。登録したときの価格と、いまの最安値を比べられます。</p>'
         '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「☆」を押すとここに入ります。</p>'
-        '<h2 class="h2">買った商品</h2><p class="lead">商品ページの「買った」を押すと、買った日の価格を記録して、その後の価格と比べられます（このブラウザだけに保存）。</p>'
+        '<h2 class="h2">買った日のメモ</h2><p class="lead">商品ページの「買った日をメモ」を押すと、その日の価格をこのブラウザにメモして、その後の価格と比べられます。楽天の購入履歴とは連動しません（実際に買ったかどうかは当サイトでは分かりません）。</p>'
         '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。</p>'
         f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
         "お気に入りに入れた商品の最安値", sample, (("お気に入り", None),)))
@@ -617,7 +619,7 @@ function norm(s){s=String(s||"");try{s=s.normalize("NFKC")}catch(e){}s=s.toLower
  return s.replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)}).replace(/\s+/g," ")}
 function yen(n){return Number(n).toLocaleString("ja-JP")}
 function toast(m){var t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("on")},3500)}
-function paint(){var bm=bload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought];b.setAttribute("aria-pressed",!!r);b.textContent=r?"✓ 買った（"+new Date(r.t).toLocaleDateString("ja-JP")+"）":"買った";
+function paint(){var bm=bload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought];b.setAttribute("aria-pressed",!!r);b.textContent=r?"✓ メモ済み（"+new Date(r.t).toLocaleDateString("ja-JP")+"）":"買った日をメモ";
  var m=document.getElementById("bought-msg");if(m){m.hidden=!r;if(r){var cur=+b.dataset.price||0,d=cur-r.p;m.innerHTML=d<0?"買った日（"+yen(r.p)+"円）より <b>"+yen(-d)+"円安く</b>なっています。次はもっとお得に買えます":d>0?"買った日（"+yen(r.p)+"円）より "+yen(d)+"円上がっています。<b>いいタイミングで買えています</b>":"買った日と同じ価格です"}}});
  var f=load();document.querySelectorAll("[data-fav]").forEach(function(b){var on=!!f[b.dataset.fav];
  b.setAttribute("aria-pressed",on);b.setAttribute("aria-label",on?"お気に入りから外す":"お気に入りに追加");
@@ -627,14 +629,14 @@ function ga(n,p){try{if(window.gtag)gtag("event",n,p||{})}catch(e){}}
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
  if(a)ga("click_rakuten",{link_type:a.classList.contains("big")?"best_shop":(a.classList.contains("sub-link")?"all_shops":"shop"),page_path:location.pathname})},true);
 document.addEventListener("click",function(e){var b=e.target.closest("[data-bought]");if(!b)return;var bm=bload(),id=b.dataset.bought;
- if(bm[id]){delete bm[id];ga("unmark_bought",{item_id:id})}else{bm[id]={p:+b.dataset.price||0,t:Date.now()};ga("mark_bought",{item_id:id});toast("買った日の価格（"+yen(+b.dataset.price||0)+"円）を記録しました。次に来たとき、その後の価格と比べられます")}bsave(bm);paint();if(document.getElementById("boughtlist"))renderBought()});
+ if(bm[id]){delete bm[id];ga("unmark_bought",{item_id:id})}else{bm[id]={p:+b.dataset.price||0,t:Date.now()};ga("mark_bought",{item_id:id});toast("買った日の価格（"+yen(+b.dataset.price||0)+"円）をこのブラウザにメモしました（楽天の購入履歴とは連動しません）。次に来たとき、その後の価格と比べられます")}bsave(bm);paint();if(document.getElementById("boughtlist"))renderBought()});
 document.addEventListener("click",function(e){var b=e.target.closest("[data-share]");if(!b)return;var t=b.dataset.share,u=location.href;ga("share",{item_id:location.pathname});
  if(navigator.share){navigator.share({title:document.title,text:t,url:u}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(t+" "+u).then(function(){toast("比較の内容とリンクをコピーしました")}).catch(function(){prompt("コピーしてください",t+" "+u)})}else{prompt("コピーしてください",t+" "+u)}});
-document.addEventListener("change",function(e){if(e.target.id!=="freeonly")return;var on=e.target.checked,l=document.getElementById("list");if(!l)return;ga("free_only",{on:on});
+document.addEventListener("change",function(e){if(e.target.id!=="freeonly")return;var on=e.target.checked,l=document.getElementById("list");if(!l)return;ga("free_only",{on:on});var fn=document.getElementById("freenote");if(fn)fn.hidden=!on;
  var n=0;[].slice.call(l.children).forEach(function(li){
   if(li.dataset.free!==undefined){li.hidden=on&&li.dataset.free!=="1";if(!li.hidden)n++;return}
   if(on){if(!li.dataset.fprice){li.hidden=true;return}li.hidden=false;n++;li.dataset.price=li.dataset.fprice;li.dataset.eff=li.dataset.feff;
-   li.querySelector(".pv").textContent=yen(li.dataset.fprice);li.querySelector(".shipv").innerHTML='<span class="ship free">送料無料</span>';li.querySelector(".ptv").textContent=yen(li.dataset.fpt)+"ポイント（"+li.dataset.frate+"倍・目安）"}
+   li.querySelector(".pv").textContent=yen(li.dataset.fprice);li.querySelector(".shipv").innerHTML='<span class="ship free">送料無料</span>'+(li.dataset.fprice!==li.dataset.aprice?'<small class="alt-p">（送料別の最安 '+yen(li.dataset.aprice)+'円）</small>':'');li.querySelector(".ptv").textContent=yen(li.dataset.fpt)+"ポイント（"+li.dataset.frate+"倍・目安）"}
   else{li.hidden=false;n++;li.dataset.price=li.dataset.aprice;li.dataset.eff=li.dataset.aeff;var o=li.dataset.orig;if(o){var x=JSON.parse(o);li.querySelector(".pv").textContent=x.p;li.querySelector(".shipv").innerHTML=x.s;li.querySelector(".ptv").textContent=x.t}}});
  var fe=document.getElementById("freeempty");if(fe)fe.hidden=n>0;var act=document.querySelector('.sort button[aria-pressed="true"]');if(act)act.click()});
 function keepOrig(){document.querySelectorAll("#list li[data-fprice], #list li[data-aprice]").forEach(function(li){if(li.dataset.orig)return;var pv=li.querySelector(".pv"),sv=li.querySelector(".shipv"),tv=li.querySelector(".ptv");if(pv&&sv&&tv)li.dataset.orig=JSON.stringify({p:pv.textContent,s:sv.innerHTML,t:tv.textContent})})}
@@ -755,10 +757,13 @@ main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .ship.free{color:var(--brand);border-color:var(--brand)}
 .pt{font-size:12px;color:var(--brand);margin:0}
 .up{font-size:12px;color:var(--sub);margin:2px 0 0}
-.sort{display:flex;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5}
+.sort{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5}
 .fresh{font-size:12px;color:var(--txt);margin:0;padding:6px 12px;background:#fff8e1;border-top:1px solid #f1e3b0;border-bottom:1px solid #f1e3b0}
 .pinfo{display:inline-block;position:relative;margin-left:4px;vertical-align:middle}.pinfo summary{list-style:none;cursor:pointer;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid #9fb8b3;font-size:11px;color:var(--brand);background:#fff}.pinfo summary::-webkit-details-marker{display:none}
 .pinfo[open] span{position:absolute;left:0;top:22px;z-index:6;width:min(80vw,320px);background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--txt);box-shadow:0 4px 12px rgba(0,0,0,.12);white-space:normal}
+.scope{display:block;font-size:11px;color:var(--sub);font-weight:400}
+.alt-p{font-size:11px;color:var(--sub);margin-left:4px}
+.free-note{flex-basis:100%;margin:0;font-size:11px;color:#7a5200}
 .free-only{display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:12px;color:var(--txt);border:1px solid #c8d8d4;border-radius:20px;padding:0 10px;min-height:36px;background:#fff}
 .free-only input{margin:0}
 .tb{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:2px}.tb.low{background:#fde7d2;color:#9a3f00}.tb.down{background:#e4f1ee;color:#0f6b62}.tb.high{background:#eef0f2;color:#4a5866}

@@ -30,6 +30,8 @@ jobs:
           YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
           VC_AFFILIATE_ID: ${{ secrets.VC_AFFILIATE_ID }}
         run: python fetch_prices.py
+      - name: record history（価格の履歴を data/history.json に積む）
+        run: python record_history.py
       - name: guard（本番でサンプル・空データを公開しない）
         run: |
           python - <<'PY'
@@ -49,7 +51,7 @@ jobs:
       - name: commit price snapshot（価格履歴を残す）
         run: |
           git config user.name "ichiro-bot"; git config user.email "ichiro-bot@users.noreply.github.com"
-          git add data/prices.json && git commit -m "prices $(date -u +%F)" || echo "no change"
+          git add data/prices.json data/history.json && git commit -m "prices $(date -u +%F)" || echo "no change"
           git push
       - uses: actions/upload-pages-artifact@v3
         with: { path: site }

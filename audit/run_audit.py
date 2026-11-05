@@ -38,15 +38,25 @@ def comment(body):
 
 
 def history():
-    """この PR の過去の監査（目印つき）と、それ以外のコメント（開発側の回答）を時系列で返す。"""
+    """この PR のコメントから (監査の回数, 開発側の回答一覧, 監査一覧, 再監査してよいか) を返す。
+    回数に数えるのは「開発側の回答コメントの後に実行された監査」だけ（同じ回答に対する push や merge で何度も走った分は数えない）。
+    開発側の回答が付く前の再実行は行わない（前回の監査結果がそのまま有効）。"""
     if not (REPO and PR):
-        return [], []
+        return 0, [], [], True
     cs = gh(f"issues/{PR}/comments?per_page=100")
-    # 回数に数えるのは実際に監査した回だけ（スキップ・エラー・上限の通知は数えない）
-    audits = [c for c in cs if c["body"].startswith(MARK) and re.match(MARK + r" round=\d+ verdict=(pass|changes|unparsed)", c["body"])]
-    replies = [c for c in cs if not c["body"].startswith(MARK)]
-    replies += [c for c in cs if "verdict=limit" in c["body"][:60]]
-    return audits, replies
+    is_audit = lambda c: bool(re.match(MARK + r" round=\d+ verdict=(pass|changes|unparsed)", c["body"]))
+    is_notice = lambda c: c["body"].startswith(MARK) and not is_audit(c)
+    audits, replies, rounds, awaiting = [], [], 0, True
+    for c in cs:
+        if is_audit(c):
+            audits.append(c)
+            if awaiting:
+                rounds += 1
+            awaiting = False
+        elif not is_notice(c):
+            replies.append(c)
+            awaiting = True
+    return rounds, replies, audits, awaiting
 
 
 def shots():
@@ -74,6 +84,14 @@ def shots():
             png = pg.screenshot(full_page=full, clip=None if not full else {"x": 0, "y": 0, "width": 390, "height": 2400})
             text = pg.inner_text("body")[:2500]
             out.append((name, path, png, text))
+            if pg.query_selector("#freeonly"):  # 切り替え ON の状態も見せる（OFF の画面だけでは判断できないため）
+                pg.check("#freeonly")
+                pg.wait_for_timeout(400)
+                out.append((name + "（「送料無料のショップだけ」ON）", path, pg.screenshot(), pg.inner_text("body")[:1500]))
+            if "item-" in path and pg.query_selector(".pinfo summary"):  # ポイントの？を開いた状態
+                pg.click(".pinfo summary")
+                pg.wait_for_timeout(300)
+                out.append((name + "（ポイントの？を開いた状態）", path, pg.screenshot(), ""))
         b.close()
     return out
 
@@ -135,10 +153,13 @@ def esc(s):
 
 
 def main():
-    audits, replies = history()
-    rnd = len(audits) + 1
+    rounds, replies, audits, awaiting = history()
+    rnd = rounds + 1
+    if audits and not awaiting:
+        print("開発側の回答がまだ無いため再監査しません（前回の監査結果が有効）")
+        return 0
     if rnd > MAX_ROUNDS:
-        if not any("verdict=limit" in c["body"] for c in replies + audits):
+        if not any(c["body"].startswith(MARK + f" round={rnd} verdict=limit") for c in gh(f"issues/{PR}/comments?per_page=100")):
             comment(f"{MARK} round={rnd} verdict=limit -->\n## 監査（ChatGPT）\nこの PR の監査は上限の {MAX_ROUNDS} 回に達したため、実行しませんでした。マージするかどうかは Takuさんの判断を待ちます。")
         return 0
     if not os.environ.get("OPENAI_API_KEY"):

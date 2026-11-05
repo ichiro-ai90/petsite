@@ -427,7 +427,7 @@ def category_body(g, prods, pet, fetched, carried):
     cheapest = min(prods, key=lambda p: best_offer(p)["price"])
     return (f'<h1 class="ttl">{E(g["title"])}</h1>'
             f'<p class="lead">楽天市場で人気の{len(prods)}商品を比べています。商品を選ぶと、その商品をいちばん安く売っているショップが分かります。</p>'
-            f'<ul class="fresh"><li>価格取得: {fetched}（毎日1回更新）</li><li>比較対象: 取得したショップの中での最安</li></ul>'
+            f'<ul class="fresh"><li>価格取得: <time data-fetched="{fetched}">{fetched}</time>（毎日1回更新）</li><li>比較対象: 取得したショップの中での最安（楽天の全ショップではありません）</li></ul>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<label class="free-only"><input type="checkbox" id="freeonly"> 送料無料のショップだけ</label>'
             f'<button type="button" data-k="pop" aria-pressed="true">人気順</button>'
@@ -709,7 +709,10 @@ function renderBought(){var l=document.getElementById("boughtlist");if(!l)return
   var h=x.h||[];if(h.length>=7){var cheaper=h.filter(function(q){return q[1]<r.p}).length;msg+='<br>買った日の価格は、過去'+h.length+'日のうち安いほうから'+(cheaper+1)+'番目です'}
   return row(x,'<span class="diff">'+msg+'</span>')}).join("");
  document.getElementById("boughtempty").hidden=ids.length>0;paint()})}
-function init(){keepOrig();renderBought();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+function ago(){document.querySelectorAll("time[data-fetched]").forEach(function(t){var m=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(t.dataset.fetched);if(!m)return;
+ var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"1時間以内":h<24?"約"+h+"時間前":"約"+Math.floor(h/24)+"日前";
+ t.textContent=t.dataset.fetched+"・"+s;if(h>=24*3){t.insertAdjacentHTML("afterend",' <span class="badge up2">価格が古い可能性があります</span>')}})}
+function init(){ago();keepOrig();renderBought();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 """

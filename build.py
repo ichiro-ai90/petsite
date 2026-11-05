@@ -213,7 +213,7 @@ def img(url, size):
 def stars(avg, n):
     if not n:
         return ""
-    return f'<span class="rv"><span class="st" style="--r:{min(avg, 5) / 5:.2f}" aria-hidden="true">★★★★★</span>{avg:.1f}<span class="rvn">（{n:,}件）</span></span>'
+    return f'<span class="rv"><span class="st" style="--r:{min(avg, 5) / 5:.2f}" aria-hidden="true">★★★★★</span>{avg:.1f}<span class="rvn">（楽天レビュー {n:,}件）</span></span>'
 
 
 def ship(text):
@@ -282,6 +282,9 @@ def same_size(offers, unit):
     return [o for o in offers if (amount(o["name"], unit) or 0) and abs(amount(o["name"], unit) - a0) < 1e-6]
 
 
+PT_INFO = '<details class="pinfo"><summary aria-label="ポイントの計算方法">？</summary><span>税抜価格の1%×ショップのポイント倍率で計算した目安です（1円未満切り捨て）。SPU・キャンペーン・クーポンは含みません。「ポイント込み」＝税込価格−この目安ポイント。送料は含みません。</span></details>'
+
+
 def product_row(p, g, fn):
     o = best_offer(p)
     oe = best_offer(p, "effective")
@@ -299,8 +302,8 @@ def product_row(p, g, fn):
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
             f'<span class="nm">{E(show_name(p["name"]))}</span>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'<span class="pr"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</span>'
-            f'<span class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）</span>'
-            f'<span class="meta">{len(p["offers"])}ショップ中の最安値{buy}{"・" + upt if upt else ""}</span>{gapt}</span></a></li>')
+            f'<span class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍・目安）{PT_INFO}</span>'
+            f'<span class="meta">取得した{len(p["offers"])}ショップの中で最安{buy}{"・" + upt + "（商品名の内容量から計算）" if upt else ""}</span>{gapt}</span></a></li>')
 
 
 SORT_JS = ('<script>(function(){var b=document.querySelectorAll(".sort button"),l=document.getElementById("list");'
@@ -337,7 +340,7 @@ def item_body(p, g, fetched):
         f'<li data-price="{x["price"]}" data-eff="{x["effective"]}"><div class="shop"><span class="sn">{E(x["shop"])}</span>'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍）・ポイント込み {x["effective"]:,}円</span></div>'
+        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍・目安）・ポイント込み {x["effective"]:,}円{PT_INFO}</span></div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -359,8 +362,8 @@ def item_body(p, g, fetched):
             f'<button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">☆ お気に入り</button>'
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
-            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）　{E(o["shop"])}</p>'
-            + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}）</p>' if up else "") +
+            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍・目安）{PT_INFO}　{E(o["shop"])}</p>'
+            + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
             f'{save}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
             f'<h2 class="h2">この商品を売っているショップ</h2>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
@@ -505,6 +508,7 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 function norm(s){s=String(s||"");try{s=s.normalize("NFKC")}catch(e){}s=s.toLowerCase();
  return s.replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)}).replace(/\s+/g," ")}
 function yen(n){return Number(n).toLocaleString("ja-JP")}
+function toast(m){var t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("on")},3500)}
 function paint(){var f=load();document.querySelectorAll("[data-fav]").forEach(function(b){var on=!!f[b.dataset.fav];
  b.setAttribute("aria-pressed",on);b.setAttribute("aria-label",on?"お気に入りから外す":"お気に入りに追加");
  b.textContent=b.classList.contains("mini")?(on?"★":"☆"):(on?"★ お気に入り済み":"☆ お気に入り")});
@@ -513,18 +517,18 @@ function ga(n,p){try{if(window.gtag)gtag("event",n,p||{})}catch(e){}}
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
  if(a)ga("click_rakuten",{link_type:a.classList.contains("big")?"best_shop":(a.classList.contains("sub-link")?"all_shops":"shop"),page_path:location.pathname})},true);
 document.addEventListener("click",function(e){var b=e.target.closest("[data-fav]");if(!b)return;e.preventDefault();
- var f=load(),id=b.dataset.fav;if(f[id]){delete f[id];ga("remove_favorite",{item_id:id})}else{f[id]={p:+b.dataset.price||0,t:Date.now()};ga("add_favorite",{item_id:id})}save(f);paint();
+ var f=load(),id=b.dataset.fav;if(f[id]){delete f[id];ga("remove_favorite",{item_id:id})}else{f[id]={p:+b.dataset.price||0,t:Date.now()};ga("add_favorite",{item_id:id});toast("お気に入りに入れました（"+yen(+b.dataset.price||0)+"円・"+new Date().toLocaleDateString("ja-JP")+"）。値下がりしたら お気に入り ページで分かります")}save(f);paint();
  if(document.getElementById("favlist"))renderFav()});
 function data(cb){if(DATA)return cb(DATA);fetch("search.json").then(function(r){return r.json()}).then(function(d){DATA=d;cb(d)})
  .catch(function(){var c=document.getElementById("count")||document.getElementById("favempty");if(c){c.hidden=false;c.textContent="商品データを読み込めませんでした。ページを再読み込みしてください。"}})}
 function unit(x){return x.u?x.ul+" "+(x.u>=10?yen(Math.round(x.u)):x.u.toFixed(1))+"円":""}
-function row(x,extra){var st=x.rv?'<span class="rv"><span class="st" style="--r:'+(Math.min(x.ra,5)/5).toFixed(2)+'" aria-hidden="true">★★★★★</span>'+Number(x.ra).toFixed(1)+'<span class="rvn">（'+yen(x.rv)+'件）</span></span>':"";
+function row(x,extra){var st=x.rv?'<span class="rv"><span class="st" style="--r:'+(Math.min(x.ra,5)/5).toFixed(2)+'" aria-hidden="true">★★★★★</span>'+Number(x.ra).toFixed(1)+'<span class="rvn">（楽天レビュー '+yen(x.rv)+'件）</span></span>':"";
  return '<li><button type="button" class="fav mini" data-fav="'+esc(x.id)+'" data-price="'+x.p+'" aria-pressed="false">☆</button>'+
  '<a class="row" href="item-'+esc(x.id)+'.html"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
  '<span class="nm">'+esc(x.n)+'</span><span class="meta">'+esc(x.m)+(x.m?"・":"")+esc(x.ct)+'</span>'+st+
  '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh==="送料無料"?" free":"")+'">'+esc(x.sh)+'</span></span>'+
  '<span class="pt">'+yen(x.pt)+'ポイント（'+x.r+'倍）・ポイント込み '+yen(x.e)+'円</span>'+
- '<span class="meta">'+x.s+'ショップ中の最安値'+(unit(x)?"・"+unit(x):"")+'</span>'+(extra||"")+'</span></a></li>'}
+ '<span class="meta">取得した'+x.s+'ショップの中で最安'+(unit(x)?"・"+unit(x)+"（商品名の内容量から計算）":"")+'</span>'+(extra||"")+'</span></a></li>'}
 function fill(sel,opts,val){var el=document.getElementById(sel);opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];el.appendChild(op)});el.value=val||""}
 function search(){var f=document.getElementById("sf");if(!f)return;var u=new URLSearchParams(location.search);
  data(function(d){var mk={};d.items.forEach(function(x){if(x.m)mk[x.m]=(mk[x.m]||0)+1});
@@ -544,7 +548,7 @@ function search(){var f=document.getElementById("sf");if(!f)return;var u=new URL
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id],s=f[id].p;if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
-  var diff=s?x.p-s:0,msg=!s||!diff?"登録時と同じ価格です":diff<0?"登録時（"+yen(s)+"円）より <b>"+yen(-diff)+"円安く</b>なっています":"登録時（"+yen(s)+"円）より "+yen(diff)+"円高くなっています";
+  var diff=s?x.p-s:0,msg=!s||!diff?"登録時と同じ価格です":diff<0?'<span class="badge down">▼'+yen(-diff)+'円</span> 登録時（'+yen(s)+'円）より安くなっています':'<span class="badge up2">▲'+yen(diff)+'円</span> 登録時（'+yen(s)+'円）より高くなっています";
   return row(x,'<span class="diff'+(diff<0?" down":"")+'">'+msg+'（価格は '+esc(d.fetched_at)+' 時点）</span>')}).join("");
  document.getElementById("favempty").hidden=ids.length>0;paint()})}
 function init(){var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
@@ -616,12 +620,16 @@ main{max-width:960px;margin:0 auto;padding:0 0 16px}
 .st::after{content:"★★★★★";position:absolute;left:0;top:0;width:calc(var(--r)*100%);overflow:hidden;color:#f5a623}
 .pr{color:var(--price);font-size:13px;margin:0}.pr b{font-size:19px}
 .pr.big b{font-size:28px}
-.ship{display:inline-block;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:2px;padding:0 4px;margin-left:4px;vertical-align:2px;font-weight:400}
+.ship{display:inline-block;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:2px;padding:0 4px;margin-left:4px;vertical-align:2px;font-weight:400}.ship::before{content:"🚚 "}
 .ship.free{color:var(--brand);border-color:var(--brand)}
 .pt{font-size:12px;color:var(--brand);margin:0}
 .up{font-size:12px;color:var(--sub);margin:2px 0 0}
 .sort{display:flex;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5}
-.fresh{font-size:12px;color:var(--sub);margin:4px 12px 8px}
+.fresh{font-size:12px;color:var(--txt);margin:0;padding:6px 12px;background:#fff8e1;border-top:1px solid #f1e3b0;border-bottom:1px solid #f1e3b0}
+.pinfo{display:inline-block;position:relative;margin-left:4px;vertical-align:middle}.pinfo summary{list-style:none;cursor:pointer;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid #9fb8b3;font-size:11px;color:var(--brand);background:#fff}.pinfo summary::-webkit-details-marker{display:none}
+.pinfo[open] span{position:absolute;left:0;top:22px;z-index:6;width:min(80vw,320px);background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--txt);box-shadow:0 4px 12px rgba(0,0,0,.12);white-space:normal}
+.badge{display:inline-block;font-weight:700;border-radius:4px;padding:0 6px;font-size:12px}.badge.down{background:#fde7d2;color:#9a3f00}.badge.up2{background:#eef0f2;color:#4a5866}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#2b2b2b;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;z-index:20;max-width:90vw;pointer-events:none}#toast.on{opacity:1;transform:translate(-50%,0)}
 .filters{position:sticky;top:0;z-index:5}
 .btn{border-radius:20px}
 .sort span{white-space:nowrap}

@@ -181,12 +181,34 @@ SCALE = {"kg": 1, "g": 100, "L": 1, "枚": 1, "匹": 1}
 SITE = "ペット用品 最安ナビ"
 CREDIT = ('<!-- Rakuten Web Services Attribution Snippet FROM HERE --><a href="https://developers.rakuten.com/" target="_blank">'
           'Supported by Rakuten Developers</a><!-- Rakuten Web Services Attribution Snippet TO HERE -->')
+# 線画アイコン（24px・線幅1.8・currentColor）。絵文字は使わない（2026-11-06 監査: AIが作った感の典型）
+_SVG = '<svg class="ic" viewBox="0 0 24 24" width="{s}" height="{s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{d}</svg>'
+ICON = {
+    "paw": '<circle cx="12" cy="15" r="3.6"/><path d="M12 11.5c-1.1-2-3.4-2.3-4.3-.6-.8 1.6.6 3.4 2.1 3.4M12 11.5c1.1-2 3.4-2.3 4.3-.6.8 1.6-.6 3.4-2.1 3.4"/><circle cx="6" cy="9" r="1.6"/><circle cx="18" cy="9" r="1.6"/><circle cx="9" cy="5.5" r="1.6"/><circle cx="15" cy="5.5" r="1.6"/>',
+    "dog": '<path d="M5 10c0-3 2-5 5-5h4c3 0 5 2 5 5v3c0 3-2 5-5 5h-4c-3 0-5-2-5-5z"/><path d="M5 11 3 7l4 1M19 11l2-4-4 1"/><circle cx="9.5" cy="11.5" r=".9" fill="currentColor"/><circle cx="14.5" cy="11.5" r=".9" fill="currentColor"/><path d="M12 14.5c-1 0-1.6-.6-1.6-1.2h3.2c0 .6-.6 1.2-1.6 1.2zM12 14.5v1.5M10.5 17c.8.8 2.2.8 3 0"/>',
+    "cat": '<path d="M6 8 5 3l4 3h6l4-3-1 5c1 1.5 1.5 3 1.5 5 0 4-3.5 7-7.5 7S4.5 17 4.5 13c0-2 .5-3.5 1.5-5z"/><circle cx="9.5" cy="12" r=".9" fill="currentColor"/><circle cx="14.5" cy="12" r=".9" fill="currentColor"/><path d="M12 14.2l-.9.9h1.8zM3 13h3M18 13h3M3.5 16l2.8-1M20.5 16l-2.8-1"/>',
+    "small": '<ellipse cx="12" cy="14" rx="7.5" ry="6"/><circle cx="7.5" cy="8" r="2.3"/><circle cx="16.5" cy="8" r="2.3"/><circle cx="9.5" cy="13" r=".9" fill="currentColor"/><circle cx="14.5" cy="13" r=".9" fill="currentColor"/><path d="M12 15.5v1.2M10.8 17.5c.7.6 1.7.6 2.4 0"/>',
+    "reptile": '<path d="M4 16c3-1 4-4 7-5s5 1 8-1"/><path d="M11 11c-1-2 0-4 2-5 2.5-1 4.5 1 4 3.5-.3 1.5-1.5 2.3-3 2.5"/><circle cx="14.5" cy="8.5" r=".8" fill="currentColor"/><path d="M8.5 12.8 7 10.5M10 12 9.5 9M14 16l-1.5 2.5M17 14.5l1 3"/>',
+    "bird-fish": '<path d="M3 12c3-4 7-6 11-6 2.5 0 4.5 1.5 6 3-1.5 1.5-3.5 3-6 3-4 0-8-2-11-6"/><path d="M3 12c3 4 7 6 11 6"/><path d="M20 9c.5 1 .5 5 0 6l-3-3z"/><circle cx="7.5" cy="11" r=".9" fill="currentColor"/>',
+    "truck": '<path d="M3 7h10v9H3zM13 10h4l3 3v3h-7z"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/>',
+    "star": '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/>',
+    "star-f": '<path fill="currentColor" stroke="none" d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/>',
+    "search": '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.3-4.3"/>',
+    "share": '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.6M8.2 13.2l7.6 4.6"/>',
+    "bag": '<path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+}
+
+
+def icon(name, size=24):
+    return _SVG.format(s=size, d=ICON[name])
+
+
 PETS = [
-    ("dog", "犬", "🐕", ["犬", "犬・猫"]),
-    ("cat", "猫", "🐈", ["猫", "犬・猫"]),
-    ("small", "小動物", "🐹", ["ハムスター", "うさぎ・モルモット", "うさぎ", "フェレット"]),
-    ("reptile", "爬虫類", "🦎", ["爬虫類"]),
-    ("bird-fish", "小鳥・魚", "🐟", ["小鳥", "金魚"]),
+    ("dog", "犬", "dog", ["犬", "犬・猫"]),
+    ("cat", "猫", "cat", ["猫", "犬・猫"]),
+    ("small", "小動物", "small", ["ハムスター", "うさぎ・モルモット", "うさぎ", "フェレット"]),
+    ("reptile", "爬虫類", "reptile", ["爬虫類"]),
+    ("bird-fish", "小鳥・魚", "bird-fish", ["小鳥", "金魚"]),
 ]
 MIN_PRODUCTS = 3  # 本番でカテゴリを公開する最低商品数
 E = html.escape
@@ -213,11 +235,13 @@ def img(url, size):
 def stars(avg, n):
     if not n:
         return ""
-    return f'<span class="rv"><span class="st" style="--r:{min(avg, 5) / 5:.2f}" aria-hidden="true">★★★★★</span>{avg:.1f}<span class="rvn">（楽天レビュー {n:,}件）</span></span>'
+    pct = min(avg, 5) / 5 * 100
+    return (f'<span class="rv"><span class="st" aria-hidden="true"><span class="st-bg">{icon("star-f", 13) * 5}</span>'
+            f'<span class="st-fg" style="width:{pct:.0f}%">{icon("star-f", 13) * 5}</span></span>{avg:.1f}<span class="rvn">（{n:,}件・楽天）</span></span>')
 
 
 def ship(text):
-    return f'<span class="ship{" free" if text == "送料無料" else ""}">{E(text or "送料不明")}</span>'
+    return f'<span class="ship{" free" if text == "送料無料" else ""}">{icon("truck", 13)}{E(text or "送料不明")}</span>'
 
 
 GA_ID = os.environ.get("GA_MEASUREMENT_ID", "").strip()
@@ -250,10 +274,10 @@ def page(title, body, desc, sample, crumbs=()):
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">
 <link rel="stylesheet" href="style.css">{ga_tag()}<script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
-{band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk" aria-hidden="true">🐾</span>{SITE}</a>
-<span class="hd-note">楽天市場の商品を、取得したショップの中で比較<br>※楽天の公式サイトではありません</span><a class="hd-fav" href="favorites.html">★ お気に入り<span id="favn"></span></a></div>
+{band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk">{icon("paw", 20)}</span>{SITE}</a>
+<span class="hd-note">楽天市場の商品を、取得したショップの中で比較します。<br>※楽天の公式サイトではありません</span><a class="hd-fav" href="favorites.html">{icon("star", 16)}お気に入り<span id="favn"></span></a></div>
 <form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
-<input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">検索</button></form></header>
+<input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">{icon("search", 18)}<span>検索</span></button></form></header>
 <main>{bc}{body}</main>
 <footer><p>楽天市場の商品だけを比べています。当サイトは楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。価格・ポイント・送料・在庫は取得時点のもので、購入前に商品ページでご確認ください。ポイントはショップのポイント倍率から計算した目安で、SPU やキャンペーンは含みません。</p>
 <p>運営: 合同会社にこのて（価格の取得・ページ作成は AI〈一郎〉が自動で行っています）</p>{ga_note()}
@@ -363,7 +387,8 @@ def same_size(offers, unit):
     return [o for o in offers if (amount(o["name"], unit) or 0) and abs(amount(o["name"], unit) - a0) < 1e-6]
 
 
-PT_INFO = '<details class="pinfo"><summary aria-label="ポイントの計算方法">？</summary><span>税抜価格の1%×ショップのポイント倍率で計算した目安です（1円未満切り捨て）。SPU・キャンペーン・クーポンは含みません。「ポイント込み」＝税込価格−この目安ポイント。送料は含みません。</span></details>'
+PT_INFO = ''
+PT_NOTE = '<span class="ptn">目安: 税抜×1%×ショップ倍率。SPU・クーポン・送料は含まず</span>'
 
 
 def product_row(p, g, fn):
@@ -382,11 +407,11 @@ def product_row(p, g, fn):
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
     return (f'<li data-pop="{p.get("reviewCount", 0)}" data-price="{o["price"]}" data-eff="{oe["effective"]}" data-unit="{up or 0:.4f}" data-aprice="{o["price"]}" data-aeff="{oe["effective"]}"{fattr}>'
-            f'<button type="button" class="fav mini" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false" aria-label="お気に入りに追加">☆</button>'
+            f'<button type="button" class="fav mini" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false" aria-label="お気に入りに追加">{icon("star", 18)}</button>'
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
             f'<span class="nm">{E(show_name(p["name"]))}</span>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'<span class="pr"><small class="scope">取得{len(p["offers"])}店中の最安</small><b class="pv">{o["price"]:,}</b>円 <span class="shipv">{ship(o["shipping"])}</span>{tbadge}</span>'
-            f'<span class="pt"><span class="ptv">{o["points"]:,}ポイント（{o["pointRate"]}倍・目安）</span>{PT_INFO}</span>'
+            f'<span class="pt"><span class="ptv">{o["points"]:,}ポイント（{o["pointRate"]}倍）</span> {PT_NOTE}</span>'
             f'<span class="meta">{buy.lstrip("・")}{"・" + upt + "（商品名の内容量から計算）" if upt else ""}</span>{gapt}</span></a></li>')
 
 
@@ -402,19 +427,17 @@ def category_body(g, prods, pet, fetched, carried):
     cheapest = min(prods, key=lambda p: best_offer(p)["price"])
     return (f'<h1 class="ttl">{E(g["title"])}</h1>'
             f'<p class="lead">楽天市場で人気の{len(prods)}商品を比べています。商品を選ぶと、その商品をいちばん安く売っているショップが分かります。</p>'
-            f'<p class="fresh">価格は {fetched} 時点（1日1回更新）。最安値・ポイントは今回取得したショップの中での比較です。</p>'
+            f'<ul class="fresh"><li>価格取得: {fetched}（毎日1回更新）</li><li>比較対象: 取得したショップの中での最安</li></ul>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<label class="free-only"><input type="checkbox" id="freeonly"> 送料無料のショップだけ</label>'
             f'<button type="button" data-k="pop" aria-pressed="true">人気順</button>'
-            f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
             f'<button type="button" data-k="price" aria-pressed="false">安い順</button>'
-            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込み（目安）で安い順</button>'
+            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
+            f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
             f'<ul class="list" id="list">{rows}</ul>'
-            f'<div class="note"><p>価格取得日時: {fetched}{carried}</p><p>「最安」は今回取得したショップの中での最安です。'
-            f'{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
-            f'ポイントはショップのポイント倍率から計算した目安です（税抜価格の1%×倍率、1円未満切り捨て。SPU・キャンペーン・クーポンは含みません）。'
-            f'「ポイント込み」＝税込価格−この目安ポイント。送料はどちらにも含みません。</p></div>{SORT_JS}')
+            f'<div class="note">{("<p>" + carried.replace("<br>", "") + "</p>") if carried else ""}<p>{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
+            f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。</p></div>{SORT_JS}')
 
 
 def item_body(p, g, fetched):
@@ -428,7 +451,7 @@ def item_body(p, g, fetched):
         f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop"><span class="sn">{E(x["shop"])}</span>'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍・目安）・ポイント込み {x["effective"]:,}円{PT_INFO}</span></div>'
+        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍）・ポイント込み <b>{x["effective"]:,}円</b></span>{PT_NOTE}</div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -445,9 +468,9 @@ def item_body(p, g, fetched):
     tr = trend_block(p["productId"], o)
     share_text = (f'{show_name(p["name"])[:50]}｜楽天{len(offers)}ショップの価格比較（{str(p.get("fetched_at") or fetched)[:10]} 取得分）。取得した中で最安 {o["price"]:,}円'
                   + (f'（同じ内容量で最大 {hi["price"] - o["price"]:,}円の差）' if save else "") + '※価格・ポイントは取得時点の目安。PR（アフィリエイト）サイト')
-    actions = (f'<div class="actions"><button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">☆ お気に入り</button>'
-               f'<button type="button" class="bought" data-bought="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">買った日をメモ</button>'
-               f'<button type="button" class="share" data-share="{E(share_text)}">この比較を送る</button></div>'
+    actions = (f'<div class="actions"><button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">{icon("star", 18)}お気に入り</button>'
+               f'<button type="button" class="bought" data-bought="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">{icon("bag", 18)}買った日をメモ</button>'
+               f'<button type="button" class="share" data-share="{E(share_text)}">{icon("share", 18)}この比較を送る</button></div>'
                f'<p class="bought-msg" id="bought-msg" hidden></p>')
     alt = ""
     if oe is not o:
@@ -462,14 +485,14 @@ def item_body(p, g, fetched):
             f'{actions}'
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
-            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍・目安）{PT_INFO}　{E(o["shop"])}</p>'
+            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p><p class="shop-l">{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
             f'{shipnote}{save}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
             f'<h2 class="h2">この商品を売っているショップ</h2>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<label class="free-only"><input type="checkbox" id="freeonly"> 送料無料だけ</label>'
             f'<button type="button" data-k="price" aria-pressed="true">安い順</button>'
-            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込み（目安）で安い順</button></div>'
+            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button></div>'
             f'<ul class="shops" id="list">{rows}</ul><p class="empty" id="freeempty" hidden>送料無料のショップは、今回の取得にはありませんでした。</p>{allshops}'
             f'<div class="note"><p>価格取得日時: {E(str(p.get("fetched_at") or fetched))}</p><p>ポイントはショップのポイント倍率から計算した目安です（税抜価格の1%×倍率。SPU・キャンペーン・クーポンは含みません）。</p></div>{SORT_JS}')
 
@@ -542,7 +565,7 @@ def main():
         cats = [(g, ps) for g, ps in published if g["animal"] in animals]
         if not cats:
             continue
-        tabs.append(f'<li><a href="#{pid}"><span class="ic" aria-hidden="true">{icon}</span>{name}</a></li>')
+        tabs.append(f'<li><a href="#{pid}">{globals()["icon"](icon, 20)}{name}</a></li>')
         cs = []
         for g, ps in sorted(cats, key=lambda c: (c[0].get("priority", 9), c[0]["title"])):
             cp = min(ps, key=lambda p: best_offer(p)["price"])
@@ -550,11 +573,11 @@ def main():
             pic = f'<img src="{E(th)}" alt="" width="72" height="72" loading="lazy">' if th else '<span class="noimg" aria-hidden="true"></span>'
             cs.append(f'<li data-q="{E(g["title"] + " " + g["keyword"])}"><a class="cat" href="{g["slug"]}.html"><span class="pic">{pic}</span>'
                       f'<span class="info"><span class="nm">{E(g["title"])}</span><span class="meta">{len(ps)}商品を比較</span></span></a></li>')
-        secs.append(f'<section class="pet-sec" id="{pid}"><h2 class="h2"><span aria-hidden="true">{icon}</span> {name}</h2><ul class="cats">{"".join(cs)}</ul></section>')
+        secs.append(f'<section class="pet-sec" id="{pid}"><h2 class="h2">{globals()["icon"](icon, 22)}{name}</h2><ul class="cats">{"".join(cs)}</ul></section>')
     from collections import Counter
     makers = [m for m, n in Counter(r["m"] for r in index_rows if r["m"]).most_common(10) if n >= 2]
     mk = "".join(f'<li><a href="search.html?maker={urllib.parse.quote(m)}">{E(m)}</a></li>' for m in makers)
-    idx = ('<p class="lead">楽天市場の人気商品を、ショップごとの価格とポイントで比べます。いつも買っている商品は「☆ お気に入り」に入れておくと、次から値段をすぐ確かめられます。</p>'
+    idx = ('<p class="lead">楽天市場の人気商品を、ショップごとの価格とポイントで比べます。いつも買っている商品は「お気に入り」に入れておくと、次から値段をすぐ確かめられます。</p>'
            f'<ul class="tabs">{"".join(tabs)}</ul>'
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
@@ -573,15 +596,15 @@ def main():
         '<label>カテゴリ<select name="cat" id="cat"><option value="">すべて</option></select></label>'
         '<label>メーカー<select name="maker" id="maker"><option value="">すべて</option></select></label>'
         '<label class="free-only"><input type="checkbox" name="free" id="free"> 送料無料のショップだけ</label><label>並べ替え<select name="sort" id="sort"><option value="pop">人気順</option><option value="price">安い順</option>'
-        '<option value="eff">ポイント込み（目安）で安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
+        '<option value="eff">ポイント込みで安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
         '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
         f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
         "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して最安値とポイントを比較", sample, (("商品を探す", None),)))
     open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
         f"お気に入り｜{SITE}", '<h1 class="ttl">お気に入り</h1>'
-        '<p class="lead">お気に入りはこのブラウザだけに保存されます（ログイン不要）。ブラウザの履歴やサイトデータを消すと、お気に入りも消えます。別の端末には引き継がれません。登録したときの価格と、いまの最安値を比べられます。</p>'
-        '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「☆」を押すとここに入ります。</p>'
-        '<h2 class="h2">買った日のメモ</h2><p class="lead">商品ページの「買った日をメモ」を押すと、その日の価格をこのブラウザにメモして、その後の価格と比べられます。楽天の購入履歴とは連動しません（実際に買ったかどうかは当サイトでは分かりません）。</p>'
+        '<p class="lead">登録したときの価格と、いまの最安値を比べられます。保存先はこのブラウザだけ（ログイン不要・端末間で共有されず、サイトデータを消すと消えます）。</p>'
+        '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「お気に入り」を押すとここに入ります。</p>'
+        '<h2 class="h2">買った日のメモ</h2><p class="lead">商品ページで「買った日をメモ」を押すと、その日の価格とその後の価格を比べられます。楽天の購入履歴とは連動しません。</p>'
         '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。</p>'
         f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
         "お気に入りに入れた商品の最安値", sample, (("お気に入り", None),)))
@@ -619,11 +642,12 @@ function norm(s){s=String(s||"");try{s=s.normalize("NFKC")}catch(e){}s=s.toLower
  return s.replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)}).replace(/\s+/g," ")}
 function yen(n){return Number(n).toLocaleString("ja-JP")}
 function toast(m){var t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("on")},3500)}
-function paint(){var bm=bload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought];b.setAttribute("aria-pressed",!!r);b.textContent=r?"✓ メモ済み（"+new Date(r.t).toLocaleDateString("ja-JP")+"）":"買った日をメモ";
+function paint(){var bm=bload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought];b.setAttribute("aria-pressed",!!r);var bag='<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';b.innerHTML=bag+(r?"メモ済み（"+new Date(r.t).toLocaleDateString("ja-JP")+"）":"買った日をメモ");
  var m=document.getElementById("bought-msg");if(m){m.hidden=!r;if(r){var cur=+b.dataset.price||0,d=cur-r.p;m.innerHTML=d<0?"買った日（"+yen(r.p)+"円）より <b>"+yen(-d)+"円安く</b>なっています。次はもっとお得に買えます":d>0?"買った日（"+yen(r.p)+"円）より "+yen(d)+"円上がっています。<b>いいタイミングで買えています</b>":"買った日と同じ価格です"}}});
  var f=load();document.querySelectorAll("[data-fav]").forEach(function(b){var on=!!f[b.dataset.fav];
  b.setAttribute("aria-pressed",on);b.setAttribute("aria-label",on?"お気に入りから外す":"お気に入りに追加");
- b.textContent=b.classList.contains("mini")?(on?"★":"☆"):(on?"★ お気に入り済み":"☆ お気に入り")});
+ var sv=on?'<svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>':'<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>';
+ b.innerHTML=b.classList.contains("mini")?sv:sv+(on?"お気に入り済み":"お気に入り")});
  var c=document.getElementById("favn");if(c){var n=Object.keys(f).length;c.textContent=n?"（"+n+"）":""}}
 function ga(n,p){try{if(window.gtag)gtag("event",n,p||{})}catch(e){}}
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
@@ -646,8 +670,9 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-fav]
 function data(cb){if(DATA)return cb(DATA);fetch("search.json").then(function(r){return r.json()}).then(function(d){DATA=d;cb(d)})
  .catch(function(){var c=document.getElementById("count")||document.getElementById("favempty");if(c){c.hidden=false;c.textContent="商品データを読み込めませんでした。ページを再読み込みしてください。"}})}
 function unit(x){return x.u?x.ul+" "+(x.u>=10?yen(Math.round(x.u)):x.u.toFixed(1))+"円":""}
-function row(x,extra){var st=x.rv?'<span class="rv"><span class="st" style="--r:'+(Math.min(x.ra,5)/5).toFixed(2)+'" aria-hidden="true">★★★★★</span>'+Number(x.ra).toFixed(1)+'<span class="rvn">（楽天レビュー '+yen(x.rv)+'件）</span></span>':"";
- return '<li><button type="button" class="fav mini" data-fav="'+esc(x.id)+'" data-price="'+x.p+'" aria-pressed="false">☆</button>'+
+var STAR='<svg class="ic" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>';
+function row(x,extra){var s5=STAR+STAR+STAR+STAR+STAR,st=x.rv?'<span class="rv"><span class="st" aria-hidden="true"><span class="st-bg">'+s5+'</span><span class="st-fg" style="width:'+Math.round(Math.min(x.ra,5)/5*100)+'%">'+s5+'</span></span>'+Number(x.ra).toFixed(1)+'<span class="rvn">（'+yen(x.rv)+'件・楽天）</span></span>':"";
+ return '<li><button type="button" class="fav mini" data-fav="'+esc(x.id)+'" data-price="'+x.p+'" aria-pressed="false" aria-label="お気に入りに追加"></button>'+
  '<a class="row" href="item-'+esc(x.id)+'.html"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
  '<span class="nm">'+esc(x.n)+'</span><span class="meta">'+esc(x.m)+(x.m?"・":"")+esc(x.ct)+'</span>'+st+
  '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh==="送料無料"?" free":"")+'">'+esc(x.sh)+'</span></span>'+
@@ -690,114 +715,118 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 """
 
 
-CSS = """:root{--txt:#333;--sub:#666;--line:#e5e5e5;--bg:#eef4f2;--red:#c4161c;--price:#b45309;--brand:#0f6b62;--btn:#0f6b62;--link:#0b5db3}
+CSS = """:root{--txt:#1f2328;--sub:#6b7280;--line:#e6e8eb;--bg:#f6f7f5;--price:#b4530a;--brand:#0f6b62;--brand-d:#0b5048;--brand-bg:#e9f3f0;--warn-bg:#fff7e6;--warn:#8a5a00;--link:#0b5db3;--r:8px}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;color:var(--txt);background:var(--bg);line-height:1.55;font-size:15px;-webkit-text-size-adjust:100%}
-a{color:var(--txt);text-decoration:none}
-a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--link);outline-offset:2px}
-.promo{margin:0;padding:5px 12px;background:#2b2b2b;color:#fff;font-size:12px;text-align:center;line-height:1.5}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;color:var(--txt);background:var(--bg);line-height:1.6;font-size:15px;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+.ic{display:inline-block;vertical-align:-0.2em;flex-shrink:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* 帯・ヘッダー */
+.promo{margin:0;padding:6px 16px;background:#2b2f33;color:#fff;font-size:12px;line-height:1.5;text-align:center}
 .sample{margin:0;padding:6px 12px;background:#fff4d6;color:#7a5200;font-size:12px;text-align:center}
 .hd{background:#fff;border-bottom:1px solid var(--line)}
-.hd-in{max-width:960px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.logo{font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px}
-.mk{background:var(--brand);color:#fff;font-size:14px;width:26px;height:26px;display:inline-grid;place-items:center;border-radius:50%;line-height:1}
-.hd-note{font-size:11px;color:var(--sub);margin-left:auto}
-.hd-fav{font-size:12px;color:var(--txt);white-space:nowrap;border:1px solid var(--line);border-radius:3px;padding:4px 8px}
-.hd-search{max-width:960px;margin:0 auto;padding:0 12px 10px;display:flex}
-.hd-search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--brand);border-right:0;border-radius:20px 0 0 20px}
-.hd-search button{font:inherit;font-size:14px;font-weight:700;background:var(--brand);color:#fff;border:0;border-radius:0 20px 20px 0;padding:0 18px;cursor:pointer;min-height:44px}
+.hd-in{max-width:960px;margin:0 auto;padding:12px 16px 8px;display:flex;align-items:center;gap:12px}
+.logo{font-weight:700;font-size:18px;letter-spacing:.01em;display:flex;align-items:center;gap:8px;color:var(--txt)}
+.mk{width:32px;height:32px;border-radius:10px;background:var(--brand);color:#fff;display:inline-grid;place-items:center}
+.hd-note{font-size:11px;color:var(--sub);line-height:1.4;margin-left:auto;text-align:right}
+.hd-fav{font-size:13px;color:var(--txt);white-space:nowrap;display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:var(--r);padding:0 10px;height:36px;background:#fff}
+.hd-search{max-width:960px;margin:0 auto;padding:0 16px 12px;display:flex}
+.hd-search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:0 14px;height:44px;border:1px solid #cfd4d9;border-right:0;border-radius:var(--r) 0 0 var(--r);background:#fff}
+.hd-search button{font:inherit;font-size:14px;font-weight:700;background:var(--brand);color:#fff;border:0;border-radius:0 var(--r) var(--r) 0;padding:0 16px;height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.hd-search button:hover{background:var(--brand-d)}
+main{max-width:960px;margin:0 auto;padding:0 0 24px}
+.bc{font-size:12px;color:var(--sub);padding:10px 16px 0}.bc a{color:var(--link)}
+.lead{font-size:13px;color:var(--sub);margin:12px 16px;line-height:1.7}
+.ttl{font-size:20px;line-height:1.4;margin:8px 16px 0;font-weight:700}
+.h2{font-size:15px;font-weight:700;margin:0;padding:14px 16px 8px;display:flex;align-items:center;gap:8px;color:var(--txt)}.h2 .ic{color:var(--brand)}
+/* トップ */
+.tabs{list-style:none;margin:0;padding:4px 16px 12px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs a{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 14px 0 10px;height:40px;font-size:14px;font-weight:700;color:var(--txt)}.tabs a .ic{color:var(--brand)}
+.pet-sec{margin-top:4px}
+.chips{list-style:none;margin:0;padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:8px}
+.chips a{display:inline-block;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:13px;color:var(--txt)}
+/* 一覧（カード） */
+.cats,.list,.shops{list-style:none;margin:0;padding:0 16px 8px;display:grid;gap:8px}
+.cats li,.list li,.shops li{background:#fff;border-radius:12px;border:1px solid var(--line)}
 .list li{position:relative}
-.fav{font:inherit;font-size:13px;background:#fff;border:1px solid #ccc;border-radius:3px;padding:5px 10px;cursor:pointer;color:var(--txt);margin-top:6px}
-.fav[aria-pressed="true"]{color:#c58a00;border-color:#e8b500;background:#fffaf0}
-.fav.mini{position:absolute;right:6px;top:6px;margin:0;width:44px;height:44px;padding:0;font-size:18px;line-height:1;color:#c58a00;z-index:1}
-.list .row{padding-right:56px}
-.chips{list-style:none;margin:0;padding:10px 12px;background:#fff;display:flex;flex-wrap:wrap;gap:6px}
-.chips a{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:4px 10px;font-size:13px;color:var(--link)}
-.mk-sec{margin-top:10px}
-.filters{background:#fff;padding:10px 12px;border-bottom:1px solid var(--line);margin-top:8px}
-.filters input{width:100%;font:inherit;font-size:16px;padding:8px 10px;border:1px solid #bbb;border-radius:4px}
-.fl-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px}
-.fl-row label{display:flex;flex-direction:column;font-size:11px;color:var(--sub);gap:2px}
-.fl-row select{font:inherit;font-size:14px;padding:6px;border:1px solid #bbb;border-radius:4px;background:#fff;color:var(--txt)}
-.count{font-size:13px;margin:8px 12px}
-.outlet{font-size:11px;color:#7a5200;background:#fff4d6;border-radius:3px;padding:0 5px;align-self:flex-start}
-.save{margin:8px 0 0;font-size:13px;color:var(--txt)}.save b{color:var(--price)}
-.save-s{display:inline-block;margin-top:3px;font-size:11px;color:var(--price);background:#fff4e6;border-radius:3px;padding:1px 6px;align-self:flex-start}
-.diff{font-size:12px;color:var(--sub);margin-top:4px}.diff.down{color:var(--price);font-weight:700}
-.gone{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;font-size:13px;color:var(--sub)}
-.gone .fav{position:static;margin:0}
-main{max-width:960px;margin:0 auto;padding:0 0 16px}
-.bc{font-size:12px;color:var(--sub);padding:8px 12px}.bc a{color:var(--link)}
-.search{background:#fff;padding:10px 12px;border-bottom:1px solid var(--line)}
-.search input{width:100%;font:inherit;font-size:16px;padding:9px 12px;border:2px solid var(--brand);border-radius:4px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.lead{font-size:13px;color:var(--sub);margin:10px 12px}
-.tabs{list-style:none;margin:0;padding:0 8px 8px;display:flex;gap:6px;overflow-x:auto}
-.tabs a{display:flex;align-items:center;gap:4px;white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:14px;font-weight:700}
-.tabs .ic{font-size:18px}
-.h2{font-size:16px;margin:0;padding:12px;background:#fff;border-bottom:1px solid var(--line)}
-.pet-sec{margin-top:10px}
-.cats,.list,.shops{list-style:none;margin:0;padding:8px;display:grid;gap:8px}
-.cats li,.list li,.shops li{background:#fff;border-radius:12px;box-shadow:0 1px 0 rgba(15,107,98,.12);border:1px solid #e3ece9}
-.cat,.row{display:flex;gap:12px;padding:10px 12px;align-items:flex-start}
+.cat,.row{display:flex;gap:12px;padding:12px;align-items:flex-start}
 .cat{align-items:center}
-.pic img,.noimg{display:block;width:96px;height:96px;object-fit:contain;background:#fff}
+.pic img,.noimg{display:block;width:88px;height:88px;object-fit:contain;background:#fff;border-radius:6px}
 .cat .pic img,.cat .noimg{width:56px;height:56px}
-.noimg{background:#f0f0f0}
+.noimg{background:#f0f1f2}
 .info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-.nm{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.cat .nm{font-weight:700}
-.meta{font-size:12px;color:var(--sub)}
-.rv{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:3px}
-.st{position:relative;color:#ddd;letter-spacing:-1px;font-size:12px}
-.st::after{content:"★★★★★";position:absolute;left:0;top:0;width:calc(var(--r)*100%);overflow:hidden;color:#f5a623}
-.pr{color:var(--price);font-size:13px;margin:0}.pr b{font-size:19px}
-.pr.big b{font-size:28px}
-.ship{display:inline-block;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:2px;padding:0 4px;margin-left:4px;vertical-align:2px;font-weight:400}.ship::before{content:"🚚 "}
-.ship.free{color:var(--brand);border-color:var(--brand)}
-.pt{font-size:12px;color:var(--brand);margin:0}
-.up{font-size:12px;color:var(--sub);margin:2px 0 0}
-.sort{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5}
-.fresh{font-size:12px;color:var(--txt);margin:0;padding:6px 12px;background:#fff8e1;border-top:1px solid #f1e3b0;border-bottom:1px solid #f1e3b0}
-.pinfo{display:inline-block;position:relative;margin-left:4px;vertical-align:middle}.pinfo summary{list-style:none;cursor:pointer;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid #9fb8b3;font-size:11px;color:var(--brand);background:#fff}.pinfo summary::-webkit-details-marker{display:none}
-.pinfo[open] span{position:absolute;left:0;top:22px;z-index:6;width:min(80vw,320px);background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--txt);box-shadow:0 4px 12px rgba(0,0,0,.12);white-space:normal}
-.scope{display:block;font-size:11px;color:var(--sub);font-weight:400}
+.nm{font-size:14px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cat .nm{font-weight:700;font-size:15px}
+.meta{font-size:12px;color:var(--sub);line-height:1.5}
+.rv{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px;margin-top:2px;white-space:nowrap}
+.st{position:relative;display:inline-block;height:13px;line-height:0;color:#e3e3e3}.st .ic{display:inline-block;vertical-align:top}
+.st-bg{display:block;white-space:nowrap}.st-fg{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f0a30a}
+.pr{color:var(--price);font-size:13px;margin:6px 0 0;line-height:1.3;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px}.pr b{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.pr.big{margin:4px 0 0}.pr.big b{font-size:30px}
+.scope{flex-basis:100%;font-size:11px;color:var(--sub);font-weight:400;line-height:1.3}
+.ship{display:inline-flex;align-items:center;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-weight:400;line-height:1.4;background:#fff}
+.ship.free{color:var(--brand);border-color:#9fc9c0;background:var(--brand-bg)}.ship .ic{margin-right:3px}
+.pt{font-size:12px;color:var(--brand);margin:4px 0 0;line-height:1.5}.pt b{color:var(--txt)}
+.ptn{display:block;font-size:11px;color:var(--sub);font-weight:400}
+.shop-l{margin:2px 0 0;font-size:13px;color:var(--txt)}
+.up{font-size:12px;color:var(--sub);margin:4px 0 0}
+.tb{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;line-height:1.4}.tb.low{background:#fde9d6;color:#9a3f00}.tb.down{background:var(--brand-bg);color:var(--brand)}.tb.high{background:#eef0f2;color:#4a5866}
+.save-s{display:inline-block;margin-top:4px;font-size:11px;color:var(--price);background:#fff3e8;border-radius:4px;padding:1px 6px;align-self:flex-start}
+.fav{font:inherit;font-size:13px;background:#fff;border:1px solid #cfd4d9;border-radius:var(--r);height:40px;padding:0 12px;cursor:pointer;color:var(--txt);display:inline-flex;align-items:center;gap:6px}
+.fav[aria-pressed="true"]{color:#b8860b;border-color:#e3c35a;background:#fffaf0}
+.fav.mini{position:absolute;right:8px;top:8px;width:40px;height:40px;padding:0;justify-content:center;color:#b8860b;z-index:1}
+.list .row{padding-right:56px}
+/* 並べ替え・絞り込み */
+.sort{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;padding:10px 16px;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5;overflow-x:auto;scrollbar-width:none}.sort::-webkit-scrollbar{display:none}
+.sort>span{white-space:nowrap}
+.sort button{font:inherit;font-size:13px;white-space:nowrap;background:#fff;border:1px solid #cfd4d9;border-radius:999px;height:36px;padding:0 14px;color:var(--txt);cursor:pointer}
+.sort button[aria-pressed="true"]{background:var(--txt);color:#fff;border-color:var(--txt)}
+.free-only{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13px;color:var(--txt);border:1px solid #cfd4d9;border-radius:999px;padding:0 12px;height:36px;background:#fff}.free-only input{margin:0;accent-color:var(--brand)}
+.free-note{margin:0;padding:6px 16px;font-size:12px;color:var(--warn);background:var(--warn-bg)}
 .alt-p{font-size:11px;color:var(--sub);margin-left:4px}
-.free-note{flex-basis:100%;margin:0;font-size:11px;color:#7a5200}
-.free-only{display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:12px;color:var(--txt);border:1px solid #c8d8d4;border-radius:20px;padding:0 10px;min-height:36px;background:#fff}
-.free-only input{margin:0}
-.tb{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:2px}.tb.low{background:#fde7d2;color:#9a3f00}.tb.down{background:#e4f1ee;color:#0f6b62}.tb.high{background:#eef0f2;color:#4a5866}
-.trend{margin:8px 0 0;font-size:12px;color:var(--txt);display:flex;gap:10px;align-items:center}.trend p{margin:0}.trend .spark{color:var(--brand);flex-shrink:0}.trend b.low{color:var(--price)}.trend b.high{color:#4a5866}.trend.wait{color:var(--sub)}
-.shipnote{margin:8px 0 0;font-size:12px;color:#7a5200;background:#fff4d6;border-radius:6px;padding:6px 10px}
-.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.actions .fav,.actions .bought,.actions .share{margin:0}
-.bought,.share{font:inherit;font-size:13px;background:#fff;border:1px solid #ccc;border-radius:3px;padding:5px 10px;cursor:pointer;color:var(--txt)}
-.bought[aria-pressed="true"]{background:#e4f1ee;border-color:var(--brand);color:var(--brand)}
-.bought-msg{font-size:12px;margin:6px 0 0;color:var(--txt)}
-.badge{display:inline-block;font-weight:700;border-radius:4px;padding:0 6px;font-size:12px}.badge.down{background:#fde7d2;color:#9a3f00}.badge.up2{background:#eef0f2;color:#4a5866}
-#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#2b2b2b;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;z-index:20;max-width:90vw;pointer-events:none}#toast.on{opacity:1;transform:translate(-50%,0)}
-.filters{position:sticky;top:0;z-index:5}
-.btn{border-radius:20px}
-.sort span{white-space:nowrap}
-.sort button{font:inherit;font-size:12px;white-space:nowrap;background:#fff;border:1px solid #c8d8d4;border-radius:20px;min-height:36px;padding:5px 10px;color:var(--txt);cursor:pointer}
-.sort button[aria-pressed="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
-.ttl{font-size:18px;margin:0;padding:6px 12px 0;line-height:1.4}
-.item{background:#fff;padding:12px;display:grid;grid-template-columns:240px 1fr;gap:16px}
-.item .ttl{padding:0;font-size:17px}
-.item-pic img,.noimg.big{width:100%;max-width:240px;height:auto;aspect-ratio:1;object-fit:contain;display:block;margin:0 auto}
-.mk2{margin:2px 0;font-size:12px;color:var(--sub)}
-.best{margin-top:10px;border:1px solid var(--line);border-radius:4px;padding:10px 12px}
+.fresh{list-style:none;margin:8px 16px 0;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:var(--r);font-size:12px;color:var(--sub);display:grid;gap:2px}
+/* 商品ページ */
+.item{background:#fff;margin:12px 16px 0;border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;grid-template-columns:200px 1fr;gap:16px}
+.item .ttl{margin:0;font-size:18px}
+.item-pic img,.noimg.big{width:100%;max-width:200px;height:auto;aspect-ratio:1;object-fit:contain;display:block;margin:0 auto;border-radius:8px}
+.mk2{margin:4px 0 0;font-size:12px}.mk2 a{color:var(--link)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.actions .fav,.actions .bought,.actions .share{margin:0}
+.bought,.share{font:inherit;font-size:13px;background:#fff;border:1px solid #cfd4d9;border-radius:var(--r);height:40px;padding:0 12px;cursor:pointer;color:var(--txt);display:inline-flex;align-items:center;gap:6px}
+.bought[aria-pressed="true"]{background:var(--brand-bg);border-color:var(--brand);color:var(--brand)}
+.bought-msg{font-size:12px;margin:8px 0 0;color:var(--txt)}
+.best{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fafbfa}
 .best-l{margin:0;font-size:12px;color:var(--sub)}
-.btn{display:inline-block;background:var(--btn);color:#fff;font-weight:700;border-radius:4px;padding:8px 12px;font-size:13px;white-space:nowrap;text-align:center}
-.btn.big{display:block;margin-top:10px;padding:13px;font-size:16px}
+.shipnote{margin:10px 0 0;font-size:12px;color:var(--warn);background:var(--warn-bg);border-radius:var(--r);padding:8px 10px;line-height:1.6}
+.save{margin:10px 0 0;font-size:13px;color:var(--txt);line-height:1.6}.save b{color:var(--price)}
+.trend{margin:10px 0 0;font-size:12px;color:var(--txt);display:flex;gap:10px;align-items:center}.trend p{margin:0;line-height:1.6}.trend .spark{color:var(--brand);flex-shrink:0}.trend b.low{color:var(--price)}.trend b.high{color:#4a5866}.trend.wait{color:var(--sub)}.trend small{color:var(--sub)}
+.btn{display:inline-block;background:var(--brand);color:#fff;font-weight:700;border-radius:var(--r);padding:0 14px;height:40px;line-height:40px;font-size:13px;white-space:nowrap;text-align:center}
+.btn:hover{background:var(--brand-d)}
+.btn.big{display:block;margin-top:12px;height:48px;line-height:48px;font-size:16px}
 .alt{font-size:12px;margin:8px 0 0;color:var(--txt)}
-.shops li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line)}
-.shop{display:flex;flex-direction:column;gap:1px;min-width:0}
+.shops li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px}
+.shop{display:flex;flex-direction:column;gap:2px;min-width:0}
 .sn{font-size:13px;color:var(--link);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub-link{display:block;padding:12px;background:#fff;color:var(--link);font-size:13px;text-align:center;border-bottom:1px solid var(--line)}
-.note{font-size:11px;color:var(--sub);padding:10px 12px}.note p{margin:2px 0}
-.empty{text-align:center;color:var(--sub);font-size:13px}
-footer{max-width:960px;margin:0 auto;padding:12px;font-size:11px;color:var(--sub)}footer a{color:var(--link)}
-@media (max-width:600px){.item{grid-template-columns:1fr}.item-pic img,.noimg.big{max-width:200px}.hd-in{flex-wrap:wrap}.hd-note{order:3;width:100%;margin:2px 0 0;font-size:11px}.hd-note br{display:none}.hd-note{word-break:keep-all}}
+.outlet{font-size:11px;color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:0 6px;align-self:flex-start}
+.sub-link{display:block;margin:0 16px 8px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:var(--r);color:var(--link);font-size:13px;text-align:center}
+/* 検索・お気に入り */
+.filters{background:#fff;padding:12px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:8px;position:sticky;top:0;z-index:5}
+.filters input{width:100%;font:inherit;font-size:16px;height:44px;padding:0 12px;border:1px solid #cfd4d9;border-radius:var(--r)}
+.fl-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px;align-items:end}
+.fl-row label{display:flex;flex-direction:column;font-size:11px;color:var(--sub);gap:2px}
+.fl-row select{font:inherit;font-size:14px;height:40px;padding:0 8px;border:1px solid #cfd4d9;border-radius:var(--r);background:#fff;color:var(--txt)}
+.fl-row .free-only{height:40px;border-radius:var(--r)}
+.count{font-size:13px;margin:10px 16px}
+.diff{font-size:12px;color:var(--sub);margin-top:4px;line-height:1.6}.diff.down{color:var(--price);font-weight:700}
+.badge{display:inline-block;font-weight:700;border-radius:4px;padding:0 6px;font-size:12px}.badge.down{background:#fde9d6;color:#9a3f00}.badge.up2{background:#eef0f2;color:#4a5866}
+.gone{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;font-size:13px;color:var(--sub)}.gone .fav{position:static;margin:0}
+.empty{text-align:center;color:var(--sub);font-size:13px;margin:16px}
+.note{font-size:11px;color:var(--sub);padding:12px 16px;line-height:1.6}.note p{margin:2px 0}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#2b2f33;color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;opacity:0;transition:.25s;z-index:20;max-width:90vw;pointer-events:none}#toast.on{opacity:1;transform:translate(-50%,0)}
+footer{max-width:960px;margin:0 auto;padding:16px;font-size:11px;color:var(--sub);line-height:1.7}footer a{color:var(--link)}
+@media (max-width:600px){.item{grid-template-columns:1fr;margin:8px 8px 0}.item-pic img,.noimg.big{max-width:180px}.hd-in{flex-wrap:wrap;gap:8px}.hd-note{order:3;width:100%;margin:0;text-align:left}.hd-note br{display:none}
+.cats,.list,.shops{padding:0 8px 8px}.fresh{margin:8px 8px 0}.sub-link{margin:0 8px 8px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 """
 
 if __name__ == "__main__":

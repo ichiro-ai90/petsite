@@ -325,8 +325,10 @@ def category_body(g, prods, pet, fetched, carried):
             f'<button type="button" data-k="eff" aria-pressed="false">ポイント込み（目安）で安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
             f'<ul class="list" id="list">{rows}</ul>'
-            f'<div class="note"><p>価格取得日時: {fetched}{carried}</p><p>「最安値」は今回取得したショップの中での最安です。'
-            f'{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り）。送料は含みません。</p></div>{SORT_JS}')
+            f'<div class="note"><p>価格取得日時: {fetched}{carried}</p><p>「最安」は今回取得したショップの中での最安です。'
+            f'{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
+            f'ポイントはショップのポイント倍率から計算した目安です（税抜価格の1%×倍率、1円未満切り捨て。SPU・キャンペーン・クーポンは含みません）。'
+            f'「ポイント込み」＝税込価格−この目安ポイント。送料はどちらにも含みません。</p></div>{SORT_JS}')
 
 
 def item_body(p, g, fetched):

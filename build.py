@@ -199,6 +199,18 @@ ICON = {
 }
 
 
+# アイコン担当（ChatGPT）が描いた版があれば上書き（design/design_icons.py が検査済みのものだけを書き出す）
+_ICON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "icons.json")
+if os.path.exists(_ICON_FILE):
+    ICON.update({k: v for k, v in json.load(open(_ICON_FILE, encoding="utf-8")).items() if k in ICON and v})
+
+
+def favicon_svg():
+    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#0f6b62"/>'
+            '<g transform="translate(4 4)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+            + ICON["paw"].replace('"currentColor"', '"#fff"') + '</g></svg>')
+
+
 def icon(name, size=24):
     return _SVG.format(s=size, d=ICON[name])
 
@@ -270,7 +282,7 @@ def page(title, body, desc, sample, crumbs=()):
         bc = '<nav class="bc" aria-label="現在地"><a href="index.html">トップ</a>' + "".join(
             f' <span aria-hidden="true">&gt;</span> ' + (f'<a href="{h}">{E(t)}</a>' if h else E(t)) for t, h in crumbs) + "</nav>"
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">
 <link rel="stylesheet" href="style.css">{ga_tag()}<script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
@@ -609,6 +621,7 @@ def main():
         f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
         "お気に入りに入れた商品の最安値", sample, (("お気に入り", None),)))
     files += ["search.html"]
+    open(os.path.join(out, "favicon.svg"), "w", encoding="utf-8").write(favicon_svg())
     if GA_ID:
         open(os.path.join(out, "privacy.html"), "w", encoding="utf-8").write(page(
             f"アクセス解析について｜{SITE}", '<h1 class="ttl">アクセス解析について</h1><div class="note" style="font-size:13px">'

@@ -104,6 +104,44 @@ class T(unittest.TestCase):
         self.assertNotIn('class="save"', out)  # 最安が訳あり品ならお得額を出さない
         self.assertIn('class="outlet"', out)
 
+    def test_history(self):
+        sys.path.insert(0, HERE)
+        import build, record_history as rh
+        day, rows = rh.rows_from({"fetched_at": "2026-11-05 05:17 JST", "products": [
+            prod("cat-litter-tofu", "x", "猫砂 7L", [offer("A", 1000, ship="送料別"), offer("B", 1200, 10, "送料無料")]),
+            dict(prod("cat-litter-tofu", "y", "猫砂 7L", [offer("A", 900)]), fetched_at="2026-11-04 05:17 JST")]})  # y は引き継ぎ
+        self.assertEqual(day, "2026-11-05")
+        self.assertEqual(rows, {"x": ["2026-11-05", 1000, 991, 2, 1200]})  # ポイント込み最安は A店（1000−9）
+        h = rh.merge({"items": {"x": [["2026-11-05", 999, 999, 1, None]]}}, day, rows)
+        self.assertEqual(h["items"]["x"], [rows["x"]])  # 同じ日は上書き
+        build.HISTORY = {"p": [[f"2026-11-{d:02d}", v, v, 3, None] for d, v in zip(range(1, 8), [1200, 1100, 1150, 1100, 1300, 1100, 1000])]}
+        t = build.trend("p", 1000)
+        self.assertTrue(t["is_low"] and not t["is_high"] and t["diff_prev"] == -100 and t["days"] == 7)
+        self.assertIn("いちばん安い", build.trend_badge(t))
+        self.assertIn("今日は過去7日でいちばん安い", build.trend_block("p", {"price": 1000}))
+        self.assertIn("根拠: 当サイトが毎日1回取得", build.trend_block("p", {"price": 1000}))
+        self.assertIn("いちばん高い", build.trend_badge(build.trend("p", 1300)))
+        self.assertEqual(build.trend_badge(build.trend("p", 1150)), "")
+        build.HISTORY = {"p": [["2026-11-05", 1000, 1000, 3, None]]}
+        self.assertIn("記録を始めました（1日目", build.trend_block("p", {"price": 1000}))
+        self.assertEqual(build.trend_badge(build.trend("p", 1000)), "")
+        build.HISTORY = {}
+
+    def test_free_shipping(self):
+        ps = [prod("cat-litter-tofu", f"f{i}", f"猫砂 7L 商品{i}", [offer("A店", 1000, ship="送料別", name="猫砂 7L"), offer("B店", 1300, 10, "送料無料", name="猫砂 7L")]) for i in range(3)]
+        d, p = run({"fetched_at": "2026-11-05 05:17 JST", "products": ps})
+        self.assertEqual(p.returncode, 0, p.stderr)
+        item = open(os.path.join(d, "site", "item-f0.html"), encoding="utf-8").read()
+        self.assertIn("この価格は送料別です", item)
+        self.assertIn("送料無料で最安は <b>B店</b> の 1,300円", item)
+        self.assertIn('data-bought="f0"', item)
+        self.assertIn('data-share=', item)
+        cat = open(os.path.join(d, "site", "cat-litter-tofu.html"), encoding="utf-8").read()
+        self.assertIn('data-fprice="1300"', cat)
+        self.assertIn('id="freeonly"', cat)
+        sj = json.load(open(os.path.join(d, "site", "search.json"), encoding="utf-8"))
+        self.assertEqual(sj["items"][0]["fp"], 1300)
+
     def test_points(self):
         sys.path.insert(0, HERE)
         from fetch_prices import points

@@ -33,7 +33,9 @@ STYLE = (
 )
 SUBJECTS = {
     "paw": "A paw print used as a website logo mark: one large main pad and four toe pads, with a slightly distinctive, balanced arrangement so it reads as a brand mark.",
-    "dog": "The head of a dog seen from the front, with floppy ears hanging down on both sides and a visible muzzle and nose. Clearly a dog, not a cat or bear.",
+    # 2026-11-06 Taku: ビーグル風は日本で一般的でない → 柴犬・トイプードル
+    "dog": ["The head of a Shiba Inu dog seen from the front: small upright triangular ears, fox-like face, curled fluffy cheeks, the classic Japanese Shiba look. Clearly a Shiba Inu dog, not a cat or fox.",
+            "The head of a Toy Poodle dog seen from the front: round fluffy curly-haired head and drooping fluffy ears, teddy-bear cut popular in Japan. Clearly a dog, not a bear or sheep."],
     "cat": "The head of a cat seen from the front, with pointed triangular ears and short whiskers. Clearly a cat.",
     "small": "A hamster seen from the front, round chubby body with small round ears and tiny paws held in front. Represents small pets (hamster, rabbit, guinea pig).",
     "reptile": "A gecko lizard seen from directly above: head, four splayed legs with toes, and a long curved tail. Clearly a lizard.",
@@ -54,10 +56,21 @@ def api(path, body):
 
 
 def generate(key, n):
+    subj = SUBJECTS[key]
+    if isinstance(subj, list):  # 描き分け（例：犬種）ごとに n 枚
+        pngs, m, u = [], None, {}
+        for i, one in enumerate(subj):
+            got, m, u = _generate(key, n, one)
+            pngs += got
+        return pngs, m, u
+    return _generate(key, n, subj)
+
+
+def _generate(key, n, subject):
     models = [os.environ.get("OPENAI_IMAGE_MODEL") or "gpt-image-2", "gpt-image-1.5", "gpt-image-1"]
     last = None
     for m in dict.fromkeys(models):
-        body = {"model": m, "prompt": STYLE + "\n\nSubject: " + SUBJECTS[key], "n": n, "size": "1024x1024",
+        body = {"model": m, "prompt": STYLE + "\n\nSubject: " + subject, "n": n, "size": "1024x1024",
                 "quality": os.environ.get("ICON_QUALITY") or "medium"}
         try:
             d = api("images/generations", body)
@@ -69,7 +82,7 @@ def generate(key, n):
     out = []
     for _ in range(n):
         d = api("responses", {"model": os.environ.get("OPENAI_MODEL") or "gpt-5-mini",
-                              "input": STYLE + "\n\nSubject: " + SUBJECTS[key] + "\nGenerate exactly one image.",
+                              "input": STYLE + "\n\nSubject: " + subject + "\nGenerate exactly one image.",
                               "tools": [{"type": "image_generation", "size": "1024x1024",
                                          "quality": os.environ.get("ICON_QUALITY") or "medium"}],
                               "tool_choice": {"type": "image_generation"}})

@@ -1,9 +1,7 @@
 # 動物アイコン生成の依頼
 
-2026-11-06 Taku 承認（各2案・中品質・約¥100）
+2026-11-06 09:18 Taku：犬だけやり直し（柴犬・トイプードル。日本で一般的な犬種に）
 
+ICON_ONLY=dog
 ICON_CANDIDATES=2
 ICON_QUALITY=medium
-
-再実行：2026-11-06 08:08 Taku がキーに Images 権限を追加
-再実行2：Responses API の画像生成ツール経由を追加

@@ -57,7 +57,45 @@ def api(path, body):
         raise
 
 
+REF_STYLE = (
+    "Use the attached reference icon (a toy poodle) as the style master for this icon set. Match it exactly: "
+    "the same chunky, rounded, soft silhouette; the same thickness of the white negative-space details; the same face treatment "
+    "(round eyes with the same size and white ring, the same small nose and gentle smiling mouth); the same overall weight and fill ratio. "
+    "Cute and friendly, yet the animal must be instantly identifiable at 28 pixels. Solid black on pure white, no other colors."
+)
+REF_SUBJECTS = {
+    "cat": "A cat head seen from the front, in the same cute style: pointed ears, short whiskers. Clearly a cat, distinct from the poodle.",
+    "small": "A hamster seen from the front, round chubby body, small round ears, tiny paws held in front, same cute face. Clearly a hamster.",
+    "reptile": "A leopard gecko in a cute chibi style, seen from above with the head slightly toward the viewer: big round head with the same cute face, four short legs with round toe tips, a thick curved tail. Clearly a lizard.",
+    "bird": "A budgerigar (parakeet) in a cute chibi style, facing front or three-quarter, perched, with the same cute eyes and a small hooked beak, wing pattern as white lines. Clearly a pet bird.",
+    "fish": "A goldfish in side view in a cute chibi style: round body, the same cute eye and small smile, a large flowing double tail fin. Clearly a goldfish.",
+    "paw": "A paw print logo mark in the same soft, rounded, chunky style: one large main pad and four round toe pads. Friendly, balanced.",
+}
+
+
+def generate_ref(key, n, ref_png):
+    """基準アイコン（トイプードル）を見せて、同じテイストで描かせる（Responses API の画像生成ツール）"""
+    data_url = "data:image/png;base64," + base64.b64encode(ref_png).decode()
+    out, last = [], None
+    for _ in range(n):
+        d = api("responses", {"model": os.environ.get("OPENAI_MODEL") or "gpt-5-mini",
+                              "input": [{"role": "user", "content": [
+                                  {"type": "input_text", "text": STYLE + "\n\n" + REF_STYLE + "\n\nSubject: " + REF_SUBJECTS[key]
+                                   + "\nGenerate exactly one new image. Do not draw the poodle."},
+                                  {"type": "input_image", "image_url": data_url}]}],
+                              "tools": [{"type": "image_generation", "size": "1024x1024",
+                                         "quality": os.environ.get("ICON_QUALITY") or "medium"}],
+                              "tool_choice": {"type": "image_generation"}})
+        last = d.get("usage", {})
+        out += [base64.b64decode(o["result"]) for o in d.get("output", []) if o.get("type") == "image_generation_call" and o.get("result")]
+    if not out:
+        raise RuntimeError(f"{key}: 画像が返ってこなかった")
+    return out, "responses+image_generation（基準: " + os.path.basename(os.environ["ICON_REF"]) + "）", last
+
+
 def generate(key, n):
+    if os.environ.get("ICON_REF") and key in REF_SUBJECTS:
+        return generate_ref(key, n, open(os.path.join(ROOT, os.environ["ICON_REF"]), "rb").read())
     subj = SUBJECTS[key]
     if isinstance(subj, list):  # 描き分け（例：犬種）ごとに n 枚
         pngs, m, u = [], None, {}

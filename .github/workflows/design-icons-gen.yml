@@ -24,7 +24,7 @@ jobs:
         run: pip install -q playwright potracer pillow numpy && python -m playwright install --with-deps chromium
       - name: generate
         run: |
-          set -a; grep -E '^(ICON_ONLY|ICON_CANDIDATES|ICON_QUALITY)=' design/gen_request.md > /tmp/req.env || true; . /tmp/req.env; set +a
+          set -a; grep -E '^(ICON_ONLY|ICON_CANDIDATES|ICON_QUALITY|ICON_REF)=' design/gen_request.md > /tmp/req.env || true; . /tmp/req.env; set +a
           python design/generate_icons.py
       - name: commit
         run: |

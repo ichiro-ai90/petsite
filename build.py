@@ -189,7 +189,8 @@ ICON = {
     "cat": '<path d="M6 8 5 3l4 3h6l4-3-1 5c1 1.5 1.5 3 1.5 5 0 4-3.5 7-7.5 7S4.5 17 4.5 13c0-2 .5-3.5 1.5-5z"/><circle cx="9.5" cy="12" r=".9" fill="currentColor"/><circle cx="14.5" cy="12" r=".9" fill="currentColor"/><path d="M12 14.2l-.9.9h1.8zM3 13h3M18 13h3M3.5 16l2.8-1M20.5 16l-2.8-1"/>',
     "small": '<ellipse cx="12" cy="14" rx="7.5" ry="6"/><circle cx="7.5" cy="8" r="2.3"/><circle cx="16.5" cy="8" r="2.3"/><circle cx="9.5" cy="13" r=".9" fill="currentColor"/><circle cx="14.5" cy="13" r=".9" fill="currentColor"/><path d="M12 15.5v1.2M10.8 17.5c.7.6 1.7.6 2.4 0"/>',
     "reptile": '<path d="M4 16c3-1 4-4 7-5s5 1 8-1"/><path d="M11 11c-1-2 0-4 2-5 2.5-1 4.5 1 4 3.5-.3 1.5-1.5 2.3-3 2.5"/><circle cx="14.5" cy="8.5" r=".8" fill="currentColor"/><path d="M8.5 12.8 7 10.5M10 12 9.5 9M14 16l-1.5 2.5M17 14.5l1 3"/>',
-    "bird-fish": '<path d="M3 12c3-4 7-6 11-6 2.5 0 4.5 1.5 6 3-1.5 1.5-3.5 3-6 3-4 0-8-2-11-6"/><path d="M3 12c3 4 7 6 11 6"/><path d="M20 9c.5 1 .5 5 0 6l-3-3z"/><circle cx="7.5" cy="11" r=".9" fill="currentColor"/>',
+    "bird": '<path d="M4 14c0-4 3-7 7-7 2 0 3.5 1 4.5 2.5L20 9l-3 3c0 4-3 7-7 7H6"/><path d="M8 13l4 2"/><circle cx="14" cy="10.5" r=".9" fill="currentColor"/>',
+    "fish": '<path d="M3 12c3-4 7-6 11-6 2.5 0 4.5 1.5 6 3-1.5 1.5-3.5 3-6 3-4 0-8-2-11-6"/><path d="M3 12c3 4 7 6 11 6"/><path d="M20 9c.5 1 .5 5 0 6l-3-3z"/><circle cx="7.5" cy="11" r=".9" fill="currentColor"/>',
     "truck": '<path d="M3 7h10v9H3zM13 10h4l3 3v3h-7z"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/>',
     "star": '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/>',
     "star-f": '<path fill="currentColor" stroke="none" d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/>',
@@ -220,7 +221,8 @@ PETS = [
     ("cat", "猫", "cat", ["猫", "犬・猫"]),
     ("small", "小動物", "small", ["ハムスター", "うさぎ・モルモット", "うさぎ", "フェレット"]),
     ("reptile", "爬虫類", "reptile", ["爬虫類"]),
-    ("bird-fish", "小鳥・魚", "bird-fish", ["小鳥", "金魚"]),
+    ("bird", "小鳥", "bird", ["小鳥"]),
+    ("fish", "魚", "fish", ["金魚"]),
 ]
 MIN_PRODUCTS = 3  # 本番でカテゴリを公開する最低商品数
 E = html.escape

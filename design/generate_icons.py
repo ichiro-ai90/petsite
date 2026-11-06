@@ -39,7 +39,9 @@ SUBJECTS = {
     "cat": "The head of a cat seen from the front, with pointed triangular ears and short whiskers. Clearly a cat.",
     "small": "A hamster seen from the front, round chubby body with small round ears and tiny paws held in front. Represents small pets (hamster, rabbit, guinea pig).",
     "reptile": "A gecko lizard seen from directly above: head, four splayed legs with toes, and a long curved tail. Clearly a lizard.",
-    "bird-fish": "Two small animals side by side, equal size: on the left a small songbird in side view, on the right a goldfish in side view with a flowing tail. Both clearly readable.",
+    # 2026-11-06 Taku: 小鳥と魚はアイコン（カテゴリ）を分ける
+    "bird": "A small songbird such as a budgerigar or Java sparrow, perched, in side view, with a short beak and a visible eye. Clearly a pet bird.",
+    "fish": "A goldfish in side view with a rounded body and a large flowing double tail fin. Clearly a goldfish.",
 }
 
 

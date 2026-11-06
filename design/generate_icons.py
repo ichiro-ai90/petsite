@@ -66,9 +66,10 @@ REF_STYLE = (
 REF_SUBJECTS = {
     "cat": "A cat head seen from the front, in the same cute style: pointed ears, short whiskers. Clearly a cat, distinct from the poodle.",
     "small": "A hamster seen from the front, round chubby body, small round ears, tiny paws held in front, same cute face. Clearly a hamster.",
-    "reptile": "A leopard gecko in a cute chibi style, seen from above with the head slightly toward the viewer: big round head with the same cute face, four short legs with round toe tips, a thick curved tail. Clearly a lizard.",
+    # 2026-11-06 Taku: 爬虫類は鼻・口ではなく舌を出している姿。魚に鼻・口は違和感
+    "reptile": "A leopard gecko in a cute chibi style, seen from above with the head slightly toward the viewer: big round head with the same cute round eyes, a small forked tongue sticking out of the mouth, four short legs with round toe tips, a thick curved tail with at most a few large spots. NO nose and NO smiling mouth — only the eyes and the forked tongue on the face. Clearly a lizard, not a frog.",
     "bird": "A budgerigar (parakeet) in a cute chibi style, facing front or three-quarter, perched, with the same cute eyes and a small hooked beak, wing pattern as white lines. Clearly a pet bird.",
-    "fish": "A goldfish in side view in a cute chibi style: round body, the same cute eye and small smile, a large flowing double tail fin. Clearly a goldfish.",
+    "fish": "A goldfish in side view in a cute chibi style: round body, the same cute round eye, a large flowing double tail fin, a few scale or fin lines as white negative space. NO nose and NO mouth or smile — only the eye on the face. Clearly a goldfish.",
     "paw": "A paw print logo mark in the same soft, rounded, chunky style: one large main pad and four round toe pads. Friendly, balanced.",
 }
 

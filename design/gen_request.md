@@ -1,8 +1,8 @@
 # 動物アイコン生成の依頼
 
-2026-11-06 12:18 Taku：全ての絵のアイコンのテイストを合わせる。基準はトイプードル（犬 案4）、判別できるが可愛らしく
+2026-11-06 23:55 Taku：爬虫類は鼻・口ではなく舌を出している姿に。魚に鼻・口は付けない。ほか（猫2・小動物2・小鳥1・肉球2）はおすすめで採用
 
-ICON_ONLY=cat,small,reptile,bird,fish,paw
+ICON_ONLY=reptile,fish
 ICON_CANDIDATES=2
 ICON_QUALITY=medium
 ICON_REF=design/ref_poodle.png

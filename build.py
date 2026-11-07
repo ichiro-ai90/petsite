@@ -277,7 +277,7 @@ def ga_note():
             '<a href="privacy.html">アクセス解析について</a></p>')
 
 
-def page(title, body, desc, sample, crumbs=()):
+def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noindex=False):
     band = ('<p class="sample">【サンプル表示】API 未接続のため架空の商品・価格です。実在の商品ではありません。</p>' if sample else "")
     bc = ""
     if crumbs:
@@ -285,7 +285,7 @@ def page(title, body, desc, sample, crumbs=()):
             f' <span aria-hidden="true">&gt;</span> ' + (f'<a href="{h}">{E(t)}</a>' if h else E(t)) for t, h in crumbs) + "</nav>"
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>{E(title)}</title><meta name="description" content="{E(desc)}">
+<title>{E(title)}</title><meta name="description" content="{E(desc)}">{head_extra(title, desc, canonical, og_image, noindex)}
 <link rel="stylesheet" href="style.css">{ga_tag()}<script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
 {band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk">{icon("paw", 20)}</span>{SITE}</a>
@@ -378,6 +378,38 @@ def trend_block(pid, o):
 def free_best(offers):
     f = [x for x in offers if x.get("shipping") == "送料無料"]
     return min(f, key=lambda x: x["price"]) if f else None
+
+
+def head_extra(title, desc, canonical, og_image, noindex):
+    """SEO・共有プレビュー用の head 要素。canonical/og:url は SITE_ORIGIN があるときだけ（相対 URL の canonical は出さない）"""
+    h = ""
+    if noindex:
+        h += '\n<meta name="robots" content="noindex,follow">'
+    if canonical:
+        h += f'\n<link rel="canonical" href="{E(canonical)}"><meta property="og:url" content="{E(canonical)}">'
+    h += (f'\n<meta property="og:type" content="website"><meta property="og:site_name" content="{E(SITE)}">'
+          f'<meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}">')
+    if og_image:
+        h += f'<meta property="og:image" content="{E(og_image)}">'
+    return h
+
+
+def item_meta(p, g, fetched_date):
+    """商品ページの title / description。「最安」は必ず「今回取得した N店のうち」に限定する（楽天アフィリエイト ガイドライン）"""
+    offers = p["offers"]
+    o = min(offers, key=lambda x: x["price"])
+    oe = min(offers, key=lambda x: (x["effective"], x["price"]))
+    n = len(offers)
+    nm = show_name(p["name"])
+    short = nm if len(nm) <= 40 else nm[:39] + "…"
+    title = f"{short}の最安値（楽天{n}店を比較）｜{SITE}"
+    desc = (f"{nm[:50]}を楽天市場の{n}ショップで比較（{fetched_date}取得）。今回取得した{n}店のうち最安は{o['price']:,}円"
+            f"（{ship_word(o['shipping'])}）、ポイント分を引いた目安では約{oe['effective']:,}円。")
+    return title, desc
+
+
+def ship_word(text):
+    return text if text in ("送料無料",) else (text or "送料不明")
 
 
 def best_offer(p, key="price"):
@@ -526,6 +558,7 @@ def main():
                 os.remove(os.path.join(out, f))
     os.makedirs(out, exist_ok=True)
     fetched = E(str(data.get("fetched_at", "不明")))
+    fdate = str(data.get("fetched_at", ""))[:10] or "取得日不明"
     gmap = {g["slug"]: g for g in groups}
     published, files, index_rows = [], [], []
     for g in groups:
@@ -550,8 +583,10 @@ def main():
         fn = g["slug"] + ".html"
         crumbs = ((pet[1], f"index.html#{pet[0]}"), (g["title"], None))
         open(os.path.join(out, fn), "w", encoding="utf-8").write(
-            page(f"{g['title']}の最安値・ポイント比較｜{SITE}", category_body(g, prods, pet, fetched, carried),
-                 f"{g['title']}を楽天市場のショップごとの価格とポイントで比較。", sample, crumbs))
+            page(f"{g['title']}の価格・ポイント比較（楽天{len(prods)}商品）｜{SITE}", category_body(g, prods, pet, fetched, carried),
+                 f"{g['title']}を楽天市場の人気{len(prods)}商品で比較（{fdate}取得）。商品ごとに、今回取得したショップのうち最安の価格とポイントの目安が分かります。",
+                 sample, crumbs, canonical=(f"{origin}/{fn}" if origin else ""),
+                 og_image=img(min(prods, key=lambda p: best_offer(p)["price"]).get("image"), 300) or ""))
         files.append(fn)
         for p in prods:
             ifn = f"item-{p['productId']}.html"
@@ -563,10 +598,11 @@ def main():
                                "img": img(p.get("image"), 128), "rv": p.get("reviewCount", 0), "ra": p.get("reviewAverage", 0),
                                "fp": (free_best(p["offers"]) or {}).get("price", 0), "fe": (free_best(p["offers"]) or {}).get("effective", 0),
                                "h": trend(p["productId"], o["price"])["series"]})
+            it, idsc = item_meta(p, g, fdate)
             open(os.path.join(out, ifn), "w", encoding="utf-8").write(
-                page(f"{show_name(p['name'])[:40]}の最安値｜{SITE}", item_body(p, g, fetched),
-                     f"{show_name(p['name'])[:60]}を楽天市場で安く買えるショップ。", sample,
-                     ((pet[1], f"index.html#{pet[0]}"), (g["title"], fn), ("ショップ比較", None))))
+                page(it, item_body(p, g, fetched), idsc, sample,
+                     ((pet[1], f"index.html#{pet[0]}"), (g["title"], fn), ("ショップ比較", None)),
+                     canonical=(f"{origin}/{ifn}" if origin else ""), og_image=img(p.get("image"), 300) or ""))
             files.append(ifn)
         published.append((g, prods))
     print(f"公開 {len(published)}/{len(groups)} カテゴリ・商品ページ {len(files) - len(published)} 件")
@@ -596,7 +632,9 @@ def main():
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
     open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(
-        page(f"{SITE}｜楽天市場のペット用品を最安値・ポイントで比較", idx, "楽天市場のペット用品を、ショップごとの最安値とポイントで比較", sample))
+        page(f"{SITE}｜楽天市場のペット用品を価格・ポイントで比較", idx,
+             f"楽天市場のペット用品{len(index_rows)}商品を、ショップごとの価格とポイントで比較（{fdate}取得）。猫砂・ドッグフード・小動物や爬虫類、小鳥・魚の餌まで。",
+             sample, canonical=(f"{origin}/" if origin else "")))
     open(os.path.join(out, "style.css"), "w", encoding="utf-8").write(CSS)
     open(os.path.join(out, "app.js"), "w", encoding="utf-8").write(APP_JS)
     json.dump({"fetched_at": str(data.get("fetched_at", "")), "pets": [[p[0], p[1]] for p in PETS],
@@ -613,7 +651,7 @@ def main():
         '<option value="eff">ポイント込みで安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
         '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
         f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
-        "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して最安値とポイントを比較", sample, (("商品を探す", None),)))
+        "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して価格とポイントを比較", sample, (("商品を探す", None),), noindex=True))
     open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
         f"お気に入り｜{SITE}", '<h1 class="ttl">お気に入り</h1>'
         '<p class="lead">登録したときの価格と、いまの最安値を比べられます。保存先はこのブラウザだけ（ログイン不要・端末間で共有されず、サイトデータを消すと消えます）。</p>'
@@ -621,8 +659,7 @@ def main():
         '<h2 class="h2">買った日のメモ</h2><p class="lead">商品ページで「買った日をメモ」を押すと、その日の価格とその後の価格を比べられます。楽天の購入履歴とは連動しません。</p>'
         '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。</p>'
         f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
-        "お気に入りに入れた商品の最安値", sample, (("お気に入り", None),)))
-    files += ["search.html"]
+        "お気に入りに入れた商品の価格", sample, (("お気に入り", None),), noindex=True))
     open(os.path.join(out, "favicon.svg"), "w", encoding="utf-8").write(favicon_svg())
     if GA_ID:
         open(os.path.join(out, "privacy.html"), "w", encoding="utf-8").write(page(
@@ -637,8 +674,9 @@ def main():
             "アクセス解析について", sample, (("アクセス解析について", None),)))
     robots = "User-agent: *\nAllow: /\n"
     if origin:
-        today = datetime.date.today().isoformat()
-        urls = "".join(f"<url><loc>{E(origin)}/{f}</loc><lastmod>{today}</lastmod></url>" for f in ["index.html"] + files)
+        today = fdate if re.match(r"\d{4}-\d{2}-\d{2}$", fdate) else datetime.date.today().isoformat()
+        locs = [f"{origin}/"] + [f"{origin}/{f}" for f in files]  # noindex の search/favorites は載せない
+        urls = "".join(f"<url><loc>{E(u)}</loc><lastmod>{today}</lastmod></url>" for u in locs)
         open(os.path.join(out, "sitemap.xml"), "w", encoding="utf-8").write(
             f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
         robots += f"Sitemap: {origin}/sitemap.xml\n"

@@ -451,7 +451,7 @@ def category_body(g, prods, pet, fetched, carried):
             f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
             f'<ul class="list" id="list">{rows}</ul>'
             f'<div class="note">{("<p>" + carried.replace("<br>", "") + "</p>") if carried else ""}<p>{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
-            f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。</p></div>{SORT_JS}')
+            f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。計算根拠の最終確認：2026-11-08（楽天市場の通常ポイント 税抜100円につき1ポイント）。</p></div>{SORT_JS}')
 
 
 def item_body(p, g, fetched):

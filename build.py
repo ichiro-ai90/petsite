@@ -402,7 +402,7 @@ def same_size(offers, unit):
 
 
 PT_INFO = ''
-PT_NOTE = '<span class="ptn">目安: 税抜×1%×ショップ倍率。SPU・クーポン・送料は含まず</span>'
+PT_NOTE = '<span class="ptn">楽天市場の通常ポイント（税抜100円につき1ポイント）×ショップのポイント倍率で計算した目安。SPU・クーポン・送料は含みません</span>'
 
 
 def product_row(p, g, fn):
@@ -465,7 +465,7 @@ def item_body(p, g, fetched):
         f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop"><span class="sn">{E(x["shop"])}</span>'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍）・ポイント込み <b>{x["effective"]:,}円</b></span>{PT_NOTE}</div>'
+        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍・目安）・ポイント分を引くと約{x["effective"]:,}円</span>{PT_NOTE}</div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -691,7 +691,7 @@ function row(x,extra){var s5=STAR+STAR+STAR+STAR+STAR,st=x.rv?'<span class="rv">
  '<a class="row" href="item-'+esc(x.id)+'.html"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
  '<span class="nm">'+esc(x.n)+'</span><span class="meta">'+esc(x.m)+(x.m?"・":"")+esc(x.ct)+'</span>'+st+
  '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh==="送料無料"?" free":"")+'">'+esc(x.sh)+'</span></span>'+
- (x._free?'<span class="pt">ポイント込み（目安） '+yen(x.e)+'円</span>':'<span class="pt">'+yen(x.pt)+'ポイント（'+x.r+'倍・目安）・ポイント込み '+yen(x.e)+'円</span>')+
+ (x._free?'<span class="pt">ポイント分を引くと約'+yen(x.e)+'円（目安）</span>':'<span class="pt">'+yen(x.pt)+'ポイント（'+x.r+'倍・目安）・ポイント分を引くと約'+yen(x.e)+'円</span>')+
  '<span class="meta">取得した'+x.s+'ショップの中で最安'+(unit(x)?"・"+unit(x)+"（商品名の内容量から計算）":"")+'</span>'+(extra||"")+'</span></a></li>'}
 function fill(sel,opts,val){var el=document.getElementById(sel);opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];el.appendChild(op)});el.value=val||""}
 function search(){var f=document.getElementById("sf");if(!f)return;var u=new URLSearchParams(location.search);

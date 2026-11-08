@@ -263,7 +263,7 @@ HI_RATE = 5  # この倍率以上のショップに「ポイント◯倍」タ�
 
 
 def hi_tag(rate):
-    return f'<span class="hi-pt">ショップポイント{rate}倍</span>' if rate >= HI_RATE else ""
+    return f'<span class="hi-pt">ショップポイント{rate}倍（目安）</span>' if rate >= HI_RATE else ""
 
 
 GA_ID = os.environ.get("GA_MEASUREMENT_ID", "").strip()
@@ -461,7 +461,7 @@ def product_row(p, g, fn):
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
     mr = max(x["pointRate"] for x in p["offers"])
-    hit = f'<span class="hi-pt">ショップポイント{mr}倍の店あり</span>' if mr >= HI_RATE else ""
+    hit = f'<span class="hi-pt">ショップポイント{mr}倍（目安）の店あり</span>' if mr >= HI_RATE else ""
     return (f'<li data-pop="{p.get("reviewCount", 0)}" data-price="{o["price"]}" data-eff="{oe["effective"]}" data-unit="{up or 0:.4f}" data-aprice="{o["price"]}" data-aeff="{oe["effective"]}"{fattr}>'
             f'<button type="button" class="fav mini" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false" aria-label="お気に入りに追加">{icon("star", 18)}</button>'
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'

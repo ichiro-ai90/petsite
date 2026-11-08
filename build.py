@@ -284,7 +284,7 @@ def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noinde
         bc = '<nav class="bc" aria-label="現在地"><a href="index.html">トップ</a>' + "".join(
             f' <span aria-hidden="true">&gt;</span> ' + (f'<a href="{h}">{E(t)}</a>' if h else E(t)) for t, h in crumbs) + "</nav>"
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.svg" type="image/svg+xml"><meta name="google-site-verification" content="u0jJCXgDbyfhcb2gBvD003LlVQdUARwQvqIsDAfi72Y">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">{head_extra(title, desc, canonical, og_image, noindex)}
 <link rel="stylesheet" href="style.css">{ga_tag()}<script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>

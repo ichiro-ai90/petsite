@@ -1,0 +1,35 @@
+name: design-icons
+# アイコン担当（ChatGPT）にアイコン一式を描かせ、検査を通ったものを同じブランチにコミットする
+# 依頼書（design/icon_brief.md）か差し戻し（design/feedback.md）を更新して push すると動く
+on:
+  push:
+    branches: ["dev/icons", "dev/icons-*"]
+    paths: ["design/icon_brief.md", "design/feedback.md", "design/design_icons.py"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: design-icons-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  design:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_DESIGN_MODEL: ${{ vars.OPENAI_DESIGN_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: playwright
+        run: pip install -q playwright && python -m playwright install --with-deps chromium
+      - name: design
+        run: python design/design_icons.py
+      - name: commit
+        run: |
+          git config user.name "ichiro-ai90"
+          git config user.email "ichiro-ai90@users.noreply.github.com"
+          git add assets/icons.json design/preview.png design/preview_draft1.png design/REPORT.md
+          git diff --cached --quiet && exit 0
+          git commit -m "design: アイコン担当（ChatGPT）の案を反映"
+          git push

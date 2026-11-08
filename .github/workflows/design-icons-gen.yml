@@ -1,0 +1,36 @@
+name: design-icons-gen
+# 動物アイコンを画像生成で作り、ベクター化した候補をコミットする（費用が出るので、依頼ファイルを push したときだけ動く）
+# 依頼：design/gen_request.md を追加・更新して dev/icons に push（中身に ICON_ONLY=dog,cat のように書けば一部だけ）
+on:
+  push:
+    branches: ["dev/icons", "dev/icons-*"]
+    paths: ["design/gen_request.md"]
+permissions:
+  contents: write
+concurrency:
+  group: design-icons-gen-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: deps
+        run: pip install -q playwright potracer pillow numpy && python -m playwright install --with-deps chromium
+      - name: generate
+        run: |
+          set -a; grep -E '^(ICON_ONLY|ICON_CANDIDATES|ICON_QUALITY|ICON_REF)=' design/gen_request.md > /tmp/req.env || true; . /tmp/req.env; set +a
+          python design/generate_icons.py
+      - name: commit
+        run: |
+          git config user.name "ichiro-ai90"
+          git config user.email "ichiro-ai90@users.noreply.github.com"
+          git add design/candidates.json design/candidates.png design/gen design/GEN_REPORT.md
+          git diff --cached --quiet && exit 0
+          git commit -m "design: 動物アイコンの生成候補"
+          git push

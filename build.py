@@ -263,7 +263,7 @@ HI_RATE = 5  # この倍率以上のショップに「ポイント◯倍」タ�
 
 
 def hi_tag(rate):
-    return f'<span class="hi-pt">ポイント{rate}倍</span>' if rate >= HI_RATE else ""
+    return f'<span class="hi-pt">ショップポイント{rate}倍</span>' if rate >= HI_RATE else ""
 
 
 GA_ID = os.environ.get("GA_MEASUREMENT_ID", "").strip()
@@ -461,7 +461,7 @@ def product_row(p, g, fn):
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
     mr = max(x["pointRate"] for x in p["offers"])
-    hit = f'<span class="hi-pt">ポイント{mr}倍のショップあり</span>' if mr >= HI_RATE else ""
+    hit = f'<span class="hi-pt">ショップポイント{mr}倍の店あり</span>' if mr >= HI_RATE else ""
     return (f'<li data-pop="{p.get("reviewCount", 0)}" data-price="{o["price"]}" data-eff="{oe["effective"]}" data-unit="{up or 0:.4f}" data-aprice="{o["price"]}" data-aeff="{oe["effective"]}"{fattr}>'
             f'<button type="button" class="fav mini" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false" aria-label="お気に入りに追加">{icon("star", 18)}</button>'
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
@@ -774,7 +774,7 @@ function renderBought(){var l=document.getElementById("boughtlist");if(!l)return
  document.getElementById("boughtempty").hidden=ids.length>0;paint()})}
 function ago(){document.querySelectorAll("time[data-fetched]").forEach(function(t){var m=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(t.dataset.fetched);if(!m)return;
  var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"1時間以内":h<24?"約"+h+"時間前":"約"+Math.floor(h/24)+"日前";
- t.textContent=t.dataset.fetched+"・"+s;if(h>=48&&!document.getElementById("stale")){var hd=document.querySelector("header");if(hd)hd.insertAdjacentHTML("afterend",'<p class="stale" id="stale" role="status">価格データの更新が約'+Math.floor(h/24)+'日止まっています。表示の価格・ポイントは '+esc(t.dataset.fetched)+' 時点のものです。購入前に楽天市場のページで最新の価格をご確認ください。</p>');ga("stale_banner",{hours:h})}})}
+ t.textContent=t.dataset.fetched+"・"+s;if(h>=48&&!document.getElementById("stale")){var hd=document.querySelector("header");if(hd)hd.insertAdjacentHTML("afterend",'<p class="stale" id="stale" role="status">表示の価格は約'+Math.floor(h/24)+'日前（'+esc(t.dataset.fetched)+'）の取得です。最新の価格は楽天市場のページでご確認ください。</p>');ga("stale_banner",{hours:h})}})}
 function init(){ago();keepOrig();renderBought();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
@@ -832,8 +832,8 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .pr.big{margin:4px 0 0}.pr.big b{font-size:30px}
 .scope{flex-basis:100%;font-size:11px;color:var(--sub);font-weight:400;line-height:1.3}
 .ship{display:inline-flex;align-items:center;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-weight:400;line-height:1.4;background:#fff}
-.ship.free{color:var(--brand);border-color:#9fc9c0;background:var(--brand-bg)}.ship.paid{color:var(--warn);border-color:#e7c27a;background:var(--warn-bg);font-weight:600}
-.ship-rule{margin:0;padding:6px 16px;font-size:12px;color:var(--sub);line-height:1.5}.ship-rule b{color:var(--warn)}
+.ship.free{color:var(--brand);border-color:#9fc9c0;background:var(--brand-bg)}.ship.paid{color:var(--warn);border-color:#ecd7a8;background:var(--warn-bg)}
+.ship-rule{margin:0;padding:6px 16px;font-size:12px;color:var(--sub);line-height:1.5}.ship-rule b{color:var(--txt);font-weight:600}
 .hi-pt{display:inline-block;align-self:flex-start;margin:4px 0 0;font-size:11px;font-weight:600;color:#fff;background:var(--brand);border-radius:4px;padding:1px 6px;line-height:1.5}
 .stale{margin:0;padding:10px 16px;font-size:13px;line-height:1.6;color:var(--warn);background:var(--warn-bg);border-bottom:1px solid #e7c27a;font-weight:600}.ship .ic{margin-right:3px}
 .pt{font-size:12px;color:var(--brand);margin:4px 0 0;line-height:1.5}.pt b{color:var(--txt)}

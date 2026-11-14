@@ -454,10 +454,10 @@ def drop_section(published, fdate):
         pct = round(x["d"] / x["hi"] * 100)
         li.append(f'<li><a class="dr" href="item-{E(p["productId"])}.html" data-ga="drop_rank" data-rank="{i}">'
                   f'<span class="rk">{i}</span><span class="pic">{pic}</span><span class="info"><span class="nm">{E(show_name(p["name"]))}</span>'
-                  f'<span class="dr-pr"><s>{x["hi"]:,}円</s> → <b>{x["now"]:,}</b>円</span></span>'
+                  f'<span class="dr-pr"><s>{x["hi"]:,}円</s><small>（{x["since"][5:].replace("-", "/")}）</small> → <b>{x["now"]:,}</b>円</span></span>'
                   f'<span class="dr-d">−{x["d"]:,}円<small>{pct}%</small></span></a></li>')
     return (f'<section class="drop-sec"><h2 class="h2">値下がり中の商品<span class="h2s">直近{DROP_DAYS}日の最高値と比べて</span></h2>'
-            f'<ol class="drops">{"".join(li)}</ol><p class="ptn">価格の記録（{fdate}まで・取得したショップの最安）から計算。内容量違いの可能性がある{int(DROP_MAX*100)}%超の差は除いています</p></section>')
+            f'<p class="ptn drop-basis">同じ商品の、取得したショップの最安価格の記録どうしを比べています（送料別）</p><ol class="drops">{"".join(li)}</ol><p class="ptn">価格の記録（{fdate}まで・取得したショップの最安）から計算。内容量違いの可能性がある{int(DROP_MAX*100)}%超の差は除いています</p></section>')
 
 
 def median_price(p, unit):
@@ -865,7 +865,7 @@ function shindan(){var root=document.getElementById("shindan");if(!root)return;d
   var m=0,sv=0,pt=0;ids.forEach(function(id){var x=by[id],q=sel[id];m+=x.p*q;pt+=x.pt*q;if(x.md>x.p)sv+=(x.md-x.p)*q});
   m=Math.round(m);sv=Math.round(sv);pt=Math.round(pt);var R={m:m,y:m*12,sv:sv*12,pt:pt*12,n:ids.length,pet:PETN[pet]||""};
   res.hidden=false;res.innerHTML='<p class="sd-k">うちの'+esc(R.pet)+'の消耗品（'+R.n+'品目）</p><p class="sd-m">月 <b class="cnt" data-to="'+R.m+'">0</b>円</p><p class="sd-y">年間 約'+yen(R.y)+'円</p>'+
-   (R.sv>0?'<p class="sd-sv">取得したショップの中央値で買う場合より<br><b class="cnt" data-to="'+R.sv+'">0</b>円/年 安い</p>':'<p class="sd-sv0">選んだ商品は、ショップ間の価格差が小さいか、比べられるショップが3店未満でした</p>')+
+   (R.sv>0?'<p class="sd-sv">取得したショップの中央値で買う場合より<br><b class="cnt" data-to="'+R.sv+'">0</b>円/年 安い</p><p class="ptn sd-basis">差額＝同じ内容量の通常品が3店以上ある商品だけ、その価格の中央値と最安の差×月の数×12。送料・クーポンは含みません</p>':'<p class="sd-sv0">選んだ商品は、ショップ間の価格差が小さいか、比べられるショップが3店未満でした</p>')+
    '<p class="sd-pt">ポイント（目安）は年 約'+yen(R.pt)+'ポイント</p><canvas id="sd-card" width="1200" height="630" hidden></canvas>'+
    '<div class="sd-share"><button type="button" class="btn-main" id="sd-sh">結果を画像でシェア</button><a class="btn-sub" id="sd-x" target="_blank" rel="noopener">X にポスト</a><a class="btn-sub" id="sd-line" target="_blank" rel="noopener">LINE で送る</a><a class="btn-sub" id="sd-dl" download="petsite-shindan.png">画像を保存</a></div>'+
    '<p class="ptn">価格は '+esc(d.fetched_at)+' 時点の楽天市場の取得結果です。送料は含みません</p>';
@@ -889,7 +889,7 @@ function card(R){var c=document.getElementById("sd-card");if(!c||!c.getContext)r
  x.fillStyle="#1f2328";x.font="700 44px "+F;x.fillText("うちの"+R.pet+"の消耗品、月いくら？",70,110);
  x.fillStyle="#6b7280";x.font="400 30px "+F;x.fillText(R.n+"品目・楽天市場の最安価格で計算",70,160);
  x.fillStyle="#1f2328";x.font="700 64px "+F;x.fillText("月",70,300);x.font="800 150px "+F;var s=yen(R.m);x.fillText(s,150,310);var w=x.measureText(s).width;x.font="700 64px "+F;x.fillText("円",160+w,300);
- if(R.sv>0){x.fillStyle="#d6336c";x.font="800 54px "+F;x.fillText("ショップ選びで 年"+yen(R.sv)+"円 の差",70,410)}
+ if(R.sv>0){x.fillStyle="#c2255c";x.font="800 54px "+F;x.fillText("ショップ選びで 年"+yen(R.sv)+"円 の差",70,410)}
  x.fillStyle="#6b7280";x.font="400 26px "+F;x.fillText("取得したショップの中央値と比べた目安（送料別・"+String(DATA.fetched_at).slice(0,10)+"時点）",70,465);
  x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F;x.fillText("ペット用品 最安ナビ　あなたの子はいくら？ 1分診断",70,598);
  try{document.getElementById("sd-dl").href=c.toDataURL("image/png")}catch(e){}}
@@ -899,7 +899,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 """
 
 
-CSS = """:root{--txt:#1f2328;--sub:#6b7280;--line:#e6e8eb;--bg:#f6f7f5;--price:#b4530a;--brand:#0f6b62;--brand-d:#0b5048;--brand-bg:#e9f3f0;--warn-bg:#fff7e6;--win:#d6336c;--win-bg:#fff0f5;--warn:#8a5a00;--link:#0b5db3;--r:8px}
+CSS = """:root{--txt:#1f2328;--sub:#6b7280;--line:#e6e8eb;--bg:#f6f7f5;--price:#b4530a;--brand:#0f6b62;--brand-d:#0b5048;--brand-bg:#e9f3f0;--warn-bg:#fff7e6;--win:#c2255c;--win-bg:#fff0f5;--warn:#8a5a00;--link:#0b5db3;--r:8px}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;color:var(--txt);background:var(--bg);line-height:1.6;font-size:15px;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -961,7 +961,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .rk{flex:0 0 24px;height:24px;border-radius:12px;background:var(--win);color:#fff;font-size:13px;font-weight:700;display:grid;place-items:center}
 .dr .pic img,.dr .noimg{width:56px;height:56px;border-radius:6px;object-fit:contain;background:#fff;display:block}
 .dr .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.dr .nm{font-size:13px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.dr-pr{font-size:13px;color:var(--sub)}.dr-pr s{color:var(--sub)}.dr-pr b{font-size:16px;color:var(--price)}
+.dr-pr{font-size:13px;color:var(--sub)}.dr-pr small{font-size:11px}.drop-basis{margin:2px 0 0}.sd-basis{margin:4px 0 0}.dr-pr s{color:var(--sub)}.dr-pr b{font-size:16px;color:var(--price)}
 .dr-d{flex:0 0 auto;text-align:right;color:var(--win);font-size:20px;font-weight:800;line-height:1.1}.dr-d small{display:block;font-size:12px;font-weight:700}
 .sd-cta{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:12px 16px;padding:14px 16px;border-radius:12px;background:var(--win-bg);border:1px solid #f6c3d4;color:var(--txt);text-decoration:none}
 .sd-cta-t{font-size:16px;font-weight:800}.sd-cta-s{font-size:12px;color:var(--sub);grid-column:1}.sd-cta-b{grid-column:2;grid-row:1/3;background:var(--win);color:#fff;font-weight:700;border-radius:999px;padding:10px 16px;font-size:14px}

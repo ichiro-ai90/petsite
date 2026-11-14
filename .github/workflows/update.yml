@@ -5,8 +5,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
-  pages: write
-  id-token: write
+  deployments: write
 concurrency:            # 手動実行と定期実行が重なっても push が衝突しないように
   group: daily-price-update
   cancel-in-progress: false
@@ -45,7 +44,7 @@ jobs:
           PY
       - name: build（sitemap の URL はサイトの実 URL＝ドメイン＋/リポジトリ名。11/02 22:5x ランブック照合で修正）
         env:
-          SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}/${{ github.event.repository.name }}
+          SITE_ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://petsite-ichiro.pages.dev' }}   # 公開先（Cloudflare Pages）。GitHub Pages には公開しない（2026-11 規約上の理由）
           GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}   # Google アナリティクス（未設定なら入れない）
         run: python build.py
       - name: commit price snapshot（価格履歴を残す）
@@ -53,11 +52,12 @@ jobs:
           git config user.name "ichiro-bot"; git config user.email "ichiro-bot@users.noreply.github.com"
           git add data/prices.json data/history.json && git commit -m "prices $(date -u +%F)" || echo "no change"
           git push
-      - uses: actions/upload-pages-artifact@v3
-        with: { path: site }
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: { name: github-pages }
-    steps:
-      - uses: actions/deploy-pages@v4
+      - name: deploy to Cloudflare Pages（プロジェクトが無ければ作る。2回目以降は「既にある」で先へ進む）
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PROJECT: ${{ vars.CF_PROJECT || 'petsite-ichiro' }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" -a -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Cloudflare の Secrets（CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID）が未設定です"; exit 1; }
+          npx --yes wrangler@3 pages project create "$CF_PROJECT" --production-branch=main || echo "project exists"
+          npx --yes wrangler@3 pages deploy site --project-name="$CF_PROJECT" --branch=main --commit-dirty=true

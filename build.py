@@ -26,6 +26,7 @@
 import datetime
 import html
 import json
+import shutil
 import os
 import re
 import sys
@@ -420,6 +421,54 @@ def ship_word(text):
     return text if text in ("送料無料",) else (text or "送料不明")
 
 
+DROP_DAYS = 7      # 値下がりランキング：直近何日の最高値と比べるか
+DROP_MAX = 0.40    # これより大きい下がり幅は内容量違い・別商品の混入の可能性が高いので載せない
+
+
+def drops(published):
+    """価格の記録（HISTORY）だけを使った事実の値下がり。直近 DROP_DAYS 日の最高値 → 今日の最安"""
+    out = []
+    for g, prods in published:
+        for p in prods:
+            rows = HISTORY.get(p["productId"], [])[-(DROP_DAYS + 1):]
+            if len(rows) < 2:
+                continue
+            now = best_offer(p)["price"]
+            hi_row = max(rows[:-1], key=lambda r: r[1])
+            hi = hi_row[1]
+            if not hi or now >= hi or (hi - now) / hi > DROP_MAX or (hi - now) / hi < 0.01:
+                continue
+            out.append({"p": p, "g": g, "hi": hi, "now": now, "d": hi - now, "since": hi_row[0]})
+    return sorted(out, key=lambda x: (-x["d"], x["now"]))
+
+
+def drop_section(published, fdate):
+    ds = drops(published)[:5]
+    if not ds:
+        return ""
+    li = []
+    for i, x in enumerate(ds, 1):
+        p = x["p"]
+        th = img(p.get("image"), 128)
+        pic = f'<img src="{E(th)}" alt="" width="64" height="64" loading="lazy">' if th else '<span class="noimg" aria-hidden="true"></span>'
+        pct = round(x["d"] / x["hi"] * 100)
+        li.append(f'<li><a class="dr" href="item-{E(p["productId"])}.html" data-ga="drop_rank" data-rank="{i}">'
+                  f'<span class="rk">{i}</span><span class="pic">{pic}</span><span class="info"><span class="nm">{E(show_name(p["name"]))}</span>'
+                  f'<span class="dr-pr"><s>{x["hi"]:,}円</s> → <b>{x["now"]:,}</b>円</span></span>'
+                  f'<span class="dr-d">−{x["d"]:,}円<small>{pct}%</small></span></a></li>')
+    return (f'<section class="drop-sec"><h2 class="h2">値下がり中の商品<span class="h2s">直近{DROP_DAYS}日の最高値と比べて</span></h2>'
+            f'<ol class="drops">{"".join(li)}</ol><p class="ptn">価格の記録（{fdate}まで・取得したショップの最安）から計算。内容量違いの可能性がある{int(DROP_MAX*100)}%超の差は除いています</p></section>')
+
+
+def median_price(p, unit):
+    """お得額の基準：最安ショップと同じ内容量の通常品の価格の中央値（3店以上あるときだけ）"""
+    ps = sorted(o["price"] for o in same_size(p["offers"], unit))
+    if len(ps) < 3:
+        return 0
+    m = len(ps) // 2
+    return ps[m] if len(ps) % 2 else (ps[m - 1] + ps[m]) // 2
+
+
 def best_offer(p, key="price"):
     return min(p["offers"], key=lambda o: (o[key], o["price"]))
 
@@ -607,7 +656,7 @@ def main():
                                "sh": o["shipping"], "s": len(p["offers"]), "u": round(up, 2) if up else 0, "ul": LABEL[g["unit"]],
                                "img": img(p.get("image"), 128), "rv": p.get("reviewCount", 0), "ra": p.get("reviewAverage", 0),
                                "fp": (free_best(p["offers"]) or {}).get("price", 0), "fe": (free_best(p["offers"]) or {}).get("effective", 0),
-                               "h": trend(p["productId"], o["price"])["series"]})
+                               "h": trend(p["productId"], o["price"])["series"], "md": median_price(p, g["unit"])})
             it, idsc = item_meta(p, g, fdate)
             open(os.path.join(out, ifn), "w", encoding="utf-8").write(
                 page(it, item_body(p, g, fetched), idsc, sample,
@@ -639,6 +688,8 @@ def main():
     mk = "".join(f'<li><a href="search.html?maker={urllib.parse.quote(m)}">{E(m)}</a></li>' for m in makers)
     idx = ('<p class="lead">楽天市場の人気商品を、ショップごとの価格とポイントで比べます。いつも買っている商品は「お気に入り」に入れておくと、次から値段をすぐ確かめられます。</p>'
            f'<ul class="tabs">{"".join(tabs)}</ul>'
+           + '<a class="sd-cta" href="shindan.html" data-ga="shindan_cta"><span class="sd-cta-t">うちの子の消耗品、月いくら？</span><span class="sd-cta-s">いつもの商品を選ぶだけ・1分でわかる</span><span class="sd-cta-b">診断する</span></a>'
+           + drop_section(published, fdate)
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
     open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(
@@ -662,6 +713,20 @@ def main():
         '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
         f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
         "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して価格とポイントを比較", sample, (("商品を探す", None),), noindex=True))
+    open(os.path.join(out, "shindan.html"), "w", encoding="utf-8").write(page(
+        f"うちの子の消耗品、月いくら？ 1分診断｜{SITE}",
+        '<h1 class="ttl">うちの子の消耗品、月いくら？</h1>'
+        '<p class="lead">ペットを選んで、いつも買っている商品と月に使う数を選ぶだけ。楽天市場で取得したショップの最安で買ったときの月額と、取得したショップの中央値で買った場合との差がわかります。</p>'
+        '<div id="shindan"><div class="sd-pets" id="sd-pets" role="group" aria-label="ペット"></div><div id="sd-list"></div>'
+        '<section class="sd-res" id="sd-res" hidden aria-live="polite"></section></div>'
+        f'<div class="note"><p>価格取得日時: <time data-fetched="{fetched}">{fetched}</time></p><p>月額は「取得したショップの最安価格（税込・送料別）×月に使う数」です。差額は、最安ショップと同じ内容量の通常品が3店以上あるときだけ、その価格の中央値との差で計算しています（3店未満の商品は差額0として扱います）。ポイントは目安です。</p></div>',
+        "ペットの消耗品（フード・猫砂・シーツなど）の月額を、楽天市場の最安価格で1分診断。結果は画像にして共有できます。",
+        sample, (("1分診断", None),), canonical=(f"{origin}/shindan.html" if origin else ""),
+        og_image=(f"{origin}/og-shindan.png" if origin else "og-shindan.png")))
+    files.append("shindan.html")
+    og_src = os.path.join(ROOT, "assets", "og-shindan.png")
+    if os.path.exists(og_src):
+        shutil.copy(og_src, os.path.join(out, "og-shindan.png"))
     open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
         f"お気に入り｜{SITE}", '<h1 class="ttl">お気に入り</h1>'
         '<p class="lead">登録したときの価格と、いまの最安値を比べられます。保存先はこのブラウザだけ（ログイン不要・端末間で共有されず、サイトデータを消すと消えます）。</p>'
@@ -713,6 +778,7 @@ function paint(){var bm=bload();document.querySelectorAll("[data-bought]").forEa
  b.innerHTML=b.classList.contains("mini")?sv:sv+(on?"お気に入り済み":"お気に入り")});
  var c=document.getElementById("favn");if(c){var n=Object.keys(f).length;c.textContent=n?"（"+n+"）":""}}
 function ga(n,p){try{if(window.gtag)gtag("event",n,p||{})}catch(e){}}
+document.addEventListener("click",function(e){var g=e.target.closest("[data-ga]");if(g)ga(g.dataset.ga,{rank:+g.dataset.rank||0})});
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
  if(a)ga("click_rakuten",{link_type:a.classList.contains("big")?"best_shop":(a.classList.contains("sub-link")?"all_shops":"shop"),page_path:location.pathname})},true);
 document.addEventListener("click",function(e){var b=e.target.closest("[data-bought]");if(!b)return;var bm=bload(),id=b.dataset.bought;
@@ -775,13 +841,65 @@ function renderBought(){var l=document.getElementById("boughtlist");if(!l)return
 function ago(){document.querySelectorAll("time[data-fetched]").forEach(function(t){var m=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(t.dataset.fetched);if(!m)return;
  var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"1時間以内":h<24?"約"+h+"時間前":"約"+Math.floor(h/24)+"日前";
  t.textContent=t.dataset.fetched+"・"+s;if(h>=48&&!document.getElementById("stale")){var hd=document.querySelector("header");if(hd)hd.insertAdjacentHTML("afterend",'<p class="stale" id="stale" role="status">表示の価格は約'+Math.floor(h/24)+'日前（'+esc(t.dataset.fetched)+'）の取得です。最新の価格は楽天市場のページでご確認ください。</p>');ga("stale_banner",{hours:h})}})}
-function init(){ago();keepOrig();renderBought();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+
+var PETN={};
+function shindan(){var root=document.getElementById("shindan");if(!root)return;data(function(d){
+ d.pets.forEach(function(p){PETN[p[0]]=p[1]});
+ var u=new URLSearchParams(location.search),pet=u.get("pet")||"",sel={},by={};d.items.forEach(function(x){by[x.id]=x});
+ (u.get("i")||"").split(",").forEach(function(s){var a=s.split(":");if(a[0]&&by[a[0]])sel[a[0]]=+a[1]||1});
+ var pets=document.getElementById("sd-pets"),list=document.getElementById("sd-list"),res=document.getElementById("sd-res");
+ pets.innerHTML=d.pets.filter(function(p){return d.items.some(function(x){return x.pet.indexOf(p[0])>-1})}).map(function(p){return '<button type="button" data-pet="'+esc(p[0])+'">'+esc(p[1])+'</button>'}).join("");
+ pets.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;pet=b.dataset.pet;sel={};draw();ga("shindan_pet",{pet:pet})});
+ function draw(){pets.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.pet===pet?"true":"false")});
+  if(!pet){list.innerHTML="";res.hidden=true;return}var g={};
+  d.items.forEach(function(x){if(x.pet.indexOf(pet)>-1)(g[x.c]=g[x.c]||{t:x.ct,xs:[]}).xs.push(x)});
+  list.innerHTML='<p class="sd-step">いつも買っている商品を選んでください（使っていないカテゴリはそのままで大丈夫です）</p>'+Object.keys(g).map(function(c){var G=g[c];G.xs.sort(function(a,b){return b.rv-a.rv});
+   var cur=G.xs.filter(function(x){return sel[x.id]})[0],q=cur?sel[cur.id]:1;
+   return '<div class="sd-cat"><label class="sd-nm">'+esc(G.t)+'<select data-c="'+esc(c)+'"><option value="">使っていない</option>'+G.xs.map(function(x){return '<option value="'+esc(x.id)+'"'+(cur&&cur.id===x.id?" selected":"")+'>'+esc(x.n.length>42?x.n.slice(0,41)+"…":x.n)+'（'+yen(x.p)+'円）</option>'}).join("")+'</select></label>'+
+   '<label class="sd-q">月に<select data-q="'+esc(c)+'">'+[0.5,1,2,3,4,6].map(function(v){return '<option value="'+v+'"'+(v==q?" selected":"")+'>'+v+'</option>'}).join("")+'</select>個</label></div>'}).join("");
+  calc(false)}
+ function calc(user){sel={};list.querySelectorAll("select[data-c]").forEach(function(s){if(s.value){var q=list.querySelector('select[data-q="'+s.dataset.c+'"]');sel[s.value]=+q.value}});
+  var ids=Object.keys(sel),p=new URLSearchParams();if(pet)p.set("pet",pet);if(ids.length)p.set("i",ids.map(function(id){return id+":"+sel[id]}).join(","));
+  history.replaceState(null,"",location.pathname+(p.toString()?"?"+p:""));
+  if(!ids.length){res.hidden=true;return}
+  var m=0,sv=0,pt=0;ids.forEach(function(id){var x=by[id],q=sel[id];m+=x.p*q;pt+=x.pt*q;if(x.md>x.p)sv+=(x.md-x.p)*q});
+  m=Math.round(m);sv=Math.round(sv);pt=Math.round(pt);var R={m:m,y:m*12,sv:sv*12,pt:pt*12,n:ids.length,pet:PETN[pet]||""};
+  res.hidden=false;res.innerHTML='<p class="sd-k">うちの'+esc(R.pet)+'の消耗品（'+R.n+'品目）</p><p class="sd-m">月 <b class="cnt" data-to="'+R.m+'">0</b>円</p><p class="sd-y">年間 約'+yen(R.y)+'円</p>'+
+   (R.sv>0?'<p class="sd-sv">取得したショップの中央値で買う場合より<br><b class="cnt" data-to="'+R.sv+'">0</b>円/年 安い</p>':'<p class="sd-sv0">選んだ商品は、ショップ間の価格差が小さいか、比べられるショップが3店未満でした</p>')+
+   '<p class="sd-pt">ポイント（目安）は年 約'+yen(R.pt)+'ポイント</p><canvas id="sd-card" width="1200" height="630" hidden></canvas>'+
+   '<div class="sd-share"><button type="button" class="btn-main" id="sd-sh">結果を画像でシェア</button><a class="btn-sub" id="sd-x" target="_blank" rel="noopener">X にポスト</a><a class="btn-sub" id="sd-line" target="_blank" rel="noopener">LINE で送る</a><a class="btn-sub" id="sd-dl" download="petsite-shindan.png">画像を保存</a></div>'+
+   '<p class="ptn">価格は '+esc(d.fetched_at)+' 時点の楽天市場の取得結果です。送料は含みません</p>';
+  countUp(res);card(R);
+  var url=location.href,txt="うちの"+R.pet+"の消耗品、月"+yen(R.m)+"円だった"+(R.sv>0?"（ショップ選びで年"+yen(R.sv)+"円の差）":"")+"｜あなたの子はいくら？";
+  document.getElementById("sd-x").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(txt)+"&url="+encodeURIComponent(url);
+  document.getElementById("sd-line").href="https://line.me/R/msg/text/?"+encodeURIComponent(txt+" "+url);
+  ["sd-x","sd-line","sd-dl"].forEach(function(id){document.getElementById(id).onclick=function(){ga("shindan_share",{method:id.slice(3),monthly:R.m})}});
+  document.getElementById("sd-sh").onclick=function(){var c=document.getElementById("sd-card");ga("shindan_share",{method:"native",monthly:R.m});
+   c.toBlob(function(b){var f=new File([b],"petsite-shindan.png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt,url:url}).catch(function(){});
+    else{var a=document.getElementById("sd-dl");a.click();toast("画像を保存しました。X や LINE に貼ってシェアできます")}})};
+  if(user)ga("shindan_result",{pet:pet,items:R.n,monthly:R.m,yearly_diff:R.sv})}
+ list.addEventListener("change",function(){calc(true)});
+ if(pet)draw()})}
+function countUp(el){el.querySelectorAll(".cnt").forEach(function(c){var to=+c.dataset.to,t0=null,dur=700;
+ if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches){c.textContent=yen(to);return}
+ function step(t){if(!t0)t0=t;var k=Math.min((t-t0)/dur,1);c.textContent=yen(Math.round(to*(1-Math.pow(1-k,3))));if(k<1)requestAnimationFrame(step)}requestAnimationFrame(step)})}
+function card(R){var c=document.getElementById("sd-card");if(!c||!c.getContext)return;var x=c.getContext("2d"),F='"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif';
+ x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#0f6b62";x.fillRect(0,0,1200,14);
+ x.fillStyle="#1f2328";x.font="700 44px "+F;x.fillText("うちの"+R.pet+"の消耗品、月いくら？",70,110);
+ x.fillStyle="#6b7280";x.font="400 30px "+F;x.fillText(R.n+"品目・楽天市場の最安価格で計算",70,160);
+ x.fillStyle="#1f2328";x.font="700 64px "+F;x.fillText("月",70,300);x.font="800 150px "+F;var s=yen(R.m);x.fillText(s,150,310);var w=x.measureText(s).width;x.font="700 64px "+F;x.fillText("円",160+w,300);
+ if(R.sv>0){x.fillStyle="#d6336c";x.font="800 54px "+F;x.fillText("ショップ選びで 年"+yen(R.sv)+"円 の差",70,410)}
+ x.fillStyle="#6b7280";x.font="400 26px "+F;x.fillText("取得したショップの中央値と比べた目安（送料別・"+String(DATA.fetched_at).slice(0,10)+"時点）",70,465);
+ x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F;x.fillText("ペット用品 最安ナビ　あなたの子はいくら？ 1分診断",70,598);
+ try{document.getElementById("sd-dl").href=c.toDataURL("image/png")}catch(e){}}
+function init(){ago();keepOrig();renderBought();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 """
 
 
-CSS = """:root{--txt:#1f2328;--sub:#6b7280;--line:#e6e8eb;--bg:#f6f7f5;--price:#b4530a;--brand:#0f6b62;--brand-d:#0b5048;--brand-bg:#e9f3f0;--warn-bg:#fff7e6;--warn:#8a5a00;--link:#0b5db3;--r:8px}
+CSS = """:root{--txt:#1f2328;--sub:#6b7280;--line:#e6e8eb;--bg:#f6f7f5;--price:#b4530a;--brand:#0f6b62;--brand-d:#0b5048;--brand-bg:#e9f3f0;--warn-bg:#fff7e6;--win:#d6336c;--win-bg:#fff0f5;--warn:#8a5a00;--link:#0b5db3;--r:8px}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;color:var(--txt);background:var(--bg);line-height:1.6;font-size:15px;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -835,6 +953,33 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .ship.free{color:var(--brand);border-color:#9fc9c0;background:var(--brand-bg)}.ship.paid{color:var(--warn);border-color:#ecd7a8;background:var(--warn-bg)}
 .ship-rule{margin:0;padding:6px 16px;font-size:12px;color:var(--sub);line-height:1.5}.ship-rule b{color:var(--txt);font-weight:600}
 .hi-pt{display:inline-block;align-self:flex-start;margin:4px 0 0;font-size:11px;font-weight:600;color:#fff;background:var(--brand);border-radius:4px;padding:1px 6px;line-height:1.5}
+.drop-sec{margin:16px 0;padding:0 16px}.h2s{font-size:12px;font-weight:400;color:var(--sub);margin-left:8px}
+.drops{list-style:none;margin:8px 0 6px;padding:0;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.drops li+li{border-top:1px solid var(--line)}
+.dr{display:flex;align-items:center;gap:10px;padding:10px 12px;color:var(--txt);text-decoration:none;min-height:48px}
+.dr:active{background:var(--win-bg)}
+.rk{flex:0 0 24px;height:24px;border-radius:12px;background:var(--win);color:#fff;font-size:13px;font-weight:700;display:grid;place-items:center}
+.dr .pic img,.dr .noimg{width:56px;height:56px;border-radius:6px;object-fit:contain;background:#fff;display:block}
+.dr .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.dr .nm{font-size:13px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dr-pr{font-size:13px;color:var(--sub)}.dr-pr s{color:var(--sub)}.dr-pr b{font-size:16px;color:var(--price)}
+.dr-d{flex:0 0 auto;text-align:right;color:var(--win);font-size:20px;font-weight:800;line-height:1.1}.dr-d small{display:block;font-size:12px;font-weight:700}
+.sd-cta{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:12px 16px;padding:14px 16px;border-radius:12px;background:var(--win-bg);border:1px solid #f6c3d4;color:var(--txt);text-decoration:none}
+.sd-cta-t{font-size:16px;font-weight:800}.sd-cta-s{font-size:12px;color:var(--sub);grid-column:1}.sd-cta-b{grid-column:2;grid-row:1/3;background:var(--win);color:#fff;font-weight:700;border-radius:999px;padding:10px 16px;font-size:14px}
+#shindan{padding:0 16px}.sd-pets{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.sd-pets button{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:15px;color:var(--txt)}
+.sd-pets button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.sd-step{font-size:13px;color:var(--sub);margin:4px 0 8px}
+.sd-cat{display:flex;gap:8px;align-items:flex-end;padding:10px 0;border-top:1px solid var(--line)}
+.sd-nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700}
+.sd-cat select{min-height:44px;border:1px solid var(--line);border-radius:var(--r);background:#fff;font-size:14px;padding:0 8px;max-width:100%}
+.sd-q{flex:0 0 auto;font-size:13px;display:flex;align-items:center;gap:4px}
+.sd-res{margin:16px 0;padding:20px 16px;border-radius:12px;background:#fff;border:2px solid var(--win);text-align:center}
+.sd-k{margin:0;font-size:14px;color:var(--sub)}.sd-m{margin:4px 0 0;font-size:20px;font-weight:700}.sd-m b{font-size:44px;color:var(--txt);font-variant-numeric:tabular-nums}
+.sd-y{margin:0;font-size:14px;color:var(--sub)}.sd-sv{margin:12px 0 0;font-size:14px;color:var(--win);font-weight:700;line-height:1.5}.sd-sv b{font-size:30px;font-variant-numeric:tabular-nums}
+.sd-sv0{margin:12px 0 0;font-size:13px;color:var(--sub)}.sd-pt{margin:8px 0 0;font-size:13px;color:var(--brand)}
+.sd-share{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 8px}
+.btn-main{min-height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--win);color:#fff;font-size:15px;font-weight:700}
+.btn-sub{min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--txt);font-size:14px;text-decoration:none}
 .stale{margin:0;padding:10px 16px;font-size:13px;line-height:1.6;color:var(--warn);background:var(--warn-bg);border-bottom:1px solid #e7c27a;font-weight:600}.ship .ic{margin-right:3px}
 .pt{font-size:12px;color:var(--brand);margin:4px 0 0;line-height:1.5}.pt b{color:var(--txt)}
 .ptn{display:block;font-size:11px;color:var(--sub);font-weight:400}

@@ -1,7 +1,7 @@
 """自動開発の司令塔（Claude を呼ぶかどうかを決める。Claude 自身は呼ばない）。
 mode を GITHUB_OUTPUT に出す: new（次の項目を作る）／fix（監査に答える）／none（何もしない）
 合格した PR のマージと、監査の起動はここで直接行う（Claude の利用枠を使わない）"""
-import datetime, json, os, re, sys, urllib.request
+import datetime, json, os, re, subprocess, sys, urllib.request
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "ichiro-ai90/petsite")
 TOK = os.environ["GITHUB_TOKEN"]
@@ -29,6 +29,24 @@ def ts(s):
     return datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
+def safe_to_merge(n):
+    """マージ前の機械チェック：PR の版でテスト（PR 表記・楽天クレジット・ガード等は tests_gate.py が全ページで確認）を通し、
+    ワークフローの変更・通知の公開鍵の削除が無いことを確かめる"""
+    sh = lambda c, cwd=ROOT: subprocess.run(c, shell=True, cwd=cwd, capture_output=True, text=True)
+    d = f"/tmp/auto-pr-{n}"
+    if sh(f"git fetch -q origin pull/{n}/head:auto-pr-{n} && git worktree add -f {d} auto-pr-{n}").returncode:
+        return False, "PR の取得に失敗"
+    names = sh(f"git diff --name-status origin/main...auto-pr-{n}").stdout
+    if re.search(r"^\S+\s+\.github/workflows/", names, re.M):
+        return False, "ワークフローの変更を含む"
+    if re.search(r"^D\s+push/vapid_public\.txt", names, re.M):
+        return False, "通知の公開鍵を消している"
+    t = sh("python3 tests_amount.py && python3 tests_fetch.py && python3 tests_gate.py", cwd=d)
+    if t.returncode:
+        return False, "テスト不合格: " + (t.stdout + t.stderr)[-300:]
+    return True, ""
+
+
 def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     if os.path.exists(os.path.join(ROOT, "auto", "STOP")):
@@ -50,6 +68,11 @@ def main():
         rnd, verdict = int(m.group(1)), m.group(2)
         replies = [c for c in cs if not c["body"].startswith(MARK) and ts(c["created_at"]) > ts(last["created_at"])]
         if verdict == "pass":
+            ok, why = safe_to_merge(n)
+            if not ok:
+                gh(f"issues/{n}/labels", "POST", {"labels": ["needs-taku"]})
+                gh(f"issues/{n}/comments", "POST", {"body": f"自動開発：監査は合格したが、マージ前の機械チェックで止めました（{why}）。オーナーの判断を待ちます（needs-taku）。"})
+                return out(mode="none", pr=n)
             gh(f"pulls/{n}/merge", "PUT", {"merge_method": "squash", "commit_title": f"{p['title']} (#{n})"})
             gh("actions/workflows/update.yml/dispatches", "POST", {"ref": "main"})
             print(f"PR #{n} は監査合格のためマージし、公開を起動しました")

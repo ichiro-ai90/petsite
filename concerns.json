@@ -1,0 +1,14 @@
+{"_note": "悩みから探す（11/16 Taku 提案）。追加の API 取得はせず、すでに載せている商品のうち、商品名に語がある商品だけを並べる。効果はうたわない（薬機法・景品表示法）。3商品未満は公開しない",
+ "concerns": [
+  {"slug": "nayami-dog-tear", "title": "涙やけ", "pet": "犬", "from": ["dog-food-large", "dog-food-small"], "words": ["涙やけ", "涙ヤケ", "なみだやけ"]},
+  {"slug": "nayami-dog-weight", "title": "体重管理", "pet": "犬", "from": ["dog-food-large", "dog-food-small"], "words": ["体重管理", "体重ケア", "ダイエット", "肥満", "ライト", "低脂肪", "減量"]},
+  {"slug": "nayami-dog-senior", "title": "シニア", "pet": "犬", "from": ["dog-food-large", "dog-food-small"], "words": ["シニア", "高齢", "7歳", "10歳", "11歳", "13歳"]},
+  {"slug": "nayami-dog-skin", "title": "皮膚・穀物不使用", "pet": "犬", "from": ["dog-food-large", "dog-food-small"], "words": ["皮膚", "被毛", "グレインフリー", "穀物不使用", "アレルゲン", "アレルギー"]},
+  {"slug": "nayami-dog-joint", "title": "関節", "pet": "犬", "from": ["dog-food-large", "dog-food-small"], "words": ["関節", "グルコサミン", "コンドロイチン"]},
+  {"slug": "nayami-dog-tummy", "title": "おなか", "pet": "犬", "from": ["dog-food-large", "dog-food-small"], "words": ["おなか", "お腹", "腸", "乳酸菌", "消化"]},
+  {"slug": "nayami-cat-hairball", "title": "毛玉", "pet": "猫", "from": ["cat-dry-food-large", "cat-dry-food-small"], "words": ["毛玉", "ヘアボール"]},
+  {"slug": "nayami-cat-urinary", "title": "下部尿路", "pet": "猫", "from": ["cat-dry-food-large", "cat-dry-food-small"], "words": ["下部尿路", "尿路", "ユリナリー", "pHコントロール", "PHコントロール"]},
+  {"slug": "nayami-cat-weight", "title": "体重管理", "pet": "猫", "from": ["cat-dry-food-large", "cat-dry-food-small"], "words": ["体重管理", "体重ケア", "ダイエット", "肥満", "ライト", "減量", "避妊", "去勢"]},
+  {"slug": "nayami-cat-senior", "title": "シニア", "pet": "猫", "from": ["cat-dry-food-large", "cat-dry-food-small"], "words": ["シニア", "高齢", "7歳", "11歳", "15歳", "20歳"]},
+  {"slug": "nayami-cat-kidney", "title": "腎臓の健康維持", "pet": "猫", "from": ["cat-dry-food-large", "cat-dry-food-small"], "words": ["腎臓", "キドニー"]}
+ ]}

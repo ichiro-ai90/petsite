@@ -16,6 +16,7 @@ def run(data):
     d = tempfile.mkdtemp()
     shutil.copy(os.path.join(HERE, "build.py"), d)
     shutil.copy(os.path.join(HERE, "products.json"), d)
+    shutil.copy(os.path.join(HERE, "concerns.json"), d)
     os.makedirs(os.path.join(d, "data"))
     json.dump(data, open(os.path.join(d, "data", "prices.json"), "w", encoding="utf-8"), ensure_ascii=False)
     os.makedirs(os.path.join(d, "site"))
@@ -118,6 +119,18 @@ class T(unittest.TestCase):
         self.assertIn("楽天・Yahoo!3店を比較", item)
         self.assertIn('<span style="margin:15px 15px 15px 15px"><a href="https://developer.yahoo.co.jp/sitemap/">Webサービス by Yahoo! JAPAN</a></span>', item)  # 公式スニペットを改変なしで
         self.assertIn("Supported by Rakuten Developers", item)  # 楽天のクレジットは残す
+
+    def test_concerns(self):
+        """悩みから探す：商品名に語がある商品が3つ以上のときだけページを作る。効果はうたわない"""
+        ps = [prod("dog-food-small", f"t{i}", f"ドッグフード 涙やけ 小粒 1kg 商品{i}", [offer("A店", 2000 + i, name="フード 1kg")]) for i in range(3)]
+        ps += [prod("dog-food-small", f"n{i}", f"ドッグフード 関節 1kg 商品{i}", [offer("A店", 2000 + i, name="フード 1kg")]) for i in range(2)]
+        d, p = run({"fetched_at": "2026-11-05 05:17 JST", "products": ps})
+        self.assertEqual(p.returncode, 0, p.stderr)
+        h = open(os.path.join(d, "site", "nayami-dog-tear.html"), encoding="utf-8").read()
+        self.assertEqual(len(re.findall(r'href="item-t\d\.html"', h)), 3)
+        self.assertIn("効果を示すものではありません", h)
+        self.assertFalse(os.path.exists(os.path.join(d, "site", "nayami-dog-joint.html")))  # 2商品 → 不公開
+        self.assertIn('href="nayami-dog-tear.html"', open(os.path.join(d, "site", "index.html"), encoding="utf-8").read())
 
     def test_no_price_history(self):
         """楽天の規約（価格情報の保存は24時間まで）：過去の価格を読まず、お得は今の平均価格との差だけで出す"""

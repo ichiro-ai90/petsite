@@ -29,8 +29,8 @@ HOST = "https://openapi.rakuten.co.jp"
 ITEM_URL = HOST + "/ichibams/api/IchibaItem/Search/20260401"
 PRODUCT_URL = HOST + "/ichibaproduct/api/Product/Search/20250801"
 SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "https://example.com")
-MAX_PRODUCTS = 10     # カテゴリあたりの製品数
-MAX_TRIES = 16        # カテゴリあたりにショップ検索する製品の上限（API 呼び出しを抑える）
+MAX_PRODUCTS = 40     # カテゴリあたりの製品数（11/15 Taku「品揃えが悪すぎる」で 10→40）
+MAX_TRIES = 60        # カテゴリあたりにショップ検索する製品の上限（1req/秒で全体 約50分以内に収める）
 MAX_OFFERS = 10       # 製品あたりに残すショップ数（安い順）
 INTERVAL = 1.1        # 秒
 _last = {"t": -1e9}
@@ -78,14 +78,32 @@ def _prod(raw):
     return raw.get("Product", raw) if isinstance(raw, dict) else {}
 
 
+PRODUCT_PAGES = 3     # 製品検索のページ数（30件×3＝最大90候補）
+
+
 def search_products(group):
-    d = _call(PRODUCT_URL, {"keyword": group.get("pkeyword") or group["keyword"], "hits": 30})
+    raws, seen = [], set()
+    for page in range(1, PRODUCT_PAGES + 1):
+        try:
+            d = _call(PRODUCT_URL, {"keyword": group.get("pkeyword") or group["keyword"], "hits": 30, "page": page})
+        except Exception as e:  # 2ページ目以降の失敗は、取れた分で続ける
+            if page == 1:
+                raise
+            print(f"  製品検索 {page}ページ目を省略: {str(e)[:120]}")
+            break
+        got = d.get("Products", [])
+        raws += got
+        if len(got) < 30:
+            break
     out = []
-    for raw in d.get("Products", []):
+    for raw in raws:
         p = _prod(raw)
         name = p.get("productName") or ""
         if not name or any(x in name for x in group.get("exclude", [])):
             continue
+        if (p.get("productId") or "") in seen:
+            continue
+        seen.add(p.get("productId") or "")
         out.append({
             "productId": p.get("productId") or "", "name": name, "jan": str(p.get("productCode") or ""),
             "maker": p.get("makerName") or p.get("brandName") or "",

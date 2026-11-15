@@ -32,15 +32,22 @@ def main():
     if rc or not m:
         print("通知は無効のまま（KV を使う権限がありません）")
         return 0
-    ns = [x for x in json.loads(m.group(0)) if x.get("title") == "petsite-push"]
+    ns = [x for x in json.loads(m.group(0)) if x.get("title", "").endswith("petsite-push")]
     kid = ns[0]["id"] if ns else ""
     if not kid:
         rc, out = run(["kv", "namespace", "create", "petsite-push"])
-        f = re.search(r'id\s*=\s*"([0-9a-f]{32})"', out)
-        if rc or not f:
-            print("通知は無効のまま（KV を作れませんでした）")
+        f = re.search(r'"?id"?\s*[:=]\s*"([0-9a-f]{32})"', out)
+        if not f:  # 作成済みなのに出力の形が違う場合に備えて、もう一度一覧から探す
+            rc2, out2 = run(["kv", "namespace", "list"])
+            m2 = re.search(r"\[.*\]", out2, re.S)
+            ns2 = [x for x in json.loads(m2.group(0)) if x.get("title", "").endswith("petsite-push")] if m2 else []
+            if ns2:
+                kid = ns2[0]["id"]
+        else:
+            kid = f.group(1)
+        if not kid:
+            print("通知は無効のまま（KV を作れませんでした）:", re.sub(r"[0-9a-f]{32}", "<id>", out)[-400:])
             return 0
-        kid = f.group(1)
     pub_file = os.path.join(HERE, "vapid_public.txt")
     if not os.path.exists(pub_file):
         from cryptography.hazmat.primitives.asymmetric import ec

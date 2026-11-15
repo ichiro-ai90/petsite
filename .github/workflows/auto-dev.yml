@@ -1,0 +1,69 @@
+name: auto-dev
+# 自動開発：やることリスト（auto/backlog.md）を1日1件、Claude（オーナーの Claude 契約の利用枠）が PR にし、
+# ChatGPT の監査に答え、合格したらマージして公開する。止めるときは auto/STOP というファイルを main に置く
+on:
+  schedule:
+    - cron: "23 */3 * * *"   # 3時間ごと。やることが無い回は Claude を呼ばずに数十秒で終わる
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+concurrency:
+  group: auto-dev
+  cancel-in-progress: false
+jobs:
+  dev:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: decide（呼ぶ必要があるときだけ Claude を呼ぶ。合格 PR のマージと監査の起動はここで行う）
+        id: c
+        env:
+          HAS_CLAUDE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+        run: |
+          if [ "$HAS_CLAUDE" != "true" ]; then echo "CLAUDE_CODE_OAUTH_TOKEN が未設定のため何もしません"; echo "mode=none" >> "$GITHUB_OUTPUT"; exit 0; fi
+          python3 auto/controller.py
+      - name: tools（テスト・ビルド・フォント作り直し用）
+        if: steps.c.outputs.mode == 'new' || steps.c.outputs.mode == 'fix'
+        run: |
+          pip install --quiet pillow fonttools
+          sudo apt-get install -y -q fonts-noto-cjk >/dev/null
+          git config --global user.name "ichiro-ai90"; git config --global user.email "ichiro-ai90@users.noreply.github.com"
+          git fetch -q origin main && git show origin/main:data/prices.json > /dev/null
+      - name: checkout PR branch（監査に答える回）
+        if: steps.c.outputs.mode == 'fix'
+        run: git checkout -q "${{ steps.c.outputs.branch }}"
+      - name: Claude（新しい項目を作る）
+        if: steps.c.outputs.mode == 'new'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            auto/RULES.md を最初に読み、そのルールと手順どおりに、auto/backlog.md の先頭の未完了項目（「（人）」付きは飛ばす）を1件だけ実装して PR を出してください。
+            ブランチ名は dev/auto-<英小文字とハイフンで内容> 。PR のタイトルと本文は日本語。作業が終わったら何もせず終了してください。
+          claude_args: '--max-turns 80 --allowedTools "Bash,Read,Edit,Write,Glob,Grep"'
+      - name: Claude（監査に答える）
+        if: steps.c.outputs.mode == 'fix'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            auto/RULES.md を最初に読んでください。今いるブランチは PR #${{ steps.c.outputs.pr }} のブランチです。
+            `gh pr view ${{ steps.c.outputs.pr }} --comments` で最新の監査コメント（<!-- ichiro-audit round= で始まる）を読み、
+            指摘ごとに 採用／保留／不採用（理由）を1つの PR コメントにまとめて投稿し（gh pr comment）、採用した分を実装・テストして同じブランチに push してください。
+            重要度「高」はルールに反しない限り採用してください。作業が終わったら何もせず終了してください。
+          claude_args: '--max-turns 80 --allowedTools "Bash,Read,Edit,Write,Glob,Grep"'
+      - name: start audit（GITHUB_TOKEN で作った PR は監査が自動で始まらないため、ここで起動）
+        if: steps.c.outputs.mode == 'new' || steps.c.outputs.mode == 'fix'
+        run: |
+          n=$(gh pr list --state open --json number,headRefName --jq '[.[]|select(.headRefName|startswith("dev/auto-"))][0].number')
+          [ -n "$n" ] && gh workflow run audit.yml -f pr="$n" && echo "監査を起動 PR #$n" || echo "PR が見つかりません"

@@ -287,6 +287,8 @@ def ga_note():
 
 
 def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noindex=False):
+    if not og_image:  # 個別の画像が無いページ（検索・マイリスト等）は、トップの共有画像を使う
+        og_image = (ORIGIN_FOR_LD + "/og-today.png") if ORIGIN_FOR_LD else "og-today.png"
     band = ('<p class="sample">【サンプル表示】API 未接続のため架空の商品・価格です。実在の商品ではありません。</p>' if sample else "")
     bc = ""
     if crumbs:

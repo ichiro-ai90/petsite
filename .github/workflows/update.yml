@@ -19,6 +19,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - name: install Pillow（共有プレビュー画像 og-today/og-weekly の生成用。無料）
+        run: pip install --quiet pillow
       - name: test amount()（内容量読み取りが壊れていたら公開しない）
         run: python tests_amount.py && python tests_fetch.py && python tests_gate.py
       - name: fetch prices（失敗・0件のカテゴリは前回データを引き継ぐ。公開できるデータが無ければ失敗）

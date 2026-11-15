@@ -36,6 +36,8 @@ jobs:
         run: |
           git fetch -q origin main
           git show origin/main:data/prices.json > data/prices.json 2>/dev/null || python fetch_prices.py
+          git show origin/main:data/history.json > data/history.json 2>/dev/null || true
+          pip install -q pillow
           python build.py
       - name: playwright
         run: pip install -q playwright && python -m playwright install --with-deps chromium

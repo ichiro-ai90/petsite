@@ -714,7 +714,7 @@ def item_body(p, g, fetched):
         f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop"><span class="sn">{E(x["shop"])}</span>{hi_tag(x["pointRate"])}'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍・目安）・ポイント分を引くと約{x["effective"]:,}円</span>{PT_NOTE}</div>'
+        f'<span class="pt">{x["points"]:,}ポイント（{x["pointRate"]}倍・目安）・ポイント分を引いた実質 約{x["effective"]:,}円</span>{PT_NOTE}</div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -929,7 +929,7 @@ def main():
         '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。いつも買う商品のページで「買った」を押してください。</p>'
         '<h2 class="h2">値下がり待ち</h2><p class="lead">「この値段になったら買う」と決めた商品です。目標に届くと一番上に出します。</p>'
         '<ul class="list" id="wishlist"></ul><p class="empty" id="wishempty" hidden>まだありません。商品ページの「値下がりを待つ」で目標の値段を登録できます。</p>'
-        '<h2 class="h2">最近見た商品（自動）</h2><p class="lead">商品ページを開くと、そのときの価格を自動で覚えます（このブラウザだけ・最大60件）。安くなった商品から並べます。</p>'
+        '<h2 class="h2">最近見た商品（自動）</h2><p class="lead">商品ページを開くと、そのとき当サイトが取得していた最安価格（税込・送料別）を自動で覚えます（このブラウザだけ・最大60件）。安くなった商品から並べます。</p>'
         '<ul class="list" id="seenlist"></ul><p class="empty" id="seenempty" hidden>まだありません。商品ページを開くと自動でここに入ります。</p>'
         '<h2 class="h2">お気に入り</h2>'
         '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「お気に入り」を押すとここに入ります。</p>'
@@ -1038,7 +1038,7 @@ function row(x,extra){var s5=STAR+STAR+STAR+STAR+STAR,st=x.rv?'<span class="rv">
  '<a class="row" href="item-'+esc(x.id)+'.html"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
  '<span class="nm">'+esc(x.n)+'</span><span class="meta">'+esc(x.m)+(x.m?"・":"")+esc(x.ct)+'</span>'+st+
  '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh==="送料無料"?" free":" paid")+'">'+esc(x.sh)+'</span></span>'+
- (x._free?'<span class="pt">ポイント分を引くと約'+yen(x.e)+'円（目安）</span>':'<span class="pt">'+yen(x.pt)+'ポイント（'+x.r+'倍・目安）・ポイント分を引くと約'+yen(x.e)+'円</span>')+
+ (x._free?'<span class="pt">ポイント分を引いた実質 約'+yen(x.e)+'円（目安・支払額ではありません）</span>':'<span class="pt">'+yen(x.pt)+'ポイント（'+x.r+'倍・目安）・ポイント分を引いた実質 約'+yen(x.e)+'円</span>')+
  '<span class="meta">取得した'+x.s+'ショップの中で最安'+(unit(x)?"・"+unit(x)+"（商品名の内容量から計算）":"")+'</span>'+(extra||"")+'</span></a></li>'}
 function fill(sel,opts,val){var el=document.getElementById(sel);opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];el.appendChild(op)});el.value=val||""}
 function search(){var f=document.getElementById("sf");if(!f)return;var u=new URLSearchParams(location.search);
@@ -1089,9 +1089,9 @@ function welcome(){var el=document.getElementById("welcome");if(!el)return;var b
   Object.keys(f).forEach(function(id){var x=by[id];if(x&&f[id].p&&x.p<f[id].p){c++;cs+=f[id].p-x.p}});
   var s2=0,ss=0;Object.keys(sv).forEach(function(id){var x=by[id],base=sv[id].cp||sv[id].p;if(x&&!bm[id]&&!f[id]&&!w[id]&&base&&x.p<base){s2++;ss+=base-x.p}});
   if(!a&&!b&&!c&&!s2)return;var parts=[];if(a)parts.push('いつもの商品 <b>'+a+'件</b>が前回より計 <b class="win">'+yen(as)+'円</b>安い');if(b)parts.push('値下がり待ち <b>'+b+'件</b>が目標価格に到達');if(c)parts.push('お気に入り <b>'+c+'件</b>が登録時より計 '+yen(cs)+'円安い');if(s2)parts.push('前に見た商品 <b>'+s2+'件</b>が見たときより計 <b class="win">'+yen(ss)+'円</b>安い');
-  el.innerHTML='<a class="welcome" href="favorites.html" data-ga="welcome_click"><span class="wl-k">おかえりなさい</span><span class="wl-t">'+parts.join('、')+'</span><span class="wl-b">マイリストを見る</span></a>';ga("welcome_show",{routine:a,wish:b,fav:c,seen:s2})})}
+  el.innerHTML='<a class="welcome" href="favorites.html" data-ga="welcome_click"><span class="wl-k">おかえりなさい</span><span class="wl-t">'+parts.join('、')+'<small class="wl-n">比較は、当サイトが取得したショップの最安価格（税込・送料別）どうし。あなたが見たショップの価格とは限りません</small></span><span class="wl-b">マイリストを見る</span></a>';ga("welcome_show",{routine:a,wish:b,fav:c,seen:s2})})}
 function ago(){document.querySelectorAll("time[data-fetched]").forEach(function(t){var m=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(t.dataset.fetched);if(!m)return;
- var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"1時間以内":h<24?"約"+h+"時間前":"約"+Math.floor(h/24)+"日前";
+ var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"取得から1時間以内":h<24?"取得から約"+h+"時間":"取得から約"+Math.floor(h/24)+"日";
  t.textContent=t.dataset.fetched+"・"+s;if(h>=48&&!document.getElementById("stale")){var hd=document.querySelector("header");if(hd)hd.insertAdjacentHTML("afterend",'<p class="stale" id="stale" role="status">表示の価格は約'+Math.floor(h/24)+'日前（'+esc(t.dataset.fetched)+'）の取得です。最新の価格は楽天市場のページでご確認ください。</p>');ga("stale_banner",{hours:h})}})}
 
 var PETN={};
@@ -1270,6 +1270,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}
+.wl-n{display:block;margin-top:4px;font-size:11px;font-weight:400;color:var(--sub)}
 .today{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:12px 16px 0;padding:12px 16px;border-radius:12px;background:#fff;border:2px solid var(--win);color:var(--txt);text-decoration:none}
 .td-k{font-size:12px;color:var(--sub)}.td-n{font-size:16px;font-weight:700}.td-n b{color:var(--win);font-size:26px;font-variant-numeric:tabular-nums}.td-b{grid-column:2;grid-row:1/3;color:var(--win);font-weight:700;font-size:14px}
 .sv-box{margin:12px 0 20px;padding:18px 16px;border-radius:12px;background:var(--win-bg);border:1px solid #f3b6c9;text-align:center}

@@ -1,6 +1,6 @@
 import { J, vapidHeaders } from "../../lib/push.js";
 // POST（毎朝の更新処理から、その回だけ有効な SEND_TOKEN 付きで呼ぶ）
-// 覚えた価格より今の取得価格が安い商品があれば、1宛先につき1日1回まで通知する
+// 登録された商品のうち、今の最安が楽天の平均価格より安いものがあれば、1宛先につき1日1回まで通知する
 export async function onRequestPost({ request, env }) {
   if (!env.SUBS || !env.SEND_TOKEN || !env.VAPID_PRIVATE) return J({ ok: false, error: "disabled" }, 503);
   if (request.headers.get("x-send-token") !== env.SEND_TOKEN) return J({ ok: false }, 403);
@@ -14,20 +14,21 @@ export async function onRequestPost({ request, env }) {
       const s = await env.SUBS.get(k.name, "json"); if (!s) continue; checked++;
       if (now - (s.last || 0) < 20 * 3600e3) continue;
       let cnt = 0, sum = 0, top = null;
-      for (const [id, p] of Object.entries(s.i || {})) {
-        const x = by[id]; if (!x) continue;
-        const base = Math.min(p, s.n[id] || Infinity);
-        if (x.p < base) { cnt++; sum += base - x.p; if (!top || base - x.p > top.d) top = { d: base - x.p, n: x.n, id }; }
+      const n = s.n || {};  // 通知した日時（同じ商品は7日に1回まで）。価格は保存しない（楽天の規約：価格情報は24時間まで）
+      for (const id of Object.keys(s.i || {})) {
+        const x = by[id]; if (!x || !(x.dl > 0)) continue;  // 平均価格（今の取得値）より安い
+        if (now - (n[id] || 0) < 7 * 86400e3) continue;
+        cnt++; sum += x.dl; if (!top || x.dl > top.d) top = { d: x.dl, n: x.n, id };
       }
       if (!cnt) continue;
-      const msg = { title: `見た商品 ${cnt}件が値下がり（計 −${sum.toLocaleString("ja-JP")}円）`,
-        body: `${top.n.slice(0, 40)} が −${top.d.toLocaleString("ja-JP")}円。当サイトが取得したショップの最安・送料別で比較（${String(data.fetched_at).slice(0, 10)}）`,
+      const msg = { title: `見た商品 ${cnt}件が平均より安い（計 −${sum.toLocaleString("ja-JP")}円）`,
+        body: `${top.n.slice(0, 40)} が楽天の平均価格より −${top.d.toLocaleString("ja-JP")}円（${String(data.fetched_at).slice(0, 16)} 取得・送料別）`,
         url: cnt === 1 ? `/item-${top.id}.html` : "/favorites.html" };
       const res = await fetch(s.e, { method: "POST", headers: await vapidHeaders(s.e, env) });
       if (res.status === 404 || res.status === 410) { await env.SUBS.delete(k.name); gone++; continue; }
       if (res.ok) {
-        for (const id of Object.keys(s.i)) if (by[id] && by[id].p < Math.min(s.i[id], s.n[id] || Infinity)) s.n[id] = by[id].p;
-        s.last = now; await env.SUBS.put(k.name, JSON.stringify(s));
+        for (const id of Object.keys(s.i)) if (by[id] && by[id].dl > 0) n[id] = now;
+        s.n = n; s.last = now; await env.SUBS.put(k.name, JSON.stringify(s));
         await env.SUBS.put("m:" + k.name.slice(2), JSON.stringify(msg), { expirationTtl: 7 * 86400 });
         sent++;
       }

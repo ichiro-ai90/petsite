@@ -816,7 +816,7 @@ def item_body(p, g, fetched):
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
-            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a></p>')
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a></p>')
             + f'<p class="shop-l">{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
             f'{shipnote}{save}{mall_cmp(offers)}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'

@@ -1,0 +1,35 @@
+name: probe-cats
+on:
+  push:
+    branches: [dev/probe-cats]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: candidate names for unpublished categories (no secrets printed)
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
+        run: |
+          python3 - <<'PY'
+          import json, fetch_prices as f
+          from build import amount
+          f.PRODUCT_PAGES = 1
+          slugs = ["dog-treat-large","hamster-bedding-paper","dried-cricket","dubia-live","reptile-substrate","cat-litter-mineral","cat-litter-wood","small-animal-wood-bedding","tropical-fish-food","parakeet-pellet"]
+          gs = {g["slug"]: g for g in json.load(open("products.json", encoding="utf-8"))["groups"]}
+          for s in slugs:
+              g = gs[s]
+              try:
+                  ps = f.search_products(g)
+              except Exception as e:
+                  print("##", s, "ERROR", str(e)[:100]); continue
+              print("##", s, g["unit"], "min", g.get("min"), "kw", g.get("pkeyword"), "candidates", len(ps))
+              for p in ps[:12]:
+                  print("  ", amount(p["name"], g["unit"]), "|", p["name"][:70])
+          PY

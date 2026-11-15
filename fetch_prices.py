@@ -156,7 +156,10 @@ def search_offers(product):
 
 YAHOO_URL = "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch"
 YAHOO_OFFERS = 5      # 製品あたりに残す Yahoo!ショッピングのストア数（安い順）
-_ylast = {"t": -1e9}
+YAHOO_INTERVAL = 3.1  # 秒。1.1秒・2秒だと「The AppID is denied: total count of AppID reached the URL's limit count」の 429 になる（11/16 一時ワークフローで確認。3秒は 20回連続で成功）
+YAHOO_BUDGET = 60 * 60  # 秒。Yahoo の取得は実行開始から60分まで（全体を90分以内に収める。残りは楽天だけ）
+_ylast = {"t": -1e9, "start": time.monotonic(), "pause": 0.0}
+_ycache = {}
 
 
 def yahoo_offers(product):
@@ -167,15 +170,26 @@ def yahoo_offers(product):
     p = {"appid": appid, "jan_code": product["jan"], "results": 20, "sort": "+price", "in_stock": "true"}
     if os.environ.get("VC_AFFILIATE_ID"):
         p.update(affiliate_type="vc", affiliate_id=os.environ["VC_AFFILIATE_ID"])
-    wait = INTERVAL - (time.monotonic() - _ylast["t"])  # Yahoo も 1秒1回まで（楽天とは別枠）
+    if product["jan"] in _ycache:  # 同じ商品が2つのカテゴリにあるとき
+        return parse_yahoo(_ycache[product["jan"]], product["minPrice"])
+    now = time.monotonic()
+    if now - _ylast["start"] > YAHOO_BUDGET or now < _ylast["pause"]:
+        return []
+    wait = YAHOO_INTERVAL - (now - _ylast["t"])  # 楽天とは別枠
     if wait > 0:
         time.sleep(wait)
     _ylast["t"] = time.monotonic()
     try:
         d = _get(YAHOO_URL, p)
+    except urllib.error.HTTPError as e:
+        if e.code == 429:  # 上限に達したら2分休む（続けて呼ぶと回復しない）
+            _ylast["pause"] = time.monotonic() + 120
+        print(f"  Yahoo 取得を省略（{product['jan']}）: HTTP {e.code}")
+        return []
     except Exception as e:
         print(f"  Yahoo 取得を省略（{product['jan']}）: {type(e).__name__} {str(e)[:80]}")
         return []
+    _ycache[product["jan"]] = d
     return parse_yahoo(d, product["minPrice"])
 
 
@@ -274,6 +288,8 @@ def main():
                "errors": errors, "carried": carried},
               open(dst, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     offers = sum(len(p["offers"]) for p in products)
+    ny = sum(1 for p in products if any(o.get("mall") == "yahoo" for o in p["offers"]))
+    print(f"Yahoo!ショッピングの価格あり {ny} 製品（Yahoo の取得 {len(_ycache)} 件）")
     print(f"製品 {len(products)} 件・ショップ {offers} 件（新規取得 {new_count} カテゴリ／前回引き継ぎ {len(carried)} カテゴリ）、エラー {len(errors)} 件")
     for e in errors[:10]:
         print("  ", e, file=sys.stderr)

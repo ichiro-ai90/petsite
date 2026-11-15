@@ -463,7 +463,7 @@ def spotlight(published, fdate):
         th = img(p.get("image"), 300)
         pic = f'<img src="{E(th)}" alt="" width="120" height="120" loading="lazy">' if th else '<span class="noimg" aria-hidden="true"></span>'
         rl = record_low(p["productId"], x["now"])
-        out += (f'<section class="hero"><p class="hero-k">人気商品が値下がり中</p><a class="hero-a" href="item-{E(p["productId"])}.html" data-ga="hero_click">'
+        out += (f'<section class="hero"><p class="hero-k">人気商品の値下がり<span class="h2s">直近7日の最高値と比べて・取得したショップの最安</span></p><a class="hero-a" href="item-{E(p["productId"])}.html" data-ga="hero_click">'
                 f'<span class="pic">{pic}</span><span class="info"><span class="nm">{E(show_name(p["name"]))}</span>'
                 f'<span class="hero-rv">レビュー {p.get("reviewCount", 0):,}件の定番</span>'
                 f'<span class="hero-d">−{x["d"]:,}円<small>（{round(x["d"] / x["hi"] * 100)}%・{x["since"][5:].replace("-", "/")}の{x["hi"]:,}円から）</small></span>'
@@ -589,8 +589,7 @@ def item_ld(p, g, pet_name, fn):
     prod = {"@context": "https://schema.org", "@type": "Product", "name": show_name(p["name"]),
             "category": g["title"], "image": img(p.get("image"), 300) or None,
             "offers": {"@type": "AggregateOffer", "priceCurrency": "JPY", "lowPrice": min(o["price"] for o in offers),
-                       "highPrice": max(o["price"] for o in offers), "offerCount": len(offers),
-                       "availability": "https://schema.org/InStock"}}
+                       "highPrice": max(o["price"] for o in offers), "offerCount": len(offers)}}
     if p.get("maker"):
         prod["brand"] = {"@type": "Brand", "name": p["maker"]}
     if p.get("jan"):
@@ -855,7 +854,7 @@ function norm(s){s=String(s||"");try{s=s.normalize("NFKC")}catch(e){}s=s.toLower
  return s.replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)}).replace(/\s+/g," ")}
 function yen(n){return Number(n).toLocaleString("ja-JP")}
 function toast(m){var t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("on")},3500)}
-function paint(){var bm=bload(),wl=wload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought],h=r?hist(r):[],today=h.length&&new Date(h[h.length-1][0]).toDateString()===new Date().toDateString();b.setAttribute("aria-pressed",!!today);var bag='<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';b.innerHTML=bag+(today?"今日買った（記録済み）":h.length?"買った（"+(h.length+1)+"回目を記録）":"買った"); var m=document.getElementById("bought-msg");if(m){m.hidden=!r;if(r){var cur=+b.dataset.price||0,d=cur-r.p,c=cyc(r);m.innerHTML=(d<0?"前回（"+new Date(r.t).toLocaleDateString("ja-JP")+"・"+yen(r.p)+"円）より <b class=\"win\">"+yen(-d)+"円安い</b>。いつもの買い物なら今が買い時です":d>0?"前回（"+yen(r.p)+"円）より "+yen(d)+"円上がっています。<b>前回はいいタイミングで買えています</b>":"前回と同じ価格です")+(c?"（いつも約"+c+"日ごとに購入）":"")}}});document.querySelectorAll("[data-wish]").forEach(function(b){var w=wl[b.dataset.wish];b.setAttribute("aria-pressed",!!w);b.lastChild.nodeValue=w?"目標 "+yen(w.g)+"円で待ち中":"値下がりを待つ"});
+function paint(){var bm=bload(),wl=wload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought],h=r?hist(r):[],today=h.length&&new Date(h[h.length-1][0]).toDateString()===new Date().toDateString();b.setAttribute("aria-pressed",!!today);var bag='<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';b.innerHTML=bag+(today?"今日買った（記録済み）":h.length?"買った（"+(h.length+1)+"回目を記録）":"買った"); var m=document.getElementById("bought-msg");if(m){m.hidden=!r;if(r){var cur=+b.dataset.price||0,d=cur-r.p,c=cyc(r);m.innerHTML=(d<0?"前回（"+new Date(r.t).toLocaleDateString("ja-JP")+"・"+yen(r.p)+"円）より <b class=\"win\">"+yen(-d)+"円安い</b>（あなたが記録した価格との比較）":d>0?"前回（"+yen(r.p)+"円）より "+yen(d)+"円上がっています。<b>前回はいいタイミングで買えています</b>":"前回と同じ価格です")+(c?"（いつも約"+c+"日ごとに購入）":"")}}});document.querySelectorAll("[data-wish]").forEach(function(b){var w=wl[b.dataset.wish];b.setAttribute("aria-pressed",!!w);b.lastChild.nodeValue=w?"目標 "+yen(w.g)+"円で待ち中":"値下がりを待つ"});
  var f=load();document.querySelectorAll("[data-fav]").forEach(function(b){var on=!!f[b.dataset.fav];
  b.setAttribute("aria-pressed",on);b.setAttribute("aria-label",on?"お気に入りから外す":"お気に入りに追加");
  var sv=on?'<svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>':'<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>';
@@ -931,9 +930,9 @@ function renderBought(){var l=document.getElementById("boughtlist");if(!l)return
  var ids=Object.keys(bm).sort(function(a,b){var xa=by[a],xb=by[b],da=xa?xa.p-bm[a].p:0,db=xb?xb.p-bm[b].p:0;return(da<0?da:1)-(db<0?db:1)||bm[b].t-bm[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id],r=bm[id],h=hist(r),day=new Date(r.t).toLocaleDateString("ja-JP"),c=cyc(r);if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした（前回 '+day+'・'+yen(r.p)+'円）。</span><button type="button" class="fav" data-bdel="'+esc(id)+'">記録を消す</button></li>';
   var dd=x.p-r.p,next=c?Math.round((r.t+c*864e5-Date.now())/864e5):null;
-  var msg=(dd<0?'<span class="badge win">前回より '+yen(-dd)+'円安い・今が買い時</span> ':dd>0?'<span class="badge up2">▲'+yen(dd)+'円</span> ':'')+'前回 '+day+'・'+yen(r.p)+'円（'+h.length+'回記録'+(c?'・約'+c+'日ごと':'')+'）'+(next!==null?(next<=0?'。そろそろ買う頃です':'。次の目安まであと'+next+'日'):'');
+  var msg=(dd<0?'<span class="badge win">あなたの前回より '+yen(-dd)+'円安い</span> ':dd>0?'<span class="badge up2">▲'+yen(dd)+'円</span> ':'')+'前回 '+day+'・'+yen(r.p)+'円（'+h.length+'回記録'+(c?'・約'+c+'日ごと':'')+'）'+(next!==null?(next<=0?'。記録の間隔ではそろそろ買う頃です':'。記録の間隔では次の目安まであと'+next+'日'):'');
   if(x.lo&&x.p<x.lo&&x.hd>=5)msg+='<br><span class="tb low">記録した'+x.hd+'日間でいちばん安い</span>';
-  return row(x,'<span class="diff">'+msg+'</span>').replace(/<\/li>$/,'<div class="mini-acts"><a href="'+ics(x,r)+'" download="kaidoki.ics" data-ga="ics">次の買い時をカレンダーへ</a><button type="button" class="link" data-bdel="'+esc(id)+'">記録を消す</button></div></li>')}).join("");
+  return row(x,'<span class="diff">'+msg+'</span>').replace(/<\/li>$/,'<div class="mini-acts"><a href="'+ics(x,r)+'" download="kaidoki.ics" data-ga="ics">次の目安日をカレンダーへ（記録の間隔から計算）</a><button type="button" class="link" data-bdel="'+esc(id)+'">記録を消す</button></div></li>')}).join("");
  document.getElementById("boughtempty").hidden=ids.length>0;paint()})}
 function renderWish(){var l=document.getElementById("wishlist");if(!l)return;data(function(d){var w=wload(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(w).sort(function(a,b){var xa=by[a],xb=by[b],ra=xa?xa.p/w[a].g:9,rb=xb?xb.p/w[b].g:9;return ra-rb});

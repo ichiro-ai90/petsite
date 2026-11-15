@@ -476,6 +476,66 @@ def today_strip(published, fdate):
             f'<span class="td-n">前日より値下がり <b>{n}</b>件</span><span class="td-b">ランキングを見る</span></a>')
 
 
+def og_card(path, title, big, sub, foot="ペット用品 最安ナビ　楽天のショップを毎日比較"):
+    """共有プレビュー用の画像（1200×630）。商品名は使わず、決まった文言と数字だけ（フォントは assets/og-font.otf のサブセット）。
+    Pillow が無い環境では作らない（画像なしで公開を続ける）"""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        return False
+    fp = os.path.join(ROOT, "assets", "og-font.otf")
+    if not os.path.exists(fp):
+        return False
+    F = lambda n: ImageFont.truetype(fp, n)
+    im = Image.new("RGB", (1200, 630), "#fffaf6")
+    d = ImageDraw.Draw(im)
+    d.rectangle([0, 0, 1200, 14], fill="#0f6b62")
+    d.text((70, 60), title, font=F(46), fill="#1f2328")
+    d.text((70, 150), big, font=F(150), fill="#c2255c")
+    d.text((70, 370), sub, font=F(36), fill="#1f2328")
+    d.rectangle([0, 540, 1200, 630], fill="#0f6b62")
+    d.text((70, 560), foot, font=F(36), fill="#ffffff")
+    im.save(path, optimize=True)
+    return True
+
+
+def prev_drop(pid, now):
+    """前日の記録からの値下がり額（内容量違いの疑いがある DROP_MAX 超は 0）"""
+    rows = HISTORY.get(pid, [])
+    if len(rows) < 2 or not rows[-2][1]:
+        return 0
+    prev = rows[-2][1]
+    return prev - now if now < prev and (prev - now) / prev <= DROP_MAX else 0
+
+
+def weekly_page(published, fdate):
+    ds = drops(published)[:20]
+    if not ds:
+        return "", None
+    li = []
+    for i, x in enumerate(ds, 1):
+        p = x["p"]
+        th = img(p.get("image"), 128)
+        pic = f'<img src="{E(th)}" alt="" width="64" height="64" loading="lazy">' if th else '<span class="noimg" aria-hidden="true"></span>'
+        pd = prev_drop(p["productId"], x["now"])
+        li.append(f'<li><a class="dr" href="item-{E(p["productId"])}.html" data-ga="weekly_rank" data-rank="{i}">'
+                  f'<span class="rk">{i}</span><span class="pic">{pic}</span><span class="info"><span class="nm">{E(show_name(p["name"]))}</span>'
+                  f'<span class="dr-pr"><s>{x["hi"]:,}円</s><small>（{x["since"][5:].replace("-", "/")}）</small> → <b>{x["now"]:,}</b>円</span>'
+                  + (f'<span class="tb new">前日より −{pd:,}円</span>' if pd else "") +
+                  f'</span><span class="dr-d">−{x["d"]:,}円<small>{round(x["d"] / x["hi"] * 100)}%</small></span></a></li>')
+    top = ds[0]
+    txt = (f'今週のペット用品 値下がりランキング（{fdate[5:].replace("-", "/")}時点）1位は −{top["d"]:,}円。'
+           f'楽天市場で取得したショップの最安価格の記録から（送料別・目安）')
+    body = (f'<h1 class="ttl">今週の値下がりランキング</h1>'
+            f'<p class="lead">直近{DROP_DAYS}日に当サイトが記録した最高値と比べて、取得したショップの最安価格が下がった商品の上位{len(ds)}件です（送料別）。毎朝更新、URL はいつも同じです。</p>'
+            f'<div class="wk-share"><button type="button" class="btn-main" data-share="{E(txt)}" data-kind="weekly">ランキングを共有</button>'
+            f'<a class="btn-sub" href="https://twitter.com/intent/tweet?text={urllib.parse.quote(txt)}&url=__URL__" target="_blank" rel="noopener" data-ga="weekly_x">X に投稿</a>'
+            f'<a class="btn-sub" href="https://line.me/R/msg/text/?{urllib.parse.quote(txt)}%20__URL__" target="_blank" rel="noopener" data-ga="weekly_line">LINE で送る</a></div>'
+            f'<ol class="drops">{"".join(li)}</ol>'
+            f'<p class="ptn">価格の記録（{fdate}まで・取得したショップの最安）から計算。内容量違いの可能性がある{int(DROP_MAX*100)}%超の差は除いています。価格は変わることがあるため、購入前に楽天市場のページでご確認ください。</p>')
+    return body, top
+
+
 def record_low(pid, now):
     """記録した期間（最大90日）の中で今がいちばん安いか。記録が5日未満なら判定しない"""
     rows = HISTORY.get(pid, [])
@@ -500,7 +560,7 @@ def spotlight(published, fdate):
         out += (f'<section class="hero"><p class="hero-k">人気商品の値下がり<span class="h2s">直近7日の最高値と比べて・取得したショップの最安</span></p><a class="hero-a" href="item-{E(p["productId"])}.html" data-ga="hero_click">'
                 f'<span class="pic">{pic}</span><span class="info"><span class="nm">{E(show_name(p["name"]))}</span>'
                 f'<span class="hero-rv">レビュー {p.get("reviewCount", 0):,}件の定番</span>'
-                f'<span class="hero-d">−{x["d"]:,}円<small>（{round(x["d"] / x["hi"] * 100)}%・{x["since"][5:].replace("-", "/")}の{x["hi"]:,}円から）</small></span>'
+                f'<span class="hero-d">−<b class="cnt" data-to="{x["d"]}">{x["d"]:,}</b>円<small>（{round(x["d"] / x["hi"] * 100)}%・{x["since"][5:].replace("-", "/")}の{x["hi"]:,}円から）</small></span>'
                 f'<span class="hero-pr"><b>{x["now"]:,}</b>円</span>'
                 + (f'<span class="tb low">記録した{rl}日間でいちばん安い</span>' if rl else "") +
                 '</span></a><p class="ptn">レビュー件数（楽天の取得値）と直近7日の値下がり率から選んでいます。価格は取得したショップの最安・送料別</p></section>')
@@ -526,10 +586,11 @@ def drop_section(published, fdate):
         pct = round(x["d"] / x["hi"] * 100)
         li.append(f'<li><a class="dr" href="item-{E(p["productId"])}.html" data-ga="drop_rank" data-rank="{i}">'
                   f'<span class="rk">{i}</span><span class="pic">{pic}</span><span class="info"><span class="nm">{E(show_name(p["name"]))}</span>'
-                  f'<span class="dr-pr"><s>{x["hi"]:,}円</s><small>（{x["since"][5:].replace("-", "/")}）</small> → <b>{x["now"]:,}</b>円</span></span>'
-                  f'<span class="dr-d">−{x["d"]:,}円<small>{pct}%</small></span></a></li>')
+                  f'<span class="dr-pr"><s>{x["hi"]:,}円</s><small>（{x["since"][5:].replace("-", "/")}）</small> → <b>{x["now"]:,}</b>円</span>'
+                  + (f'<span class="tb new">前日より −{prev_drop(p["productId"], x["now"]):,}円</span>' if prev_drop(p["productId"], x["now"]) else "") +
+                  f'</span><span class="dr-d">−{x["d"]:,}円<small>{pct}%</small></span></a></li>')
     return (f'<section class="drop-sec" id="drops"><h2 class="h2">値下がり中の商品<span class="h2s">直近{DROP_DAYS}日の最高値と比べて</span></h2>'
-            f'<p class="ptn drop-basis">同じ商品の、取得したショップの最安価格の記録どうしを比べています（送料別）</p><ol class="drops">{"".join(li)}</ol><p class="ptn">価格の記録（{fdate}まで・取得したショップの最安）から計算。内容量違いの可能性がある{int(DROP_MAX*100)}%超の差は除いています</p></section>')
+            f'<p class="ptn drop-basis">同じ商品の、取得したショップの最安価格の記録どうしを比べています（送料別）</p><ol class="drops">{"".join(li)}</ol><a class="more-link" href="weekly.html" data-ga="to_weekly">今週の値下がりランキング（上位20件）を見る</a><p class="ptn">価格の記録（{fdate}まで・取得したショップの最安）から計算。内容量違いの可能性がある{int(DROP_MAX*100)}%超の差は除いています</p></section>')
 
 
 def median_price(p, unit):
@@ -808,10 +869,25 @@ def main():
            + '<div id="welcome"></div>' + today_strip(published, fdate) + spotlight(published, fdate) + drop_section(published, fdate)
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
+    _ds = drops(published)
+    og_ok = og_card(os.path.join(out, "og-today.png"), f"{fdate[5:].replace('-', '/')} ペット用品の値動き（楽天市場）",
+                    f"値下がり {today_drops(published)}件", (f"7日間の最大 −{_ds[0]['d']:,}円（取得したショップの最安・送料別）" if _ds else "楽天のショップの価格を毎日記録して比較")) if fdate[:2] == "20" else False
     open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(
         page(f"{SITE}｜楽天市場のペット用品を価格・ポイントで比較", idx,
              f"楽天市場のペット用品{len(index_rows)}商品を、ショップごとの価格とポイントで比較（{fdate}取得）。猫砂・ドッグフード・小動物や爬虫類、小鳥・魚の餌まで。",
-             sample, canonical=(f"{origin}/" if origin else "")))
+             sample, canonical=(f"{origin}/" if origin else ""),
+             og_image=((f"{origin}/og-today.png" if origin else "og-today.png") if og_ok else "")))
+    wk, wtop = weekly_page(published, fdate)
+    if wk:
+        wog = og_card(os.path.join(out, "og-weekly.png"), f"今週のペット用品 値下がりランキング（{fdate[5:].replace('-', '/')}）",
+                      f"1位 −{wtop['d']:,}円", f"直近{DROP_DAYS}日の最高値と比べて {round(wtop['d'] / wtop['hi'] * 100)}% 下がった（取得価格・送料別）")
+        wurl = f"{origin}/weekly.html" if origin else "weekly.html"
+        open(os.path.join(out, "weekly.html"), "w", encoding="utf-8").write(page(
+            f"今週のペット用品 値下がりランキング（{fdate}）｜{SITE}", wk.replace("__URL__", urllib.parse.quote(wurl, safe="")),
+            f"楽天市場のペット用品で、直近{DROP_DAYS}日に値下がりした商品の上位ランキング（{fdate}更新・取得したショップの最安価格の記録から）。",
+            sample, (("今週の値下がりランキング", None),), canonical=(wurl if origin else ""),
+            og_image=((f"{origin}/og-weekly.png" if origin else "og-weekly.png") if wog else "")))
+        files.append("weekly.html")
     open(os.path.join(out, "style.css"), "w", encoding="utf-8").write(CSS)
     open(os.path.join(out, "app.js"), "w", encoding="utf-8").write(APP_JS)
     json.dump({"fetched_at": str(data.get("fetched_at", "")), "pets": [[p[0], p[1]] for p in PETS],
@@ -1086,7 +1162,7 @@ function shareSaved(S){var c=document.createElement("canvas");c.width=1200;c.hei
   else{var a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="petsite-savings.png";a.click();toast("画像を保存しました。X や LINE に貼ってシェアできます")}})}
 function happy(k,t){var el=document.getElementById("bought-msg");if(!el)return;var b=document.querySelector(".actions [data-card]");if(!b)return;
  el.insertAdjacentHTML("afterend",'<p class="happy" id="happy"><span>'+esc(t)+'</span><button type="button" class="link" data-share="'+esc(t+"。"+b.dataset.share)+'" data-card="1" data-kind="happy" data-cn="'+esc(b.dataset.cn)+'" data-cp="'+b.dataset.cp+'" data-ck="'+esc(b.dataset.ck)+'" data-cv="'+esc(b.dataset.cv)+'" data-cd="'+esc(b.dataset.cd)+'">シェアする</button></p>');ga("happy_show",{kind:k})}
-function init(){ago();keepOrig();renderBought();renderWish();renderSavings();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+function init(){var hr=document.querySelector(".hero");if(hr)countUp(hr);var wu=document.querySelector(".wk-share");if(wu)ga("weekly_view",{});ago();keepOrig();renderBought();renderWish();renderSavings();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 """
@@ -1173,6 +1249,9 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .sd-share{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 8px}
 .btn-main{min-height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--win);color:#fff;font-size:15px;font-weight:700}
 .btn-sub{min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--txt);font-size:14px;text-decoration:none}
+.tb.new{background:var(--win-bg);color:var(--win);border:1px solid #f3b6c9;font-weight:700}
+.more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
+.wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .today{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:12px 16px 0;padding:12px 16px;border-radius:12px;background:#fff;border:2px solid var(--win);color:var(--txt);text-decoration:none}
 .td-k{font-size:12px;color:var(--sub)}.td-n{font-size:16px;font-weight:700}.td-n b{color:var(--win);font-size:26px;font-variant-numeric:tabular-nums}.td-b{grid-column:2;grid-row:1/3;color:var(--win);font-weight:700;font-size:14px}
 .sv-box{margin:12px 0 20px;padding:18px 16px;border-radius:12px;background:var(--win-bg);border:1px solid #f3b6c9;text-align:center}

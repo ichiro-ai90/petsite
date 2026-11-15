@@ -83,18 +83,20 @@ PRODUCT_PAGES = 3     # 製品検索のページ数（30件×3＝最大90候補�
 
 def search_products(group):
     raws, seen = [], set()
-    for page in range(1, PRODUCT_PAGES + 1):
-        try:
-            d = _call(PRODUCT_URL, {"keyword": group.get("pkeyword") or group["keyword"], "hits": 30, "page": page})
-        except Exception as e:  # 2ページ目以降の失敗は、取れた分で続ける
-            if page == 1:
-                raise
-            print(f"  製品検索 {page}ページ目を省略: {str(e)[:120]}")
-            break
-        got = d.get("Products", [])
-        raws += got
-        if len(got) < 30:
-            break
+    kws = group.get("pkeywords") or [group.get("pkeyword") or group["keyword"]]  # 複数の言い方で探して合わせる（11/15）
+    for ki, kw in enumerate(kws):
+        for page in range(1, PRODUCT_PAGES + 1):
+            try:
+                d = _call(PRODUCT_URL, {"keyword": kw, "hits": 30, "page": page})
+            except Exception as e:  # 1つ目の言い方の1ページ目以外の失敗は、取れた分で続ける
+                if page == 1 and ki == 0:
+                    raise
+                print(f"  製品検索「{kw}」{page}ページ目を省略: {str(e)[:120]}")
+                break
+            got = d.get("Products", [])
+            raws += got
+            if len(got) < 30:
+                break
     out = []
     for raw in raws:
         p = _prod(raw)

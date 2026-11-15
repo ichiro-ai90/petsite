@@ -60,7 +60,7 @@
   },
   {
    "slug": "dog-treat-large",
-   "title": "犬用おやつ 大袋",
+   "title": "犬用おやつ",
    "animal": "犬",
    "keyword": "犬 おやつ 大容量",
    "unit": "g",
@@ -69,8 +69,12 @@
     "おもちゃ",
     "お試し"
    ],
-   "min": 300,
-   "pkeyword": "犬 おやつ"
+   "pkeyword": "犬 おやつ",
+   "pkeywords": [
+    "犬 おやつ",
+    "犬用 ジャーキー",
+    "犬 ガム おやつ"
+   ]
   },
   {
    "slug": "cat-dry-food-large",
@@ -159,7 +163,12 @@
     "ケージ",
     "セット"
    ],
-   "pkeyword": "ハムスター 床材"
+   "pkeyword": "ハムスター 床材",
+   "pkeywords": [
+    "ハムスター 床材",
+    "小動物 ペーパー 床材",
+    "小動物 紙 マット"
+   ]
   },
   {
    "slug": "timothy-hay",
@@ -211,27 +220,19 @@
     "生体",
     "飼育ケース"
    ],
-   "pkeyword": "乾燥コオロギ"
-  },
-  {
-   "slug": "dubia-live",
-   "title": "デュビア（活餌）",
-   "animal": "爬虫類",
-   "keyword": "デュビア 活餌",
-   "unit": "匹",
-   "priority": 2,
-   "exclude": [
-    "飼育ケース",
-    "ゼリー"
-   ],
-   "pkeyword": "デュビア"
+   "pkeyword": "乾燥コオロギ",
+   "pkeywords": [
+    "乾燥コオロギ",
+    "コオロギ 乾燥",
+    "爬虫類 フード 昆虫"
+   ]
   },
   {
    "slug": "reptile-substrate",
    "title": "爬虫類用 床材（砂・ソイル）",
    "animal": "爬虫類",
    "keyword": "爬虫類 床材 砂",
-   "unit": "kg",
+   "unit": "L",
    "priority": 2,
    "exclude": [
     "ケージ",
@@ -240,7 +241,13 @@
     "砂利",
     "小鳥"
    ],
-   "pkeyword": "爬虫類 床材"
+   "pkeyword": "爬虫類 床材",
+   "pkeywords": [
+    "爬虫類 床材",
+    "爬虫類 ソイル",
+    "爬虫類 砂",
+    "バークチップ 爬虫類"
+   ]
   },
   {
    "slug": "ferret-food",
@@ -382,7 +389,12 @@
     "おもちゃ"
    ],
    "pkeyword": "猫砂 鉱物 ベントナイト",
-   "min": 5
+   "min": 5,
+   "pkeywords": [
+    "猫砂 鉱物",
+    "ベントナイト 猫砂",
+    "猫砂 固まる 鉱物"
+   ]
   },
   {
    "slug": "cat-litter-paper",
@@ -418,7 +430,13 @@
     "おもちゃ"
    ],
    "pkeyword": "猫砂 木 ひのき",
-   "min": 5
+   "min": 5,
+   "pkeywords": [
+    "ひのき 猫砂",
+    "木の猫砂",
+    "猫砂 木製",
+    "猫砂 ヒノキ"
+   ]
   },
   {
    "slug": "cat-system-litter",
@@ -521,7 +539,12 @@
     "スコップ",
     "おもちゃ"
    ],
-   "pkeyword": "小動物 床材 ウッドチップ"
+   "pkeyword": "小動物 床材 ウッドチップ",
+   "pkeywords": [
+    "ウッドチップ 小動物",
+    "小動物 床材 チップ",
+    "牧草 床材 小動物"
+   ]
   },
   {
    "slug": "guinea-pig-food",
@@ -572,7 +595,12 @@
     "スコップ",
     "おもちゃ"
    ],
-   "pkeyword": "熱帯魚 餌 フレーク"
+   "pkeyword": "熱帯魚 餌 フレーク",
+   "pkeywords": [
+    "熱帯魚 餌",
+    "熱帯魚 フード",
+    "テトラ フード"
+   ]
   },
   {
    "slug": "medaka-food",
@@ -606,7 +634,13 @@
     "スコップ",
     "おもちゃ"
    ],
-   "pkeyword": "インコ ペレット"
+   "pkeyword": "インコ ペレット",
+   "pkeywords": [
+    "インコ ペレット",
+    "インコ フード",
+    "小鳥 ペレット",
+    "オカメインコ フード"
+   ]
   },
   {
    "slug": "pet-shampoo-cat",

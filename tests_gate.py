@@ -69,6 +69,8 @@ class T(unittest.TestCase):
             self.assertIn('<a href="https://developers.rakuten.com/" target="_blank">Supported by Rakuten Developers</a>', h)
             self.assertIn("AI〈一郎〉", h)
             self.assertIn("楽天グループ株式会社とは関係ありません", h)
+            self.assertIn("購入時に楽天市場店舗（www.rakuten.co.jp）に表示されている価格が、その商品の販売に適用されます。", h)  # 楽天の免責（各ページ）
+            self.assertIn('href="about.html"', h)
             self.assertNotIn("【サンプル表示】", h)
             self.assertNotIn("Yahoo", h)
         self.assertIn('href="cat-litter-tofu.html"', idx)
@@ -130,7 +132,10 @@ class T(unittest.TestCase):
         self.assertEqual(len(re.findall(r'href="item-t\d\.html"', h)), 3)
         self.assertIn("効果を示すものではありません", h)
         self.assertFalse(os.path.exists(os.path.join(d, "site", "nayami-dog-joint.html")))  # 2商品 → 不公開
-        self.assertIn('href="nayami-dog-tear.html"', open(os.path.join(d, "site", "index.html"), encoding="utf-8").read())
+        idx = open(os.path.join(d, "site", "index.html"), encoding="utf-8").read()
+        self.assertIn('href="nayami-dog-tear.html"', idx)
+        self.assertLess(idx.index("悩みから探す"), idx.index("sd-cta"))  # 一番上（ペットのタブの直後）に出す
+        self.assertIn('id="notes"', open(os.path.join(d, "site", "about.html"), encoding="utf-8").read())
 
     def test_no_price_history(self):
         """楽天の規約（価格情報の保存は24時間まで）：過去の価格を読まず、お得は今の平均価格との差だけで出す"""

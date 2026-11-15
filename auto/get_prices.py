@@ -2,7 +2,7 @@
 楽天の規約で価格情報の保存は24時間までのため、価格はリポジトリにコミットしない（11/15）。
 - 取得できれば data/prices.json に書いて exit 0。24時間より古い・無い・失敗なら何もせず exit 0（呼び出し側はサンプルか新規取得で続ける）
 - 必要: GITHUB_TOKEN（actions: read）、GITHUB_REPOSITORY"""
-import datetime, io, json, os, sys, urllib.request, zipfile
+import datetime, io, json, os, sys, urllib.error, urllib.request, zipfile
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "ichiro-ai90/petsite")
 TOK = os.environ.get("GITHUB_TOKEN", "")
@@ -12,6 +12,23 @@ DST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 def req(url):
     r = urllib.request.Request(url, headers={"Authorization": f"Bearer {TOK}", "Accept": "application/vnd.github+json"})
     return urllib.request.urlopen(r, timeout=60)
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):
+        return None
+
+
+def download(url):
+    """成果物の zip は保存先（別ドメイン）へ転送される。転送先に GitHub の認証ヘッダーを送ると 401 になるため、転送先は認証なしで取る"""
+    op = urllib.request.build_opener(_NoRedirect)
+    r = urllib.request.Request(url, headers={"Authorization": f"Bearer {TOK}", "Accept": "application/vnd.github+json"})
+    try:
+        return op.open(r, timeout=60).read()
+    except urllib.error.HTTPError as e:
+        if e.code in (301, 302, 303, 307, 308) and e.headers.get("Location"):
+            return urllib.request.urlopen(e.headers["Location"], timeout=120).read()
+        raise
 
 
 def main():
@@ -29,7 +46,7 @@ def main():
         if age > datetime.timedelta(hours=24):
             print("前回の価格は24時間を超えているため使いません")
             return 0
-        z = zipfile.ZipFile(io.BytesIO(req(a["archive_download_url"]).read()))
+        z = zipfile.ZipFile(io.BytesIO(download(a["archive_download_url"])))
         data = z.read("prices.json")
         json.loads(data)
         os.makedirs(os.path.dirname(DST), exist_ok=True)

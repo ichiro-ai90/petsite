@@ -13,6 +13,8 @@
 - build.py に新しい漢字を足したら、共有画像用フォント assets/og-font.otf を `python3 auto/regen_font.py` で作り直す（このワークフローでは元フォントと fonttools を入れてある）
 - push/vapid_public.txt は消さない（消すと通知の購読がすべて無効になる）
 
+- 文字を増やさない（オーナー指示 11/15）：説明は数字・アイコン・図に置き換える。注記は短いラベル＋※（ページ下部の脚注 #notes）で満たし、本文に文を足さない。1ブロックの説明は1行（約30字）まで。監査が注記を求めても、この形で対応する
+
 ## 作業の手順
 1. auto/backlog.md の先頭の未完了項目（「（人）」付きは飛ばす）を1件だけ選ぶ
 2. 実装し、`python3 tests_amount.py && python3 tests_fetch.py && python3 tests_gate.py` と `SITE_ORIGIN=https://petnavi.niconote.jp python3 build.py` を通す。JS を変えたら `node -e "new Function(require('fs').readFileSync('site/app.js','utf8'))"` で構文を確認

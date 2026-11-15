@@ -10,6 +10,7 @@ on:
         required: true
 permissions:
   contents: read
+  actions: read
   pull-requests: write
   issues: write
 concurrency:
@@ -35,7 +36,8 @@ jobs:
       - name: build（PR の版のサイトを、main で取得済みの価格データで生成）
         run: |
           git fetch -q origin main
-          git show origin/main:data/prices.json > data/prices.json 2>/dev/null || python fetch_prices.py
+          python auto/get_prices.py  # 24時間以内の本番の価格（無ければサンプルで画面を作る）
+          [ -f data/prices.json ] || cp data/sample_prices.json data/prices.json
           pip install -q pillow
           [ -f push/vapid_public.txt ] || echo BHWbLnpUhP2fZcN6oHm2bGkTbmMtcKJZ2hFHx8u7fW0ZUz7p8YnCKUlL1hDvC4E0EaQk1kVvYtm0oVqV7xfXz1A > push/vapid_public.txt  # 監査の画面に通知ボタンを出すための見本の公開鍵（本番では使わない）
           python build.py

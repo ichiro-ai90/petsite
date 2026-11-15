@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   deployments: write
+  actions: read
 concurrency:            # 手動実行と定期実行が重なっても push が衝突しないように
   group: daily-price-update
   cancel-in-progress: false
@@ -24,6 +25,10 @@ jobs:
         run: pip install --quiet pillow
       - name: test amount()（内容量読み取りが壊れていたら公開しない）
         run: python tests_amount.py && python tests_fetch.py && python tests_gate.py
+      - name: previous prices（24時間以内の前回分だけ。失敗したカテゴリの引き継ぎ用）
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python auto/get_prices.py
       - name: fetch prices（失敗・0件のカテゴリは前回データを引き継ぐ。公開できるデータが無ければ失敗）
         env:
           RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
@@ -54,11 +59,19 @@ jobs:
           SITE_ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://petnavi.niconote.jp' }}   # 公開先（Cloudflare Pages）。GitHub Pages には公開しない（2026-11 規約上の理由）
           GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}   # Google アナリティクス（未設定なら入れない）
         run: python build.py
-      - name: commit price snapshot（価格履歴を残す）
+      - name: keep prices for 1 day（楽天の規約：価格情報の保存は24時間まで。リポジトリにはコミットせず、保持1日の成果物にだけ置く）
+        uses: actions/upload-artifact@v4
+        with:
+          name: prices
+          path: data/prices.json
+          retention-days: 1
+          overwrite: true
+      - name: commit push key（値下がり通知の公開鍵を初めて作った回だけ。価格はコミットしない）
         run: |
-          git config user.name "ichiro-bot"; git config user.email "ichiro-bot@users.noreply.github.com"
-          git add data/prices.json; [ -f push/vapid_public.txt ] && git add push/vapid_public.txt; git commit -m "prices $(date -u +%F)" || echo "no change"
-          git push
+          if [ -f push/vapid_public.txt ] && ! git ls-files --error-unmatch push/vapid_public.txt >/dev/null 2>&1; then
+            git config user.name "ichiro-bot"; git config user.email "ichiro-bot@users.noreply.github.com"
+            git add push/vapid_public.txt && git commit -m "push key" && git push
+          fi
       - name: deploy to Cloudflare Pages（プロジェクトが無ければ作る。2回目以降は「既にある」で先へ進む）
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -298,7 +298,7 @@ def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noinde
 <link rel="stylesheet" href="style.css">{ga_tag()}<script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
 {band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk">{icon("paw", 20)}</span>{SITE}</a>
-<span class="hd-note">楽天市場の商品を、取得したショップの中で比較します。<br>※楽天の公式サイトではありません</span><a class="hd-fav" href="favorites.html">{icon("star", 16)}お気に入り<span id="favn"></span></a></div>
+<span class="hd-note">楽天市場の商品を、取得したショップの中で比較します。<br>※楽天の公式サイトではありません</span><a class="hd-fav" href="favorites.html">{icon("star", 16)}マイリスト<span id="favn"></span></a></div>
 <form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
 <input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">{icon("search", 18)}<span>検索</span></button></form></header>
 <main>{bc}{body}</main>
@@ -442,6 +442,44 @@ def drops(published):
     return sorted(out, key=lambda x: (-x["d"], x["now"]))
 
 
+def record_low(pid, now):
+    """記録した期間（最大90日）の中で今がいちばん安いか。記録が5日未満なら判定しない"""
+    rows = HISTORY.get(pid, [])
+    if len(rows) < 5:
+        return 0
+    past = [r[1] for r in rows[:-1] if r[1]]
+    return len(rows) if past and now < min(past) else 0
+
+
+def spotlight(published, fdate):
+    """人気（レビュー件数）×値下がり率の上位1件と、5,000円以上の商品の値下がり上位3件。すべて取得した事実から"""
+    ds = drops(published)
+    import math
+    pop = [x for x in ds if x["p"].get("reviewCount", 0) >= 30]
+    out = ""
+    if pop:
+        x = max(pop, key=lambda x: (x["d"] / x["hi"]) * math.log10(x["p"].get("reviewCount", 0) + 10))
+        p = x["p"]
+        th = img(p.get("image"), 300)
+        pic = f'<img src="{E(th)}" alt="" width="120" height="120" loading="lazy">' if th else '<span class="noimg" aria-hidden="true"></span>'
+        rl = record_low(p["productId"], x["now"])
+        out += (f'<section class="hero"><p class="hero-k">人気商品が値下がり中</p><a class="hero-a" href="item-{E(p["productId"])}.html" data-ga="hero_click">'
+                f'<span class="pic">{pic}</span><span class="info"><span class="nm">{E(show_name(p["name"]))}</span>'
+                f'<span class="hero-rv">レビュー {p.get("reviewCount", 0):,}件の定番</span>'
+                f'<span class="hero-d">−{x["d"]:,}円<small>（{round(x["d"] / x["hi"] * 100)}%・{x["since"][5:].replace("-", "/")}の{x["hi"]:,}円から）</small></span>'
+                f'<span class="hero-pr"><b>{x["now"]:,}</b>円</span>'
+                + (f'<span class="tb low">記録した{rl}日間でいちばん安い</span>' if rl else "") +
+                '</span></a><p class="ptn">レビュー件数（楽天の取得値）と直近7日の値下がり率から選んでいます。価格は取得したショップの最安・送料別</p></section>')
+    prem = sorted([x for x in ds if x["now"] >= 5000], key=lambda x: -x["d"] / x["hi"])[:3]
+    if prem:
+        li = "".join(f'<li><a class="dr" href="item-{E(x["p"]["productId"])}.html" data-ga="premium_drop" data-rank="{i}"><span class="info"><span class="nm">{E(show_name(x["p"]["name"]))}</span>'
+                     f'<span class="dr-pr"><s>{x["hi"]:,}円</s> → <b>{x["now"]:,}</b>円</span></span><span class="dr-d">−{x["d"]:,}円<small>{round(x["d"] / x["hi"] * 100)}%</small></span></a></li>'
+                     for i, x in enumerate(prem, 1))
+        out += (f'<section class="drop-sec"><h2 class="h2">ちょっといい物が安くなっています<span class="h2s">5,000円以上の商品</span></h2>'
+                f'<p class="ptn drop-basis">「気になっていたけど高くて…」という商品を試すなら、下がっている今が目安です（直近7日の最高値と比べた事実）</p><ol class="drops">{li}</ol></section>')
+    return out
+
+
 def drop_section(published, fdate):
     ds = drops(published)[:5]
     if not ds:
@@ -545,6 +583,30 @@ def category_body(g, prods, pet, fetched, carried):
             f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。計算根拠の最終確認：2026-11-08（楽天市場の通常ポイント 税抜100円につき1ポイント）。</p></div>{SORT_JS}')
 
 
+def item_ld(p, g, pet_name, fn):
+    """検索エンジン・AI 向けの構造化データ（Product＋AggregateOffer、パンくず）。評価は第三者のため載せない"""
+    offers = p["offers"]
+    prod = {"@context": "https://schema.org", "@type": "Product", "name": show_name(p["name"]),
+            "category": g["title"], "image": img(p.get("image"), 300) or None,
+            "offers": {"@type": "AggregateOffer", "priceCurrency": "JPY", "lowPrice": min(o["price"] for o in offers),
+                       "highPrice": max(o["price"] for o in offers), "offerCount": len(offers),
+                       "availability": "https://schema.org/InStock"}}
+    if p.get("maker"):
+        prod["brand"] = {"@type": "Brand", "name": p["maker"]}
+    if p.get("jan"):
+        prod["gtin13"] = p["jan"]
+    prod = {k: v for k, v in prod.items() if v is not None}
+    base = (ORIGIN_FOR_LD + "/") if ORIGIN_FOR_LD else ""
+    bc = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "トップ", "item": base or "index.html"},
+        {"@type": "ListItem", "position": 2, "name": g["title"], "item": base + fn},
+        {"@type": "ListItem", "position": 3, "name": show_name(p["name"])}]}
+    return ''.join('<script type="application/ld+json">' + json.dumps(x, ensure_ascii=False).replace("</", "<\\/") + '</script>' for x in (prod, bc))
+
+
+ORIGIN_FOR_LD = ""
+
+
 def item_body(p, g, fetched):
     offers = sorted(p["offers"], key=lambda o: o["price"])
     o = offers[0]
@@ -575,7 +637,9 @@ def item_body(p, g, fetched):
                   + (f'（同じ内容量で最大 {hi["price"] - o["price"]:,}円の差）' if save else "") + '※価格・ポイントは取得時点の目安。PR（アフィリエイト）サイト')
     actions = (f'<div class="actions"><button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">{icon("star", 18)}お気に入り</button>'
                f'<button type="button" class="bought" data-bought="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">{icon("bag", 18)}買った日をメモ</button>'
+               f'<button type="button" class="wish" data-wish="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">{icon("search", 18)}値下がりを待つ</button>'
                f'<button type="button" class="share" data-share="{E(share_text)}">{icon("share", 18)}この比較を送る</button></div>'
+               f'<form class="wish-f" id="wish-f" hidden><label>この値段になったら買う <input type="number" inputmode="numeric" min="1" id="wish-v"> 円</label><button type="submit">登録</button></form>'
                f'<p class="bought-msg" id="bought-msg" hidden></p>')
     alt = ""
     if oe is not o:
@@ -583,8 +647,11 @@ def item_body(p, g, fetched):
                f'（{oe["pointRate"]}倍・{oe["points"]:,}ポイント）。</p>')
     allshops = (f'<a class="sub-link" href="{E(p["productUrl"])}" rel="sponsored nofollow" target="_blank">楽天市場の商品ページで全{p.get("itemCount", 0):,}ショップを見る</a>'
                 if p.get("productUrl") else "")
+    summary = (f'<p class="facts">要点：{E(show_name(p["name"])[:60])}は、楽天市場で取得した{len(offers)}ショップのうち最安 {o["price"]:,}円（{E(o["shop"])}・{"送料無料" if o.get("shipping") == "送料無料" else "送料別"}）。'
+               + (f'同じ内容量のショップ間で最大{hi["price"] - o["price"]:,}円の差。' if save else "")
+               + f'価格は{E(str(p.get("fetched_at") or fetched))}時点。</p>')
     return (f'<div class="item"><div class="item-pic">{pic}</div><div class="item-info">'
-            f'<h1 class="ttl">{E(show_name(p["name"]))}</h1>'
+            f'<h1 class="ttl">{E(show_name(p["name"]))}</h1>{summary}'
             + (f'<p class="mk2"><a href="search.html?maker={urllib.parse.quote(p["maker"])}">{E(p["maker"])}の商品をもっと見る</a></p>' if p.get("maker") else "")
             + f'{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'{actions}'
@@ -618,6 +685,8 @@ def main():
     os.makedirs(out, exist_ok=True)
     fetched = E(str(data.get("fetched_at", "不明")))
     fdate = str(data.get("fetched_at", ""))[:10] or "取得日不明"
+    global ORIGIN_FOR_LD
+    ORIGIN_FOR_LD = origin or ""
     gmap = {g["slug"]: g for g in groups}
     published, files, index_rows = [], [], []
     for g in groups:
@@ -656,10 +725,11 @@ def main():
                                "sh": o["shipping"], "s": len(p["offers"]), "u": round(up, 2) if up else 0, "ul": LABEL[g["unit"]],
                                "img": img(p.get("image"), 128), "rv": p.get("reviewCount", 0), "ra": p.get("reviewAverage", 0),
                                "fp": (free_best(p["offers"]) or {}).get("price", 0), "fe": (free_best(p["offers"]) or {}).get("effective", 0),
-                               "h": trend(p["productId"], o["price"])["series"], "md": median_price(p, g["unit"])})
+                               "h": trend(p["productId"], o["price"])["series"], "md": median_price(p, g["unit"]),
+                               "lo": min([r[1] for r in HISTORY.get(p["productId"], [])[:-1] if r[1]] or [0]), "hd": len(HISTORY.get(p["productId"], []))})
             it, idsc = item_meta(p, g, fdate)
             open(os.path.join(out, ifn), "w", encoding="utf-8").write(
-                page(it, item_body(p, g, fetched), idsc, sample,
+                page(it, item_body(p, g, fetched) + item_ld(p, g, pet[1], fn), idsc, sample,
                      ((pet[1], f"index.html#{pet[0]}"), (g["title"], fn), ("ショップ比較", None)),
                      canonical=(f"{origin}/{ifn}" if origin else ""), og_image=img(p.get("image"), 300) or ""))
             files.append(ifn)
@@ -689,7 +759,7 @@ def main():
     idx = ('<p class="lead">楽天市場の人気商品を、ショップごとの価格とポイントで比べます。いつも買っている商品は「お気に入り」に入れておくと、次から値段をすぐ確かめられます。</p>'
            f'<ul class="tabs">{"".join(tabs)}</ul>'
            + '<a class="sd-cta" href="shindan.html" data-ga="shindan_cta"><span class="sd-cta-t">うちの子の消耗品、月いくら？</span><span class="sd-cta-s">いつもの商品を選ぶだけ・1分でわかる</span><span class="sd-cta-b">診断する</span></a>'
-           + drop_section(published, fdate)
+           + '<div id="welcome"></div>' + spotlight(published, fdate) + drop_section(published, fdate)
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
     open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(
@@ -728,14 +798,25 @@ def main():
     if os.path.exists(og_src):
         shutil.copy(og_src, os.path.join(out, "og-shindan.png"))
     open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
-        f"お気に入り｜{SITE}", '<h1 class="ttl">お気に入り</h1>'
-        '<p class="lead">登録したときの価格と、いまの最安値を比べられます。保存先はこのブラウザだけ（ログイン不要・端末間で共有されず、サイトデータを消すと消えます）。</p>'
+        f"マイリスト（いつもの買い物・値下がり待ち・お気に入り）｜{SITE}", '<h1 class="ttl">マイリスト</h1>'
+        '<p class="lead">保存先はこのブラウザだけです（ログイン不要・端末間で共有されず、サイトデータを消すと消えます）。楽天の購入履歴とは連動しません。</p>'
+        '<h2 class="h2">いつもの買い物</h2><p class="lead">商品ページで「買った」を押すたびに価格と日付を記録します。前回より安くなっていれば一番上に出します。</p>'
+        '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。いつも買う商品のページで「買った」を押してください。</p>'
+        '<h2 class="h2">値下がり待ち</h2><p class="lead">「この値段になったら買う」と決めた商品です。目標に届くと一番上に出します。</p>'
+        '<ul class="list" id="wishlist"></ul><p class="empty" id="wishempty" hidden>まだありません。商品ページの「値下がりを待つ」で目標の値段を登録できます。</p>'
+        '<h2 class="h2">お気に入り</h2>'
         '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「お気に入り」を押すとここに入ります。</p>'
-        '<h2 class="h2">買った日のメモ</h2><p class="lead">商品ページで「買った日をメモ」を押すと、その日の価格とその後の価格を比べられます。楽天の購入履歴とは連動しません。</p>'
-        '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。</p>'
         f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
-        "お気に入りに入れた商品の価格", sample, (("お気に入り", None),), noindex=True))
+        "いつもの買い物・値下がり待ち・お気に入りの価格", sample, (("マイリスト", None),), noindex=True))
     open(os.path.join(out, "favicon.svg"), "w", encoding="utf-8").write(favicon_svg())
+    cats = "\n".join(f"- [{g['title']}]({(origin + '/') if origin else ''}{g['slug']}.html): {len(prods)}商品" for g, prods in published)
+    open(os.path.join(out, "llms.txt"), "w", encoding="utf-8").write(
+        f"# {SITE}\n\n> 楽天市場のペット消耗品（フード・猫砂・ペットシーツ・小動物/爬虫類/小鳥/魚の餌など）を、商品ごとに取得したショップの最安価格・ポイント・送料の有無で比べるサイト。"
+        f"運営: 合同会社にこのて（価格の取得とページ作成は AI〈一郎〉が自動で実施）。楽天グループとは関係のない個人運営の比較サイトで、楽天アフィリエイトを利用しています。\n\n"
+        f"- 価格の取得: 毎日1回、楽天ウェブサービスの API から。最新の取得日 {fdate}\n"
+        "- 「最安」は取得したショップの中での最安。送料・クーポン・SPU は含まない。ポイントはショップ倍率からの目安\n"
+        "- 価格の記録を最大90日保存し、値下がり・記録した期間での最安を事実として表示\n\n"
+        f"## カテゴリ\n{cats}\n\n## 主なページ\n- [1分診断：うちの子の消耗品、月いくら？]({(origin + '/') if origin else ''}shindan.html)\n- [商品を探す]({(origin + '/') if origin else ''}search.html)\n")
     if GA_ID:
         open(os.path.join(out, "privacy.html"), "w", encoding="utf-8").write(page(
             f"アクセス解析について｜{SITE}", '<h1 class="ttl">アクセス解析について</h1><div class="note" style="font-size:13px">'
@@ -760,7 +841,11 @@ def main():
 
 
 APP_JS = r"""(function(){
-var KEY="petsite_fav_v1",BKEY="petsite_bought_v1",mem={},bmem={},DATA=null;
+var KEY="petsite_fav_v1",BKEY="petsite_bought_v1",WKEY="petsite_wish_v1",mem={},bmem={},wmem={},DATA=null;
+function wload(){try{return JSON.parse(localStorage.getItem(WKEY)||"{}")}catch(e){return wmem}}
+function wsave(v){wmem=v;try{localStorage.setItem(WKEY,JSON.stringify(v))}catch(e){}}
+function hist(r){return r.h&&r.h.length?r.h:[[r.t,r.p]]}
+function cyc(r){var h=hist(r);if(h.length<2)return 0;return Math.round((h[h.length-1][0]-h[0][0])/864e5/(h.length-1))}
 function bload(){try{return JSON.parse(localStorage.getItem(BKEY)||"{}")}catch(e){return bmem}}
 function bsave(v){bmem=v;try{localStorage.setItem(BKEY,JSON.stringify(v))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return mem}}
@@ -770,8 +855,7 @@ function norm(s){s=String(s||"");try{s=s.normalize("NFKC")}catch(e){}s=s.toLower
  return s.replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60)}).replace(/\s+/g," ")}
 function yen(n){return Number(n).toLocaleString("ja-JP")}
 function toast(m){var t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("on")},3500)}
-function paint(){var bm=bload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought];b.setAttribute("aria-pressed",!!r);var bag='<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';b.innerHTML=bag+(r?"メモ済み（"+new Date(r.t).toLocaleDateString("ja-JP")+"）":"買った日をメモ");
- var m=document.getElementById("bought-msg");if(m){m.hidden=!r;if(r){var cur=+b.dataset.price||0,d=cur-r.p;m.innerHTML=d<0?"買った日（"+yen(r.p)+"円）より <b>"+yen(-d)+"円安く</b>なっています。次はもっとお得に買えます":d>0?"買った日（"+yen(r.p)+"円）より "+yen(d)+"円上がっています。<b>いいタイミングで買えています</b>":"買った日と同じ価格です"}}});
+function paint(){var bm=bload(),wl=wload();document.querySelectorAll("[data-bought]").forEach(function(b){var r=bm[b.dataset.bought],h=r?hist(r):[],today=h.length&&new Date(h[h.length-1][0]).toDateString()===new Date().toDateString();b.setAttribute("aria-pressed",!!today);var bag='<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';b.innerHTML=bag+(today?"今日買った（記録済み）":h.length?"買った（"+(h.length+1)+"回目を記録）":"買った"); var m=document.getElementById("bought-msg");if(m){m.hidden=!r;if(r){var cur=+b.dataset.price||0,d=cur-r.p,c=cyc(r);m.innerHTML=(d<0?"前回（"+new Date(r.t).toLocaleDateString("ja-JP")+"・"+yen(r.p)+"円）より <b class=\"win\">"+yen(-d)+"円安い</b>。いつもの買い物なら今が買い時です":d>0?"前回（"+yen(r.p)+"円）より "+yen(d)+"円上がっています。<b>前回はいいタイミングで買えています</b>":"前回と同じ価格です")+(c?"（いつも約"+c+"日ごとに購入）":"")}}});document.querySelectorAll("[data-wish]").forEach(function(b){var w=wl[b.dataset.wish];b.setAttribute("aria-pressed",!!w);b.lastChild.nodeValue=w?"目標 "+yen(w.g)+"円で待ち中":"値下がりを待つ"});
  var f=load();document.querySelectorAll("[data-fav]").forEach(function(b){var on=!!f[b.dataset.fav];
  b.setAttribute("aria-pressed",on);b.setAttribute("aria-label",on?"お気に入りから外す":"お気に入りに追加");
  var sv=on?'<svg class="ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>':'<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>';
@@ -782,7 +866,17 @@ document.addEventListener("click",function(e){var g=e.target.closest("[data-ga]"
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
  if(a)ga("click_rakuten",{link_type:a.classList.contains("big")?"best_shop":(a.classList.contains("sub-link")?"all_shops":"shop"),page_path:location.pathname})},true);
 document.addEventListener("click",function(e){var b=e.target.closest("[data-bought]");if(!b)return;var bm=bload(),id=b.dataset.bought;
- if(bm[id]){delete bm[id];ga("unmark_bought",{item_id:id})}else{bm[id]={p:+b.dataset.price||0,t:Date.now()};ga("mark_bought",{item_id:id});toast("買った日の価格（"+yen(+b.dataset.price||0)+"円）をこのブラウザにメモしました（楽天の購入履歴とは連動しません）。次に来たとき、その後の価格と比べられます")}bsave(bm);paint();if(document.getElementById("boughtlist"))renderBought()});
+ var pr=+b.dataset.price||0,now=Date.now(),r=bm[id];
+ if(r){var h=hist(r);if(new Date(h[h.length-1][0]).toDateString()===new Date().toDateString()){h.pop();if(h.length){r.h=h;r.t=h[h.length-1][0];r.p=h[h.length-1][1]}else delete bm[id];ga("unmark_bought",{item_id:id});bsave(bm);paint();toast("今日の記録を取り消しました");return}
+  h.push([now,pr]);r.h=h;r.t=now;r.p=pr;ga("mark_bought",{item_id:id,times:h.length});toast(h.length+"回目の購入を記録しました（"+yen(pr)+"円）。いつも約"+cyc(r)+"日ごとに買っています")}
+ else{bm[id]={p:pr,t:now,h:[[now,pr]]};ga("mark_bought",{item_id:id,times:1});toast("買った価格（"+yen(pr)+"円）を記録しました。次に来たとき、前回より安ければマイリストの一番上に出します")}
+ bsave(bm);paint();if(document.getElementById("boughtlist"))renderBought()});
+document.addEventListener("click",function(e){var b=e.target.closest("[data-bdel]");if(!b)return;var bm=bload();delete bm[b.dataset.bdel];bsave(bm);renderBought()});
+document.addEventListener("click",function(e){var b=e.target.closest("[data-wdel]");if(!b)return;var w=wload();delete w[b.dataset.wdel];wsave(w);renderWish();paint()});
+document.addEventListener("click",function(e){var b=e.target.closest("[data-wish]");if(!b)return;var w=wload(),id=b.dataset.wish,f=document.getElementById("wish-f");
+ if(w[id]){delete w[id];wsave(w);paint();ga("unwish",{item_id:id});toast("値下がり待ちから外しました");return}
+ if(!f)return;f.hidden=false;var v=document.getElementById("wish-v");v.value=Math.floor((+b.dataset.price||0)*0.9/10)*10;v.focus();
+ f.onsubmit=function(ev){ev.preventDefault();var g=+v.value;if(!(g>0))return;var w2=wload();w2[id]={g:g,p:+b.dataset.price||0,t:Date.now()};wsave(w2);f.hidden=true;paint();ga("wish",{item_id:id,target:g});toast(yen(g)+"円以下になったらマイリストとトップでお知らせします（このブラウザで開いたとき）")}});
 document.addEventListener("click",function(e){var b=e.target.closest("[data-share]");if(!b)return;var t=b.dataset.share,u=location.href;ga("share",{item_id:location.pathname});
  if(navigator.share){navigator.share({title:document.title,text:t,url:u}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(t+" "+u).then(function(){toast("比較の内容とリンクをコピーしました")}).catch(function(){prompt("コピーしてください",t+" "+u)})}else{prompt("コピーしてください",t+" "+u)}});
 document.addEventListener("change",function(e){if(e.target.id!=="freeonly")return;var on=e.target.checked,l=document.getElementById("list");if(!l)return;ga("free_only",{on:on});var fn=document.getElementById("freenote");if(fn)fn.hidden=!on;
@@ -831,13 +925,31 @@ function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(
   var diff=s?x.p-s:0,msg=!s||!diff?"登録時と同じ価格です":diff<0?'<span class="badge down">▼'+yen(-diff)+'円</span> 登録時（'+yen(s)+'円）より安くなっています':'<span class="badge up2">▲'+yen(diff)+'円</span> 登録時（'+yen(s)+'円）より高くなっています';
   return row(x,'<span class="diff'+(diff<0?" down":"")+'">'+msg+'（価格は '+esc(d.fetched_at)+' 時点）</span>')}).join("");
  document.getElementById("favempty").hidden=ids.length>0;paint()})}
+function ics(x,r){var c=cyc(r)||30,d=new Date(r.t+c*864e5),f=function(n){return("0"+n).slice(-2)},ds=d.getFullYear()+f(d.getMonth()+1)+f(d.getDate());
+ return "data:text/calendar;charset=utf-8,"+encodeURIComponent("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//petsite//JA\r\nBEGIN:VEVENT\r\nUID:"+x.id+"-"+ds+"@petsite\r\nDTSTART;VALUE=DATE:"+ds+"\r\nSUMMARY:"+x.n.slice(0,40)+" の買い時チェック\r\nDESCRIPTION:"+location.origin+location.pathname.replace(/[^\/]*$/,"")+"item-"+x.id+".html\r\nEND:VEVENT\r\nEND:VCALENDAR")}
 function renderBought(){var l=document.getElementById("boughtlist");if(!l)return;data(function(d){var bm=bload(),by={};d.items.forEach(function(x){by[x.id]=x});
- var ids=Object.keys(bm).sort(function(a,b){return bm[b].t-bm[a].t});
- l.innerHTML=ids.map(function(id){var x=by[id],r=bm[id],day=new Date(r.t).toLocaleDateString("ja-JP");if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした（'+day+' に '+yen(r.p)+'円で購入）。</span><button type="button" class="fav" data-bought="'+esc(id)+'">記録を消す</button></li>';
-  var d=x.p-r.p,msg=d<0?'<span class="badge down">▼'+yen(-d)+'円</span> 買った日（'+day+'・'+yen(r.p)+'円）より安くなっています。次はもっとお得に':d>0?'<span class="badge up2">▲'+yen(d)+'円</span> 買った日（'+day+'・'+yen(r.p)+'円）より上がっています。<b>いいタイミングで買えました</b>':'買った日（'+day+'）と同じ価格です';
-  var h=x.h||[];if(h.length>=7){var cheaper=h.filter(function(q){return q[1]<r.p}).length;msg+='<br>買った日の価格は、過去'+h.length+'日のうち安いほうから'+(cheaper+1)+'番目です'}
-  return row(x,'<span class="diff">'+msg+'</span>')}).join("");
+ var ids=Object.keys(bm).sort(function(a,b){var xa=by[a],xb=by[b],da=xa?xa.p-bm[a].p:0,db=xb?xb.p-bm[b].p:0;return(da<0?da:1)-(db<0?db:1)||bm[b].t-bm[a].t});
+ l.innerHTML=ids.map(function(id){var x=by[id],r=bm[id],h=hist(r),day=new Date(r.t).toLocaleDateString("ja-JP"),c=cyc(r);if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした（前回 '+day+'・'+yen(r.p)+'円）。</span><button type="button" class="fav" data-bdel="'+esc(id)+'">記録を消す</button></li>';
+  var dd=x.p-r.p,next=c?Math.round((r.t+c*864e5-Date.now())/864e5):null;
+  var msg=(dd<0?'<span class="badge win">前回より '+yen(-dd)+'円安い・今が買い時</span> ':dd>0?'<span class="badge up2">▲'+yen(dd)+'円</span> ':'')+'前回 '+day+'・'+yen(r.p)+'円（'+h.length+'回記録'+(c?'・約'+c+'日ごと':'')+'）'+(next!==null?(next<=0?'。そろそろ買う頃です':'。次の目安まであと'+next+'日'):'');
+  if(x.lo&&x.p<x.lo&&x.hd>=5)msg+='<br><span class="tb low">記録した'+x.hd+'日間でいちばん安い</span>';
+  return row(x,'<span class="diff">'+msg+'</span>').replace(/<\/li>$/,'<div class="mini-acts"><a href="'+ics(x,r)+'" download="kaidoki.ics" data-ga="ics">次の買い時をカレンダーへ</a><button type="button" class="link" data-bdel="'+esc(id)+'">記録を消す</button></div></li>')}).join("");
  document.getElementById("boughtempty").hidden=ids.length>0;paint()})}
+function renderWish(){var l=document.getElementById("wishlist");if(!l)return;data(function(d){var w=wload(),by={};d.items.forEach(function(x){by[x.id]=x});
+ var ids=Object.keys(w).sort(function(a,b){var xa=by[a],xb=by[b],ra=xa?xa.p/w[a].g:9,rb=xb?xb.p/w[b].g:9;return ra-rb});
+ l.innerHTML=ids.map(function(id){var x=by[id],r=w[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした（目標 '+yen(r.g)+'円）。</span><button type="button" class="fav" data-wdel="'+esc(id)+'">外す</button></li>';
+  var reach=x.p<=r.g,pct=Math.max(0,Math.min(100,Math.round((r.p-x.p)/Math.max(1,r.p-r.g)*100)));
+  var msg=reach?'<span class="badge win">目標の '+yen(r.g)+'円に届きました</span> 登録時 '+yen(r.p)+'円 → いま '+yen(x.p)+'円':'目標 '+yen(r.g)+'円まであと <b>'+yen(x.p-r.g)+'円</b>（登録時 '+yen(r.p)+'円）<span class="bar"><i style="width:'+pct+'%"></i></span>';
+  if(x.lo&&x.p<x.lo&&x.hd>=5)msg+='<br><span class="tb low">記録した'+x.hd+'日間でいちばん安い</span>';
+  return row(x,'<span class="diff">'+msg+'</span>').replace(/<\/li>$/,'<div class="mini-acts"><button type="button" class="link" data-wdel="'+esc(id)+'">外す</button></div></li>')}).join("");
+ document.getElementById("wishempty").hidden=ids.length>0;paint()})}
+function welcome(){var el=document.getElementById("welcome");if(!el)return;var bm=bload(),w=wload(),f=load();if(!Object.keys(bm).length&&!Object.keys(w).length&&!Object.keys(f).length)return;
+ data(function(d){var by={};d.items.forEach(function(x){by[x.id]=x});var a=0,as=0,b=0,c=0,cs=0;
+  Object.keys(bm).forEach(function(id){var x=by[id];if(x&&x.p<bm[id].p){a++;as+=bm[id].p-x.p}});
+  Object.keys(w).forEach(function(id){var x=by[id];if(x&&x.p<=w[id].g)b++});
+  Object.keys(f).forEach(function(id){var x=by[id];if(x&&f[id].p&&x.p<f[id].p){c++;cs+=f[id].p-x.p}});
+  if(!a&&!b&&!c)return;var parts=[];if(a)parts.push('いつもの商品 <b>'+a+'件</b>が前回より計 <b class="win">'+yen(as)+'円</b>安い');if(b)parts.push('値下がり待ち <b>'+b+'件</b>が目標価格に到達');if(c)parts.push('お気に入り <b>'+c+'件</b>が登録時より計 '+yen(cs)+'円安い');
+  el.innerHTML='<a class="welcome" href="favorites.html" data-ga="welcome_click"><span class="wl-k">おかえりなさい</span><span class="wl-t">'+parts.join('、')+'</span><span class="wl-b">マイリストを見る</span></a>';ga("welcome_show",{routine:a,wish:b,fav:c})})}
 function ago(){document.querySelectorAll("time[data-fetched]").forEach(function(t){var m=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(t.dataset.fetched);if(!m)return;
  var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"1時間以内":h<24?"約"+h+"時間前":"約"+Math.floor(h/24)+"日前";
  t.textContent=t.dataset.fetched+"・"+s;if(h>=48&&!document.getElementById("stale")){var hd=document.querySelector("header");if(hd)hd.insertAdjacentHTML("afterend",'<p class="stale" id="stale" role="status">表示の価格は約'+Math.floor(h/24)+'日前（'+esc(t.dataset.fetched)+'）の取得です。最新の価格は楽天市場のページでご確認ください。</p>');ga("stale_banner",{hours:h})}})}
@@ -893,7 +1005,7 @@ function card(R){var c=document.getElementById("sd-card");if(!c||!c.getContext)r
  x.fillStyle="#6b7280";x.font="400 26px "+F;x.fillText("取得したショップの中央値と比べた目安（送料別・"+String(DATA.fetched_at).slice(0,10)+"時点）",70,465);
  x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F;x.fillText("ペット用品 最安ナビ　あなたの子はいくら？ 1分診断",70,598);
  try{document.getElementById("sd-dl").href=c.toDataURL("image/png")}catch(e){}}
-function init(){ago();keepOrig();renderBought();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+function init(){ago();keepOrig();renderBought();renderWish();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 """
@@ -980,6 +1092,19 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .sd-share{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 8px}
 .btn-main{min-height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--win);color:#fff;font-size:15px;font-weight:700}
 .btn-sub{min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--txt);font-size:14px;text-decoration:none}
+.badge.win,.win{color:var(--win)}.badge.win{background:var(--win-bg);border:1px solid #f3b6c9;font-weight:700}
+.mini-acts{display:flex;gap:16px;align-items:center;font-size:13px;padding:0 12px 10px 120px}.mini-acts a{color:var(--brand)}.link{background:none;border:0;padding:0;color:var(--sub);text-decoration:underline;font-size:12px}
+.bar{display:block;height:6px;background:#eee;border-radius:3px;margin-top:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--win)}
+.welcome{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:12px 16px 0;padding:12px 16px;border-radius:12px;background:#fff;border:2px solid var(--win);color:var(--txt);text-decoration:none}
+.wl-k{font-size:12px;color:var(--win);font-weight:700}.wl-t{grid-column:1;font-size:14px;line-height:1.5}.wl-b{grid-column:2;grid-row:1/3;font-size:13px;font-weight:700;color:var(--win)}
+.hero{margin:12px 16px;padding:14px;border-radius:12px;background:var(--win-bg);border:1px solid #f3b6c9}.hero-k{margin:0 0 8px;font-size:13px;font-weight:800;color:var(--win)}
+.hero-a{display:flex;gap:12px;color:var(--txt);text-decoration:none}.hero-a .pic img,.hero-a .noimg{width:96px;height:96px;border-radius:8px;object-fit:contain;background:#fff;display:block}
+.hero-a .info{display:flex;flex-direction:column;gap:2px;min-width:0}.hero-rv{font-size:12px;color:var(--sub)}.hero-d{font-size:26px;font-weight:800;color:var(--win);line-height:1.1}.hero-d small{display:block;font-size:11px;font-weight:600}
+.hero-pr b{font-size:18px;color:var(--price)}
+.wish-f[hidden]{display:none}.wish-f{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0;font-size:14px}.wish-f input{width:110px;min-height:40px;border:1px solid var(--line);border-radius:var(--r);padding:0 8px;font-size:16px}
+.wish-f button{min-height:40px;padding:0 16px;border:0;border-radius:999px;background:var(--win);color:#fff;font-weight:700}
+.facts{font-size:13px;color:var(--sub);line-height:1.6;margin:4px 0 8px}
+.save b{color:var(--win);font-size:20px}
 .stale{margin:0;padding:10px 16px;font-size:13px;line-height:1.6;color:var(--warn);background:var(--warn-bg);border-bottom:1px solid #e7c27a;font-weight:600}.ship .ic{margin-right:3px}
 .pt{font-size:12px;color:var(--brand);margin:4px 0 0;line-height:1.5}.pt b{color:var(--txt)}
 .ptn{display:block;font-size:11px;color:var(--sub);font-weight:400}

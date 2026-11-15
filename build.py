@@ -746,7 +746,7 @@ def item_body(p, g, fetched):
                f'<button type="button" class="wish" data-wish="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">{icon("search", 18)}値下がりを待つ</button>'
                f'<button type="button" class="share" data-share="{E(share_text)}" data-card="1"{card_attr}>{icon("share", 18)}この比較を送る</button></div>'
                f'<form class="wish-f" id="wish-f" hidden><label>この値段になったら買う <input type="number" inputmode="numeric" min="1" id="wish-v"> 円</label><button type="submit">登録</button></form>'
-               f'<p class="bought-msg" id="bought-msg" hidden></p>')
+               f'<p class="bought-msg" id="bought-msg" hidden></p><div id="pushbox"></div>')
     alt = ""
     if oe is not o:
         alt = (f'<p class="alt">ポイント込みなら <b>{E(oe["shop"])}</b> が {oe["effective"]:,}円でいちばんお得です'
@@ -891,7 +891,11 @@ def main():
             og_image=((f"{origin}/og-weekly.png" if origin else "og-weekly.png") if wog else "")))
         files.append("weekly.html")
     open(os.path.join(out, "style.css"), "w", encoding="utf-8").write(CSS)
-    open(os.path.join(out, "app.js"), "w", encoding="utf-8").write(APP_JS)
+    vp = os.path.join(ROOT, "push", "vapid_public.txt")  # 値下がり通知の公開鍵（毎朝の更新処理が KV を使えるときだけ作る。無ければ通知ボタンは出ない）
+    vkey = open(vp, encoding="utf-8").read().strip() if os.path.exists(vp) else ""
+    open(os.path.join(out, "app.js"), "w", encoding="utf-8").write(APP_JS.replace("__VAPID__", vkey if re.match(r"^[A-Za-z0-9_-]{80,100}$", vkey) else ""))
+    if os.path.exists(os.path.join(ROOT, "assets", "sw.js")):
+        shutil.copy(os.path.join(ROOT, "assets", "sw.js"), os.path.join(out, "sw.js"))
     json.dump({"fetched_at": str(data.get("fetched_at", "")), "pets": [[p[0], p[1]] for p in PETS],
                "cats": [[g["slug"], g["title"]] for g, _ in published], "items": index_rows},
               open(os.path.join(out, "search.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
@@ -924,7 +928,7 @@ def main():
     open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
         f"マイリスト（いつもの買い物・値下がり待ち・お気に入り）｜{SITE}", '<h1 class="ttl">マイリスト</h1>'
         '<p class="lead">保存先はこのブラウザだけです（ログイン不要・端末間で共有されず、サイトデータを消すと消えます）。楽天の購入履歴とは連動しません。</p>'
-        '<div id="savings"></div>'
+        '<div id="savings"></div><div id="pushbox"></div>'
         '<h2 class="h2">いつもの買い物</h2><p class="lead">商品ページで「買った」を押すたびに価格と日付を記録します。前回より安くなっていれば一番上に出します。</p>'
         '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。いつも買う商品のページで「買った」を押してください。</p>'
         '<h2 class="h2">値下がり待ち</h2><p class="lead">「この値段になったら買う」と決めた商品です。目標に届くと一番上に出します。</p>'
@@ -968,7 +972,7 @@ def main():
 
 
 APP_JS = r"""(function(){
-var KEY="petsite_fav_v1",BKEY="petsite_bought_v1",WKEY="petsite_wish_v1",SKEY="petsite_seen_v1",mem={},bmem={},wmem={},smem={},DATA=null;
+var VAPID="__VAPID__";var KEY="petsite_fav_v1",BKEY="petsite_bought_v1",WKEY="petsite_wish_v1",SKEY="petsite_seen_v1",mem={},bmem={},wmem={},smem={},DATA=null;
 function sload(){try{return JSON.parse(localStorage.getItem(SKEY)||"{}")}catch(e){return smem}}
 function ssave(o){var ids=Object.keys(o).sort(function(a,b){return o[b].t-o[a].t});if(ids.length>60){ids.slice(60).forEach(function(k){delete o[k]})}try{localStorage.setItem(SKEY,JSON.stringify(o))}catch(e){smem=o}}
 function seen(){var b=document.querySelector(".actions [data-fav]");if(!b)return;var id=b.dataset.fav,p=+b.dataset.price||0,o=sload(),r=o[id];
@@ -1178,7 +1182,23 @@ function shareSaved(S){var c=document.createElement("canvas");c.width=1200;c.hei
   else{var a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="petsite-savings.png";a.click();toast("画像を保存しました。X や LINE に貼ってシェアできます")}})}
 function happy(k,t){var el=document.getElementById("bought-msg");if(!el)return;var b=document.querySelector(".actions [data-card]");if(!b)return;
  el.insertAdjacentHTML("afterend",'<p class="happy" id="happy"><span>'+esc(t)+'</span><button type="button" class="link" data-share="'+esc(t+"。"+b.dataset.share)+'" data-card="1" data-kind="happy" data-cn="'+esc(b.dataset.cn)+'" data-cp="'+b.dataset.cp+'" data-ck="'+esc(b.dataset.ck)+'" data-cv="'+esc(b.dataset.cv)+'" data-cd="'+esc(b.dataset.cd)+'">シェアする</button></p>');ga("happy_show",{kind:k})}
-function init(){seen();renderSeen();var hr=document.querySelector(".hero");if(hr)countUp(hr);var wu=document.querySelector(".wk-share");if(wu)ga("weekly_view",{});ago();keepOrig();renderBought();renderWish();renderSavings();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+function pushItems(){var o={},sv=sload(),f=load(),w=wload(),bm=bload();
+ Object.keys(sv).forEach(function(id){o[id]=sv[id].cp||sv[id].p});Object.keys(f).forEach(function(id){if(f[id].p)o[id]=Math.min(o[id]||1e9,f[id].p)});
+ Object.keys(w).forEach(function(id){o[id]=Math.min(o[id]||1e9,w[id].g+1)});Object.keys(bm).forEach(function(id){o[id]=Math.min(o[id]||1e9,bm[id].p)});return o}
+function pushSync(sub,method){return fetch("/api/subscribe",{method:method||"POST",headers:{"content-type":"application/json"},body:JSON.stringify({endpoint:sub.endpoint,items:pushItems()})}).then(function(r){return r.ok})}
+function u8(b){var p="=".repeat((4-b.length%4)%4),r=atob((b+p).replace(/-/g,"+").replace(/_/g,"/")),a=new Uint8Array(r.length);for(var i=0;i<r.length;i++)a[i]=r.charCodeAt(i);return a}
+function pushUI(){var el=document.getElementById("pushbox");if(!el||!VAPID)return;var ios=/iPhone|iPad/.test(navigator.userAgent),sa=window.navigator.standalone||matchMedia("(display-mode: standalone)").matches;
+ if(!("serviceWorker" in navigator)||!("PushManager" in window)||!window.Notification){if(ios&&!sa)el.innerHTML='<p class="push-h">iPhone は、Safari の共有ボタンから「ホーム画面に追加」して開くと、値下がりの通知を受け取れます</p>';return}
+ navigator.serviceWorker.register("/sw.js").then(function(reg){return reg.pushManager.getSubscription().then(function(sub){
+  function draw(on){el.innerHTML=on?'<p class="push-on">値下がり通知：オン（見た商品・お気に入りが安くなったら、1日1回までお知らせ）<button type="button" class="link" id="push-off">通知をやめる</button></p>':
+   '<button type="button" class="btn-main push-btn" id="push-on">値下がりしたら通知を受け取る</button><p class="push-n">見た商品・お気に入りが当サイトの取得価格で安くなったら、1日1回までお知らせします。保存するのは通知の宛先と商品・価格だけです（氏名・メールは不要）</p>';
+   var a=document.getElementById("push-on"),b=document.getElementById("push-off");
+   if(a)a.onclick=function(){ga("push_ask",{});Notification.requestPermission().then(function(p){if(p!=="granted"){toast("通知が許可されませんでした。ブラウザの設定から変更できます");ga("push_denied",{});return}
+    reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID)}).then(function(s){return pushSync(s).then(function(ok){if(ok){sub=s;try{localStorage.setItem("petsite_push_t",Date.now())}catch(e){}draw(true);ga("push_on",{items:Object.keys(pushItems()).length});toast("値下がりしたらお知らせします")}else toast("登録できませんでした。時間をおいてお試しください")})}).catch(function(){toast("登録できませんでした")})})};
+   if(b)b.onclick=function(){pushSync(sub,"DELETE").then(function(){return sub.unsubscribe()}).then(function(){sub=null;draw(false);ga("push_off",{});toast("通知をやめました（記録も消しました）")})}}
+  draw(!!sub);
+  if(sub){var t=+(localStorage.getItem("petsite_push_t")||0);if(Date.now()-t>6*36e5){pushSync(sub).then(function(){try{localStorage.setItem("petsite_push_t",Date.now())}catch(e){}})}}})}).catch(function(){})}
+function init(){seen();renderSeen();pushUI();var hr=document.querySelector(".hero");if(hr)countUp(hr);var wu=document.querySelector(".wk-share");if(wu)ga("weekly_view",{});ago();keepOrig();renderBought();renderWish();renderSavings();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 """
@@ -1271,6 +1291,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}
 .wl-n{display:block;margin-top:4px;font-size:11px;font-weight:400;color:var(--sub)}
+.push-btn{width:100%;margin:8px 0 4px}.push-n,.push-h{margin:0 0 8px;font-size:12px;color:var(--sub)}.push-on{margin:8px 0;font-size:13px;color:var(--brand);font-weight:700}
 .today{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:12px 16px 0;padding:12px 16px;border-radius:12px;background:#fff;border:2px solid var(--win);color:var(--txt);text-decoration:none}
 .td-k{font-size:12px;color:var(--sub)}.td-n{font-size:16px;font-weight:700}.td-n b{color:var(--win);font-size:26px;font-variant-numeric:tabular-nums}.td-b{grid-column:2;grid-row:1/3;color:var(--win);font-weight:700;font-size:14px}
 .sv-box{margin:12px 0 20px;padding:18px 16px;border-radius:12px;background:var(--win-bg);border:1px solid #f3b6c9;text-align:center}

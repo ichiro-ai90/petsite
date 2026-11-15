@@ -304,8 +304,8 @@ def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noinde
 <form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
 <input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">{icon("search", 18)}<span>検索</span></button></form></header>
 <main>{bc}{body}</main>
-<footer id="notes"><p class="fn">※ ポイント＝税抜価格の1%×ショップの倍率（目安。SPU・クーポンは含みません）／実質＝価格−ポイント（支払額ではありません）／単価＝商品名の内容量から計算／「N店中の最安」＝当サイトが取得したショップの中での最安／「他店」＝同じ内容量のショップ（3店以上）の価格の中央値／価格は取得時点・送料はショップにより別</p><p>このサイトで掲載されている情報は、ペット用品 最安ナビの作成者により運営されています。価格、販売可能情報は、変更される場合があります。購入時に楽天市場店舗（www.rakuten.co.jp）に表示されている価格が、その商品の販売に適用されます。楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。</p>
-<p>運営: 合同会社にこのて（価格の取得・ページ作成は AI〈一郎〉が自動で行っています）</p>{ga_note()}
+<footer><p>このサイトで掲載されている情報は、ペット用品 最安ナビの作成者により運営されています。価格、販売可能情報は、変更される場合があります。購入時に楽天市場店舗（www.rakuten.co.jp）に表示されている価格が、その商品の販売に適用されます。</p>
+<p>運営: 合同会社にこのて（AI〈一郎〉が自動で作成）・楽天グループ株式会社とは関係ありません｜<a href="about.html">注記・このサイトについて</a></p>
 <p>{CREDIT}</p>{yahoo_foot()}</footer>
 </body></html>"""
 
@@ -325,9 +325,11 @@ YAHOO_CREDIT = ('<!-- Begin Yahoo! JAPAN Web Services Attribution Snippet -->\n'
 def yahoo_foot():
     if not HAS_YAHOO:
         return ""
-    return ('<p>Yahoo!ショッピングの価格・ポイント（PayPayポイント等の付与予定。条件により変わります）は Yahoo!ショッピングの API の取得結果です。'
-            '購入時に Yahoo!ショッピングのページに表示されている価格が適用されます。LINEヤフー株式会社とは関係のない個人運営の比較サイトです。</p>'
-            f'{YAHOO_CREDIT}')
+    return YAHOO_CREDIT
+
+
+YAHOO_NOTE = ('<p>Yahoo!ショッピングの価格・ポイント（PayPayポイント等の付与予定。条件により変わります）は Yahoo!ショッピングの API の取得結果です。'
+              '購入時に Yahoo!ショッピングのページに表示されている価格が適用されます。LINEヤフー株式会社とは関係のない個人運営の比較サイトです。</p>')
 
 
 def too_old(fetched_at, hours=24):
@@ -641,7 +643,7 @@ def same_size(offers, unit):
 
 
 PT_INFO = ''
-PT_NOTE = '<a class="kome" href="#notes" aria-label="注記を見る">※</a>'
+PT_NOTE = '<a class="kome" href="about.html#notes" aria-label="注記を見る">※</a>'
 YPT_NOTE = PT_NOTE  # Yahoo!ショッピングのポイントは API の付与予定（注記はフッターに併記）
 
 
@@ -941,13 +943,13 @@ def main():
                  sample, ((pet[1], f"index.html#{pet[0]}"), (g0["title"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
         files.append(fn)
         nayami.append(f'<li><a href="{fn}">{E(c["pet"])}｜{E(c["title"])}<small>{len(cps)}</small></a></li>')
-    nayami_sec = (f'<section class="mk-sec"><h2 class="h2">悩みから探す</h2><p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p><ul class="chips">{"".join(nayami)}</ul></section>' if nayami else "")
+    nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す</h2><ul class="nayami-l">{"".join(nayami)}</ul>'
+                  '<p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p></section>' if nayami else "")
     idx = ('<div class="vp"><p class="vp-t">楽天のペット用品、<b>どのショップがいちばん安い？</b></p>'
            f'<p class="vp-s">{sum(len(x[1]) for x in published)}商品・ショップごとの価格を1日2回チェック</p></div>'
-           f'<ul class="tabs">{"".join(tabs)}</ul>'
+           f'<ul class="tabs">{"".join(tabs)}</ul>' + nayami_sec
            + '<a class="sd-cta" href="shindan.html" data-ga="shindan_cta"><span class="sd-cta-t">うちの子の消耗品、月いくら？</span><span class="sd-cta-s">いつもの商品を選ぶだけ・1分でわかる</span><span class="sd-cta-b">診断する</span></a>'
            + '<div id="welcome"></div>' + today_strip(published, fdate) + spotlight(published, fdate) + drop_section(published, fdate)
-           + nayami_sec
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
     _ds = drops(published)
@@ -1029,6 +1031,23 @@ def main():
         "- 「最安」は取得したショップの中での最安。送料・クーポン・SPU は含まない。ポイントはショップ倍率からの目安\n"
         "- 価格は1日2回取り直し、保存しない（楽天の規約：価格情報は24時間まで）。お得は同じ内容量の他店（中央値）と今の最安の差で表示\n\n"
         f"## カテゴリ\n{cats}\n\n## 主なページ\n- [1分診断：うちの子の消耗品、月いくら？]({(origin + '/') if origin else ''}shindan.html)\n- [商品を探す]({(origin + '/') if origin else ''}search.html)\n")
+    open(os.path.join(out, "about.html"), "w", encoding="utf-8").write(page(
+        f"このサイトについて｜{SITE}", '<h1 class="ttl">このサイトについて</h1><div class="note" style="font-size:13px">'
+        '<h2 class="h2" id="notes">表示の意味（※）</h2><ul>'
+        '<li>ポイント＝税抜価格の1%×ショップの倍率（目安。SPU・クーポンは含みません）</li>'
+        '<li>実質＝価格−ポイント（支払額ではありません）</li>'
+        '<li>単価＝商品名の内容量から計算</li>'
+        '<li>「N店中の最安」＝当サイトが取得したショップの中での最安</li>'
+        '<li>「他店」＝同じ内容量のショップ（3店以上）の価格の中央値</li>'
+        '<li>価格は取得時点・税込。送料はショップにより別</li></ul>'
+        '<h2 class="h2">運営</h2><p>合同会社にこのて。価格の取得とページ作成は AI〈一郎〉が自動で行っています。'
+        '楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。'
+        'リンク先で購入されると、当サイトに紹介料が支払われます。</p>'
+        + (YAHOO_NOTE if HAS_YAHOO else "")
+        + ('<h2 class="h2">アクセス解析</h2><p>Google アナリティクスを使っています（Cookie を使い、個人を特定しない形で集めます）。'
+           '<a href="privacy.html">詳しく</a></p>' if GA_ID else "")
+        + '<p>お気に入り・買った日のメモは、お使いのブラウザの中だけに保存されます。</p></div>',
+        "ペット用品 最安ナビの表示の意味・運営者", sample, (("このサイトについて", None),)))
     if GA_ID:
         open(os.path.join(out, "privacy.html"), "w", encoding="utf-8").write(page(
             f"アクセス解析について｜{SITE}", '<h1 class="ttl">アクセス解析について</h1><div class="note" style="font-size:13px">'
@@ -1382,7 +1401,11 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tb.new{background:var(--win-bg);color:var(--win);border:1px solid #f3b6c9;font-weight:700}
 .more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.nayami-n{margin:2px 16px 8px;font-size:12px;color:var(--sub)}
+.nayami-n{margin:2px 16px 8px;font-size:11px;color:var(--sub)}
+.nayami{margin:12px 0 4px}.nayami-h{margin:0 16px 6px;font-size:16px;font-weight:800}
+.nayami-l{display:flex;gap:8px;overflow-x:auto;list-style:none;margin:0;padding:0 16px 4px;scrollbar-width:none}
+.nayami-l a{display:block;white-space:nowrap;padding:8px 14px;border-radius:999px;background:var(--win-bg,#fff4e5);border:1px solid var(--line,#e5e7eb);color:inherit;text-decoration:none;font-weight:700;font-size:14px}
+.nayami-l small{margin-left:6px;color:var(--sub);font-weight:400}
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}
 .wl-wrap{position:relative}.wl-sh{display:block;margin:4px 16px 0 auto;padding:4px 0}

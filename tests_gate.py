@@ -113,12 +113,13 @@ class T(unittest.TestCase):
         self.assertEqual(build.HISTORY, {}) if hasattr(build, "load_history") else None
         build.HISTORY = {}
         self.assertEqual(build.trend_block("p", {"price": 1000}), "")
-        p = prod("cat-litter-tofu", "p", "猫砂 7L", [offer("A", 900), offer("B", 1000)])
-        self.assertIsNone(build.deal(p))
-        d = build.deal(dict(p, avgPrice=1000))
-        self.assertEqual((d["hi"], d["now"], d["d"]), (1000, 900, 100))
-        self.assertIsNone(build.deal(dict(p, avgPrice=920)))   # 3%未満は出さない
-        self.assertIsNone(build.deal(dict(p, avgPrice=5000)))  # 40%超は別商品の混入とみなす
+        p = prod("cat-litter-tofu", "p", "猫砂 7L", [offer("A", 900, name="猫砂 7L"), offer("B", 1000, name="猫砂 7L")])
+        self.assertIsNone(build.deal(p, "L"))   # 同じ内容量の他店が3店未満なら出さない
+        p3 = prod("cat-litter-tofu", "p", "猫砂 7L", [offer(n, v, name="猫砂 7L") for n, v in (("A", 850), ("B", 1000), ("C", 1100))])
+        d = build.deal(p3, "L")
+        self.assertEqual((d["hi"], d["now"], d["d"]), (1000, 850, 150))
+        p4 = prod("cat-litter-tofu", "p", "猫砂 7L", [offer(n, v, name="猫砂 7L") for n, v in (("A", 950), ("B", 1000), ("C", 1010))])
+        self.assertIsNone(build.deal(p4, "L"))  # 10%未満は出さない
 
     def test_free_shipping(self):
         ps = [prod("cat-litter-tofu", f"f{i}", f"猫砂 7L 商品{i}", [offer("A店", 1000, ship="送料別", name="猫砂 7L"), offer("B店", 1300, 10, "送料無料", name="猫砂 7L")]) for i in range(3)]

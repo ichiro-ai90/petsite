@@ -65,5 +65,5 @@ jobs:
       - name: start audit（GITHUB_TOKEN で作った PR は監査が自動で始まらないため、ここで起動）
         if: steps.c.outputs.mode == 'new' || steps.c.outputs.mode == 'fix'
         run: |
-          n=$(gh pr list --state open --json number,headRefName --jq '[.[]|select(.headRefName|startswith("dev/auto-"))][0].number')
+          n=$(python3 auto/controller.py latest)
           [ -n "$n" ] && gh workflow run audit.yml -f pr="$n" && echo "監査を起動 PR #$n" || echo "PR が見つかりません"

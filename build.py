@@ -1190,8 +1190,9 @@ function u8(b){var p="=".repeat((4-b.length%4)%4),r=atob((b+p).replace(/-/g,"+")
 function pushUI(){var el=document.getElementById("pushbox");if(!el||!VAPID)return;var ios=/iPhone|iPad/.test(navigator.userAgent),sa=window.navigator.standalone||matchMedia("(display-mode: standalone)").matches;
  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!window.Notification){if(ios&&!sa)el.innerHTML='<p class="push-h">iPhone は、Safari の共有ボタンから「ホーム画面に追加」して開くと、値下がりの通知を受け取れます</p>';return}
  navigator.serviceWorker.register("/sw.js").then(function(reg){return reg.pushManager.getSubscription().then(function(sub){
-  function draw(on){el.innerHTML=on?'<p class="push-on">値下がり通知：オン（見た商品・お気に入りが安くなったら、1日1回までお知らせ）<button type="button" class="link" id="push-off">通知をやめる</button></p>':
-   '<button type="button" class="btn-main push-btn" id="push-on">値下がりしたら通知を受け取る</button><p class="push-n">見た商品・お気に入りが当サイトの取得価格で安くなったら、1日1回までお知らせします。保存するのは通知の宛先と商品・価格だけです（氏名・メールは不要）</p>';
+  var D='<details class="push-d"><summary>値下がり通知で保存する情報と消し方</summary><p>保存するもの：通知の宛先（ブラウザが発行するURL）と、見た商品・お気に入り等の商品IDと当サイトが取得した価格だけです。氏名・メールアドレス・楽天のアカウントは受け取りません。</p><p>使い道：毎朝の価格更新のあと、覚えた価格より今の取得価格（当サイトが取得したショップの最安・税込・送料別）が安い商品があるときに、1日1回まで通知を送るためだけに使います。</p><p>保存場所：Cloudflare（本サイトの配信事業者）のデータ保存領域。</p><p>消し方：このボタンの「通知をやめる」で、宛先と商品の記録をすぐに消します。ブラウザの設定で通知を切った場合も、次の送信時に届かなくなった宛先として自動で消します。</p></details>';
+  function draw(on){el.innerHTML=(on?'<p class="push-on">値下がり通知：オン（見た商品・お気に入りが安くなったら、1日1回までお知らせ）<button type="button" class="link" id="push-off">通知をやめる</button></p>':
+   '<button type="button" class="btn-main push-btn" id="push-on">値下がりしたら通知を受け取る</button><p class="push-n">見た商品・お気に入りが当サイトの取得価格で安くなったら、1日1回までお知らせします。いつでも1タップでやめられます</p>')+D;
    var a=document.getElementById("push-on"),b=document.getElementById("push-off");
    if(a)a.onclick=function(){ga("push_ask",{});Notification.requestPermission().then(function(p){if(p!=="granted"){toast("通知が許可されませんでした。ブラウザの設定から変更できます");ga("push_denied",{});return}
     reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID)}).then(function(s){return pushSync(s).then(function(ok){if(ok){sub=s;try{localStorage.setItem("petsite_push_t",Date.now())}catch(e){}draw(true);ga("push_on",{items:Object.keys(pushItems()).length});toast("値下がりしたらお知らせします")}else toast("登録できませんでした。時間をおいてお試しください")})}).catch(function(){toast("登録できませんでした")})})};
@@ -1291,6 +1292,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}
 .wl-n{display:block;margin-top:4px;font-size:11px;font-weight:400;color:var(--sub)}
+.push-d{margin:0 0 12px;font-size:12px;color:var(--sub)}.push-d summary{cursor:pointer;color:var(--link)}.push-d p{margin:6px 0}
 .push-btn{width:100%;margin:8px 0 4px}.push-n,.push-h{margin:0 0 8px;font-size:12px;color:var(--sub)}.push-on{margin:8px 0;font-size:13px;color:var(--brand);font-weight:700}
 .today{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:12px 16px 0;padding:12px 16px;border-radius:12px;background:#fff;border:2px solid var(--win);color:var(--txt);text-decoration:none}
 .td-k{font-size:12px;color:var(--sub)}.td-n{font-size:16px;font-weight:700}.td-n b{color:var(--win);font-size:26px;font-variant-numeric:tabular-nums}.td-b{grid-column:2;grid-row:1/3;color:var(--win);font-weight:700;font-size:14px}

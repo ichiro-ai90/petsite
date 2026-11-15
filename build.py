@@ -748,6 +748,12 @@ def mall_cmp(offers):
             f'<small>（取得時点・税込・送料別。ポイントは含みません）</small></p>')
 
 
+def card_pt(price):
+    """楽天カード払いで増えるポイントの目安（楽天カード公式 2026-11-16 確認）：
+    通常分＝利用額（税込）100円につき1pt・上限なし／特典分＝利用額（税抜）100円につき1pt・月1,000ptまで（期間限定）"""
+    return price // 100 + int(price / 1.1) // 100
+
+
 def item_body(p, g, fetched):
     offers = sorted(p["offers"], key=lambda o: o["price"])
     o = offers[0]
@@ -808,7 +814,9 @@ def item_body(p, g, fetched):
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
-            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p><p class="shop-l">{E(o["shop"])}</p>'
+            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a></p>')
+            + f'<p class="shop-l">{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
             f'{shipnote}{save}{mall_cmp(offers)}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
             f'<h2 class="h2">この商品を売っているショップ</h2>'
@@ -1033,7 +1041,9 @@ def main():
         '<li>単価＝商品名の内容量から計算</li>'
         '<li>「N店中の最安」＝当サイトが取得したショップの中での最安</li>'
         '<li>「他店」＝同じ内容量のショップ（3店以上）の価格の中央値</li>'
-        '<li>価格は取得時点・税込。送料はショップにより別</li></ul>'
+        '<li>価格は取得時点・税込。送料はショップにより別</li>'
+        '<li id="card">楽天カード払いなら＝楽天市場で楽天カードで支払ったときに増えるポイントの目安（楽天カード通常分：税込100円につき1pt・上限なし／'
+        '楽天カード特典分：税抜100円につき1pt・期間限定ポイント・月1,000ptまで。楽天カード公式の条件による）。その月の他の買い物で上限に達していると少なくなります</li></ul>'
         '<h2 class="h2">運営</h2><p>合同会社にこのて。価格の取得とページ作成は AI〈一郎〉が自動で行っています。'
         '楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。'
         'リンク先で購入されると、当サイトに紹介料が支払われます。</p>'
@@ -1395,6 +1405,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tb.new{background:var(--win-bg);color:var(--win);border:1px solid #f3b6c9;font-weight:700}
 .more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.card-pt{margin:2px 0;font-size:13px}.card-pt b{color:#bf0000}
 .nayami-n{margin:2px 16px 8px;font-size:11px;color:var(--sub)}
 .nayami{margin:12px 0 4px}.nayami-h{margin:0 16px 6px;font-size:16px;font-weight:800}
 .nayami-l{display:flex;gap:8px;overflow-x:auto;list-style:none;margin:0;padding:0 16px 4px;scrollbar-width:none}

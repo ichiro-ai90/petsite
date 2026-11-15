@@ -10,3 +10,5 @@
 - [ ] 値下がり額の見せ方の統一：トップ・ランキング・weekly の「他店より安い」額を同じ大きさ・太さ・色（--win）に揃え、現在価格は一段小さく。数字の右に％を小さく
 - [ ] 商品ページの共有プレビュー画像を横長に：毎朝の build で、他店より安い商品（drops の上位20件）だけ og 画像（1200×630、商品名は使わず「−◯円／◯％／取得ショップ数」）を作り、その商品ページの og:image にする
 - [ ] （人）楽天の買い時表示：お買い物マラソン等の開催期間は楽天の公式ページで確認が必要なため、オーナーが期間を auto/campaigns.json に書いたら表示する仕組みだけ作る（期間の推測はしない）
+- [ ] 不公開の10カテゴリを公開できるように：products.json の keyword・pkeyword・exclude・min を見直し、build.py の amount() が内容量を読めない商品名のパターン（例：「◯kg×◯袋」「◯L入」「◯枚入り×◯」「◯匹」）を tests_amount.py にテスト付きで追加。対象：dog-treat-large・hamster-bedding-paper・dried-cricket・dubia-live・reptile-substrate・cat-litter-mineral・cat-litter-wood・small-animal-wood-bedding・tropical-fish-food・parakeet-pellet
+- [ ] 売れ筋の大カテゴリを深く：ドッグフード・キャットフード・ペットシーツ・猫砂の各カテゴリだけ、製品検索を5ページ・1カテゴリ最大100商品に（fetch_prices.py にカテゴリ別の上限 "max" を追加。1秒1回のまま、1回の取得が90分を超えないこと）

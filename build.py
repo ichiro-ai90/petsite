@@ -930,7 +930,7 @@ def main():
     open(os.path.join(out, "favorites.html"), "w", encoding="utf-8").write(page(
         f"マイリスト（いつもの買い物・値下がり待ち・お気に入り）｜{SITE}", '<h1 class="ttl">マイリスト</h1>'
         '<p class="lead">保存先はこのブラウザだけです（ログイン不要・端末間で共有されず、サイトデータを消すと消えます）。楽天の購入履歴とは連動しません。</p>'
-        '<div id="savings"></div><div id="pushbox"></div>'
+        '<div id="savings"></div><div id="wshare" class="sd-share"></div><div id="pushbox"></div>'
         '<h2 class="h2">いつもの買い物</h2><p class="lead">商品ページで「買った」を押すたびに価格と日付を記録します。前回より安くなっていれば一番上に出します。</p>'
         '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。いつも買う商品のページで「買った」を押してください。</p>'
         '<h2 class="h2">値下がり待ち</h2><p class="lead">「この値段になったら買う」と決めた商品です。目標に届くと一番上に出します。</p>'
@@ -1088,14 +1088,28 @@ function renderWish(){var l=document.getElementById("wishlist");if(!l)return;dat
   if(x.lo&&x.p<x.lo&&x.hd>=5)msg+='<br><span class="tb low">記録した'+x.hd+'日間でいちばん安い</span>';
   return row(x,'<span class="diff">'+msg+'</span>').replace(/<\/li>$/,'<div class="mini-acts">'+(reach?'<button type="button" class="link" data-kind="wish" data-url="item-'+esc(id)+'.html" data-share="'+esc(x.n.slice(0,40)+" が待っていた "+yen(r.g)+"円以下（いま "+yen(x.p)+"円・取得時点）になりました")+'">シェアする</button>':'')+'<button type="button" class="link" data-wdel="'+esc(id)+'">外す</button></div></li>')}).join("");
  document.getElementById("wishempty").hidden=ids.length>0;paint()})}
-function welcome(){var el=document.getElementById("welcome");if(!el)return;var bm=bload(),w=wload(),f=load(),sv=sload();if(!Object.keys(bm).length&&!Object.keys(w).length&&!Object.keys(f).length&&!Object.keys(sv).length)return;
+function wstats(cb){var bm=bload(),w=wload(),f=load(),sv=sload();if(!Object.keys(bm).length&&!Object.keys(w).length&&!Object.keys(f).length&&!Object.keys(sv).length)return;
  data(function(d){var by={};d.items.forEach(function(x){by[x.id]=x});var a=0,as=0,b=0,c=0,cs=0;
   Object.keys(bm).forEach(function(id){var x=by[id];if(x&&x.p<bm[id].p){a++;as+=bm[id].p-x.p}});
   Object.keys(w).forEach(function(id){var x=by[id];if(x&&x.p<=w[id].g)b++});
   Object.keys(f).forEach(function(id){var x=by[id];if(x&&f[id].p&&x.p<f[id].p){c++;cs+=f[id].p-x.p}});
   var s2=0,ss=0;Object.keys(sv).forEach(function(id){var x=by[id],base=sv[id].cp||sv[id].p;if(x&&!bm[id]&&!f[id]&&!w[id]&&base&&x.p<base){s2++;ss+=base-x.p}});
-  if(!a&&!b&&!c&&!s2)return;var parts=[];if(a)parts.push('いつもの商品 <b>'+a+'件</b>が前回より計 <b class="win">'+yen(as)+'円</b>安い');if(b)parts.push('値下がり待ち <b>'+b+'件</b>が目標価格に到達');if(c)parts.push('お気に入り <b>'+c+'件</b>が登録時より計 '+yen(cs)+'円安い');if(s2)parts.push('前に見た商品 <b>'+s2+'件</b>が見たときより計 <b class="win">'+yen(ss)+'円</b>安い');
-  el.innerHTML='<a class="welcome" href="favorites.html" data-ga="welcome_click"><span class="wl-k">おかえりなさい</span><span class="wl-t">'+parts.join('、')+'<small class="wl-n">比較は、当サイトが取得したショップの最安価格（税込・送料別）どうし。あなたが見たショップの価格とは限りません</small></span><span class="wl-b">マイリストを見る</span></a>';ga("welcome_show",{routine:a,wish:b,fav:c,seen:s2})})}
+  if(!a&&!b&&!c&&!s2)return;cb({a:a,as:as,b:b,c:c,cs:cs,s2:s2,ss:ss,t:as+cs+ss,n:a+c+s2})})}
+function welcome(){var el=document.getElementById("welcome");if(!el)return;wstats(function(r){var a=r.a,b=r.b,c=r.c,s2=r.s2,parts=[];if(a)parts.push('いつもの商品 <b>'+a+'件</b>が前回より計 <b class="win">'+yen(r.as)+'円</b>安い');if(b)parts.push('値下がり待ち <b>'+b+'件</b>が目標価格に到達');if(c)parts.push('お気に入り <b>'+c+'件</b>が登録時より計 '+yen(r.cs)+'円安い');if(s2)parts.push('前に見た商品 <b>'+s2+'件</b>が見たときより計 <b class="win">'+yen(r.ss)+'円</b>安い');
+  el.innerHTML='<div class="wl-wrap"><a class="welcome" href="favorites.html" data-ga="welcome_click"><span class="wl-k">おかえりなさい</span><span class="wl-t">'+parts.join('、')+'<small class="wl-n">比較は、当サイトが取得したショップの最安価格（税込・送料別）どうし。あなたが見たショップの価格とは限りません</small></span><span class="wl-b">マイリストを見る</span></a>'+(r.t>0?'<button type="button" class="link wl-sh" data-wsh="1">この結果をシェア</button>':'')+'</div>';ga("welcome_show",{routine:a,wish:b,fav:c,seen:s2});bindWsh(r)})}
+function wshareBox(){var el=document.getElementById("wshare");if(!el)return;wstats(function(r){if(r.t>0){el.innerHTML='<button type="button" class="btn-sub" data-wsh="1">この結果をシェア</button>';bindWsh(r)}})}
+function bindWsh(r){document.querySelectorAll("[data-wsh]").forEach(function(b){b.onclick=function(){shareWelcome(r)}})}
+function shareWelcome(r){var c=document.createElement("canvas");c.width=1200;c.height=630;var x=c.getContext("2d");if(!x)return;
+ x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#0f6b62";x.fillRect(0,0,1200,14);
+ x.fillStyle="#1f2328";x.font="700 44px "+F2;x.fillText("前に見た・お気に入りの商品が",70,110);
+ x.fillStyle="#c2255c";x.font="800 150px "+F2;var s=yen(r.t);x.fillText(s,70,300);var w=x.measureText(s).width;x.font="700 64px "+F2;x.fillText("円 値下がり",90+w,300);
+ x.fillStyle="#1f2328";x.font="700 36px "+F2;x.fillText(r.n+"件の商品の合計",70,370);
+ x.fillStyle="#6b7280";x.font="400 24px "+F2;x.fillText("比較は、当サイトが取得したショップの最安価格（税込・送料別）どうし。",70,440);x.fillText("利用者が見たショップの価格とは限りません。取得時点の目安・PR（アフィリエイト）",70,480);
+ x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを毎日比較",70,598);
+ var txt="見た商品・お気に入りの "+r.n+"件が、合計 "+yen(r.t)+"円 値下がりしていました（当サイト取得価格どうしの比較・目安）",url=location.origin+location.pathname.replace(/[^\/]*$/,"")+"index.html";ga("share",{kind:"welcome",value:r.t});
+ c.toBlob(function(b){var f=new File([b],"petsite-welcome.png",{type:"image/png"});
+  if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt,url:url}).catch(function(){});
+  else{var a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="petsite-welcome.png";a.click();toast("画像を保存しました。X や LINE に貼ってシェアできます")}})}
 function ago(){document.querySelectorAll("time[data-fetched]").forEach(function(t){var m=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(t.dataset.fetched);if(!m)return;
  var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"取得から1時間以内":h<24?"取得から約"+h+"時間":"取得から約"+Math.floor(h/24)+"日";
  t.textContent=t.dataset.fetched+"・"+s;if(h>=48&&!document.getElementById("stale")){var hd=document.querySelector("header");if(hd)hd.insertAdjacentHTML("afterend",'<p class="stale" id="stale" role="status">表示の価格は約'+Math.floor(h/24)+'日前（'+esc(t.dataset.fetched)+'）の取得です。最新の価格は楽天市場のページでご確認ください。</p>');ga("stale_banner",{hours:h})}})}
@@ -1201,7 +1215,7 @@ function pushUI(){var el=document.getElementById("pushbox");if(!el||!VAPID)retur
    if(b)b.onclick=function(){pushSync(sub,"DELETE").then(function(){return sub.unsubscribe()}).then(function(){sub=null;draw(false);ga("push_off",{});toast("通知をやめました（記録も消しました）")})}}
   draw(!!sub);
   if(sub){var t=+(localStorage.getItem("petsite_push_t")||0);if(Date.now()-t>6*36e5){pushSync(sub).then(function(){try{localStorage.setItem("petsite_push_t",Date.now())}catch(e){}})}}})}).catch(function(){})}
-function init(){seen();renderSeen();pushUI();var hr=document.querySelector(".hero");if(hr)countUp(hr);var wu=document.querySelector(".wk-share");if(wu)ga("weekly_view",{});ago();keepOrig();renderBought();renderWish();renderSavings();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+function init(){seen();renderSeen();pushUI();var hr=document.querySelector(".hero");if(hr)countUp(hr);var wu=document.querySelector(".wk-share");if(wu)ga("weekly_view",{});ago();keepOrig();renderBought();renderWish();renderSavings();welcome();wshareBox();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 """
@@ -1293,6 +1307,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}
+.wl-wrap{position:relative}.wl-sh{display:block;margin:4px 16px 0 auto;padding:4px 0}
 .wl-n{display:block;margin-top:4px;font-size:11px;font-weight:400;color:var(--sub)}
 .push-d{margin:0 0 12px;font-size:12px;color:var(--sub)}.push-d summary{cursor:pointer;color:var(--link)}.push-d p{margin:6px 0}
 .push-btn{width:100%;margin:8px 0 4px}.push-n,.push-h{margin:0 0 8px;font-size:12px;color:var(--sub)}.push-on{margin:8px 0;font-size:13px;color:var(--brand);font-weight:700}

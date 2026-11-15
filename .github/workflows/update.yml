@@ -58,6 +58,7 @@ jobs:
         env:
           SITE_ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://petnavi.niconote.jp' }}   # 公開先（Cloudflare Pages）。GitHub Pages には公開しない（2026-11 規約上の理由）
           GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}   # Google アナリティクス（未設定なら入れない）
+          RAKUTEN_CARD_URL: ${{ secrets.RAKUTEN_CARD_URL }}  # 楽天カードの申込リンク（楽天アフィリエイト。未設定なら出さない）
         run: python build.py
       - name: keep prices for 1 day（楽天の規約：価格情報の保存は24時間まで。リポジトリにはコミットせず、保持1日の成果物にだけ置く）
         uses: actions/upload-artifact@v4

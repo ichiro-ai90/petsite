@@ -941,7 +941,7 @@ def main():
                  sample, ((pet[1], f"index.html#{pet[0]}"), (g0["title"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
         files.append(fn)
         nayami.append(f'<li><a href="{fn}">{E(c["pet"])}｜{E(c["title"])}<small>{len(cps)}</small></a></li>')
-    nayami_sec = (f'<section class="mk-sec"><h2 class="h2">悩みから探す</h2><ul class="chips">{"".join(nayami)}</ul></section>' if nayami else "")
+    nayami_sec = (f'<section class="mk-sec"><h2 class="h2">悩みから探す</h2><p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p><ul class="chips">{"".join(nayami)}</ul></section>' if nayami else "")
     idx = ('<div class="vp"><p class="vp-t">楽天のペット用品、<b>どのショップがいちばん安い？</b></p>'
            f'<p class="vp-s">{sum(len(x[1]) for x in published)}商品・ショップごとの価格を1日2回チェック</p></div>'
            f'<ul class="tabs">{"".join(tabs)}</ul>'

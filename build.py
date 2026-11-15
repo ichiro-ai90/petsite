@@ -749,6 +749,10 @@ def mall_cmp(offers):
             f'<small>（取得時点・税込・送料別。ポイントは含みません）</small></p>')
 
 
+_CU = os.environ.get("RAKUTEN_CARD_URL", "").strip()
+CARD_URL = _CU if _CU.startswith("https://hb.afl.rakuten.co.jp/") else ""  # 楽天の正規のアフィリエイトリンクだけ使う
+
+
 def card_pt(price):
     """楽天カード払いで増えるポイントの目安（楽天カード公式 2026-11-16 確認）：
     通常分＝利用額（税込）100円につき1pt・上限なし／特典分＝利用額（税抜）100円につき1pt・月1,000ptまで（期間限定）"""
@@ -816,7 +820,9 @@ def item_body(p, g, fetched):
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
-            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a></p>')
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
+                         + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")
+                         + '</p>')
             + f'<p class="shop-l">{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
             f'{shipnote}{save}{mall_cmp(offers)}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
@@ -1430,7 +1436,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .cty{margin-left:8px;font-size:12px;font-weight:700;color:var(--sub);border:1px solid var(--line,#e5e7eb);border-radius:4px;padding:1px 6px;vertical-align:middle}
-.card-pt{margin:2px 0;font-size:13px}.card-pt b{color:#bf0000}
+.card-pt{margin:2px 0;font-size:13px}.card-ln{margin-left:8px;font-size:12px}.card-pt b{color:#bf0000}
 .nayami-n{margin:2px 16px 8px;font-size:11px;color:var(--sub)}
 .nayami{margin:12px 0 4px}.nayami-h{margin:0 16px 6px;font-size:16px;font-weight:800}
 .nayami-l{display:flex;gap:8px;overflow-x:auto;list-style:none;margin:0;padding:0 16px 4px;scrollbar-width:none}

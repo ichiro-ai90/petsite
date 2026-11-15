@@ -90,7 +90,7 @@ def shots():
             png = pg.screenshot(full_page=full, clip=None if not full else {"x": 0, "y": 0, "width": 390, "height": 2400})
             meta = pg.evaluate("""() => { const m = n => (document.querySelector(`meta[property="${n}"],meta[name="${n}"]`) || {}).content || "（なし）";
               return `【head】title: ${document.title}／og:title: ${m("og:title")}／og:description: ${m("og:description")}／og:image: ${m("og:image")}／robots: ${m("robots")}`; }""")
-            text = meta + "\n" + pg.inner_text("body")[:2300]
+            text = meta + "\n" + pg.inner_text("body")[:2300] + "\n（本文はここで切っています。末尾の途切れは監査用の切り取りで、実際のページは続きがあります）"
             out.append((name, path, png, text))
             if pg.query_selector("#freeonly"):  # 切り替え ON の状態も見せる（OFF の画面だけでは判断できないため）
                 pg.check("#freeonly")
@@ -101,8 +101,8 @@ def shots():
                 pg.wait_for_timeout(300)
                 out.append((name + "（ポイントの？を開いた状態）", path, pg.screenshot(), ""))
         if first:  # 2回目以降の利用者の画面（記録あり）。初訪問の画面とは分けて評価してもらう
-            pg.evaluate("""id => { const t = Date.now(), d = 864e5;
-              localStorage.setItem('petsite_bought_v1', JSON.stringify({[id]: {p: 1, t: t - 30*d, h: [[t - 60*d, 1, 300], [t - 30*d, 1, 450]]}})); }""", first["id"])
+            pg.evaluate("""id => { const t = Date.now(), d = 864e5;  // 見本：前回は今より200円高く買った例（実在の価格を基準に作る）
+              localStorage.setItem('petsite_bought_v1', JSON.stringify({[id[0]]: {p: id[1] + 200, t: t - 30*d, h: [[t - 60*d, id[1] + 300, 300], [t - 30*d, id[1] + 200, 450]]}})); }""", [first["id"], first["p"]])
             pg.goto("http://localhost:8000/favorites.html", wait_until="networkidle", timeout=30000)
             pg.wait_for_timeout(1200)
             out.append(("マイリスト（2回目以降の利用者・記録2回の例。初訪問では出ない）", "favorites.html", pg.screenshot(), pg.inner_text("body")[:1500]))

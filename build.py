@@ -721,9 +721,9 @@ def item_body(p, g, fetched):
     same = same_size(offers, g["unit"])
     hi = max(same, key=lambda x: x["price"])
     hie = max(x["effective"] for x in same)
-    save = "" if OUTLET.search(o["name"]) else (f'<p class="save">同じ内容量で売っている{len(same)}ショップの中でいちばん高いショップより <b>{hi["price"] - o["price"]:,}円安い</b>'
-            + (f'（ポイント込みなら最大 {hie - oe["effective"]:,}円お得）' if oe in same and oe["effective"] < hie else "")
-            + '</p>') if len(same) >= 2 and hi["price"] > o["price"] else ""
+    _dl = deal(p, g["unit"])
+    save = "" if OUTLET.search(o["name"]) or not _dl else (
+        f'<p class="save">他店（同じ内容量 {len(same)}店の中央値 {_dl["hi"]:,}円）より <b>{_dl["d"]:,}円安い</b>{PT_NOTE}</p>')
     fb = free_best(offers)
     shipnote = ""
     if o.get("shipping") != "送料無料":

@@ -1,0 +1,32 @@
+name: probe-yahoo
+on:
+  push:
+    branches: [dev/probe-yahoo]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Yahoo の商品検索が動くか（値は出さない）
+        env:
+          YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.parse
+          import fetch_prices as f
+          print("YAHOO_APP_ID set:", bool(os.environ.get("YAHOO_APP_ID")))
+          for kw in ["猫砂 おから", "ドッグフード"]:
+              d = f._get(f.YAHOO_URL, {"appid": os.environ["YAHOO_APP_ID"], "query": kw, "results": 3})
+              hits = d.get("hits") or []
+              print(kw, "totalResultsAvailable", d.get("totalResultsAvailable"), "hits", len(hits))
+              for h in hits:
+                  print("  ", h.get("price"), "|", (h.get("seller") or {}).get("name"), "| jan", h.get("janCode"), "|", (h.get("name") or "")[:40])
+              jan = next((h.get("janCode") for h in hits if h.get("janCode")), None)
+              if jan:
+                  o = f.yahoo_offers({"jan": jan, "minPrice": 1})
+                  print("  yahoo_offers(jan) ->", len(o), [(x["shop"][:12], x["price"], x["shipping"]) for x in o[:3]])
+          PY

@@ -473,7 +473,7 @@ def today_strip(published, fdate):
             f'<span class="td-n">平均より安い <b>{n}</b>件</span><span class="td-b">ランキングを見る</span></a>')
 
 
-def og_card(path, title, big, sub, foot="ペット用品 最安ナビ　楽天のショップを毎日比較"):
+def og_card(path, title, big, sub, foot="ペット用品 最安ナビ　楽天のショップを比較"):
     """共有プレビュー用の画像（1200×630）。商品名は使わず、決まった文言と数字だけ（フォントは assets/og-font.otf のサブセット）。
     Pillow が無い環境では作らない（画像なしで公開を続ける）"""
     try:
@@ -868,7 +868,7 @@ def main():
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
     _ds = drops(published)
     og_ok = og_card(os.path.join(out, "og-today.png"), f"{fdate[5:].replace('-', '/')} ペット用品のお得（楽天市場）",
-                    f"値下がり {today_drops(published)}件", (f"7日間の最大 −{_ds[0]['d']:,}円（取得したショップの最安・送料別）" if _ds else "楽天のショップの価格を毎日記録して比較")) if fdate[:2] == "20" else False
+                    f"お得 {today_drops(published)}件", (f"楽天の平均価格より最大 −{_ds[0]['d']:,}円（取得時点・送料別）" if _ds else "楽天のショップの価格を比較（1日2回更新）")) if fdate[:2] == "20" else False
     open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(
         page(f"{SITE}｜楽天市場のペット用品を価格・ポイントで比較", idx,
              f"楽天市場のペット用品{len(index_rows)}商品を、ショップごとの価格とポイントで比較（{fdate}取得）。猫砂・ドッグフード・小動物や爬虫類、小鳥・魚の餌まで。",
@@ -943,7 +943,7 @@ def main():
         f"運営: 合同会社にこのて（価格の取得とページ作成は AI〈一郎〉が自動で実施）。楽天グループとは関係のない個人運営の比較サイトで、楽天アフィリエイトを利用しています。\n\n"
         f"- 価格の取得: 毎日1回、楽天ウェブサービスの API から。最新の取得日 {fdate}\n"
         "- 「最安」は取得したショップの中での最安。送料・クーポン・SPU は含まない。ポイントはショップ倍率からの目安\n"
-        "- 価格の記録を最大90日保存し、値下がり・記録した期間での最安を事実として表示\n\n"
+        "- 価格は1日2回取り直し、保存しない（楽天の規約：価格情報は24時間まで）。お得は楽天の製品データの平均価格と今の最安の差で表示\n\n"
         f"## カテゴリ\n{cats}\n\n## 主なページ\n- [1分診断：うちの子の消耗品、月いくら？]({(origin + '/') if origin else ''}shindan.html)\n- [商品を探す]({(origin + '/') if origin else ''}search.html)\n")
     if GA_ID:
         open(os.path.join(out, "privacy.html"), "w", encoding="utf-8").write(page(
@@ -1024,8 +1024,8 @@ document.addEventListener("change",function(e){if(e.target.id!=="freeonly")retur
  var n=0;[].slice.call(l.children).forEach(function(li){
   if(li.dataset.free!==undefined){li.hidden=on&&li.dataset.free!=="1";if(!li.hidden)n++;return}
   if(on){if(!li.dataset.fprice){li.hidden=true;return}li.hidden=false;n++;li.dataset.price=li.dataset.fprice;li.dataset.eff=li.dataset.feff;
-   li.querySelector(".pv").textContent=yen(li.dataset.fprice);li.querySelector(".shipv").innerHTML='<span class="ship free">送料無料</span>'+(li.dataset.fprice!==li.dataset.aprice?'<small class="alt-p">（送料別の最安 '+yen(li.dataset.aprice)+'円）</small>':'');li.querySelector(".ptv").textContent=yen(li.dataset.fpt)+"ポイント（"+li.dataset.frate+"倍・目安）";var sc=li.querySelector(".scope");if(sc){sc.dataset.o=sc.dataset.o||sc.textContent;sc.textContent="送料無料のショップの中で最安"}}
-  else{li.hidden=false;n++;li.dataset.price=li.dataset.aprice;li.dataset.eff=li.dataset.aeff;var o=li.dataset.orig;if(o){var x=JSON.parse(o);li.querySelector(".pv").textContent=x.p;li.querySelector(".shipv").innerHTML=x.s;li.querySelector(".ptv").textContent=x.t}var sc2=li.querySelector(".scope");if(sc2&&sc2.dataset.o)sc2.textContent=sc2.dataset.o}});
+   li.querySelector(".pv").textContent=yen(li.dataset.fprice);li.querySelector(".shipv").innerHTML='<span class="ship free">送料無料</span>'+(li.dataset.fprice!==li.dataset.aprice?'<small class="alt-p">（送料別の最安 '+yen(li.dataset.aprice)+'円）</small>':'');li.querySelector(".ptv").textContent=yen(li.dataset.fpt)+"ポイント（"+li.dataset.frate+"倍・目安）";var sc=li.querySelector(".scope");if(sc){sc.dataset.o=sc.dataset.o||sc.textContent;sc.textContent="送料無料のショップの中で最安"}li.querySelectorAll(".up,.save-s").forEach(function(z){z.hidden=true})}
+  else{li.hidden=false;n++;li.dataset.price=li.dataset.aprice;li.dataset.eff=li.dataset.aeff;var o=li.dataset.orig;if(o){var x=JSON.parse(o);li.querySelector(".pv").textContent=x.p;li.querySelector(".shipv").innerHTML=x.s;li.querySelector(".ptv").textContent=x.t}var sc2=li.querySelector(".scope");if(sc2&&sc2.dataset.o)sc2.textContent=sc2.dataset.o;li.querySelectorAll(".up,.save-s").forEach(function(z){z.hidden=false})}});
  var fe=document.getElementById("freeempty");if(fe)fe.hidden=n>0;var act=document.querySelector('.sort button[aria-pressed="true"]');if(act)act.click()});
 function keepOrig(){document.querySelectorAll("#list li[data-fprice], #list li[data-aprice]").forEach(function(li){if(li.dataset.orig)return;var pv=li.querySelector(".pv"),sv=li.querySelector(".shipv"),tv=li.querySelector(".ptv");if(pv&&sv&&tv)li.dataset.orig=JSON.stringify({p:pv.textContent,s:sv.innerHTML,t:tv.textContent})})}
 document.addEventListener("click",function(e){var b=e.target.closest("[data-fav]");if(!b)return;e.preventDefault();
@@ -1096,12 +1096,12 @@ function wshareBox(){var el=document.getElementById("wshare");if(!el)return;wsta
 function bindWsh(r){document.querySelectorAll("[data-wsh]").forEach(function(b){b.onclick=function(){shareWelcome(r)}})}
 function shareWelcome(r){var c=document.createElement("canvas");c.width=1200;c.height=630;var x=c.getContext("2d");if(!x)return;
  x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#0f6b62";x.fillRect(0,0,1200,14);
- x.fillStyle="#1f2328";x.font="700 44px "+F2;x.fillText("前に見た・お気に入りの商品が",70,110);
- x.fillStyle="#c2255c";x.font="800 150px "+F2;var s=yen(r.t);x.fillText(s,70,300);var w=x.measureText(s).width;x.font="700 64px "+F2;x.fillText("円 値下がり",90+w,300);
+ x.fillStyle="#1f2328";x.font="700 44px "+F2;x.fillText("前に見た・お気に入りの商品が平均より",70,110);
+ x.fillStyle="#c2255c";x.font="800 150px "+F2;var s=yen(r.t);x.fillText(s,70,300);var w=x.measureText(s).width;x.font="700 64px "+F2;x.fillText("円 安い",90+w,300);
  x.fillStyle="#1f2328";x.font="700 36px "+F2;x.fillText(r.n+"件の商品の合計",70,370);
- x.fillStyle="#6b7280";x.font="400 24px "+F2;x.fillText("比較は、当サイトが取得したショップの最安価格（税込・送料別）どうし。",70,440);x.fillText("利用者が見たショップの価格とは限りません。取得時点の目安・PR（アフィリエイト）",70,480);
- x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを毎日比較",70,598);
- var txt="見た商品・お気に入りの "+r.n+"件が、合計 "+yen(r.t)+"円 値下がりしていました（当サイト取得価格どうしの比較・目安）",url=location.origin+location.pathname.replace(/[^\/]*$/,"")+"index.html";ga("share",{kind:"welcome",value:r.t});
+ x.fillStyle="#6b7280";x.font="400 24px "+F2;x.fillText("楽天の製品データの平均価格と、取得時点の最安（税込・送料別）の差の合計",70,440);x.fillText("目安・PR（アフィリエイト）",70,480);
+ x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);
+ var txt="見た商品・お気に入りの "+r.n+"件が、楽天の平均価格より合計 "+yen(r.t)+"円 安くなっていました（取得時点・目安）",url=location.origin+location.pathname.replace(/[^\/]*$/,"")+"index.html";ga("share",{kind:"welcome",value:r.t});
  c.toBlob(function(b){var f=new File([b],"petsite-welcome.png",{type:"image/png"});
   if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt,url:url}).catch(function(){});
   else{var a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="petsite-welcome.png";a.click();toast("画像を保存しました。X や LINE に貼ってシェアできます")}})}
@@ -1169,7 +1169,7 @@ function itemCard(b){var c=document.createElement("canvas");c.width=1200;c.heigh
  if(d.cv){x.fillStyle="#c2255c";x.font="800 110px "+F2;x.fillText(d.cv,70,380)}
  x.fillStyle="#1f2328";x.font="700 40px "+F2;x.fillText("取得した最安 "+yen(+d.cp)+"円（送料別の場合あり）",70,d.cv?460:380);
  x.fillStyle="#6b7280";x.font="400 24px "+F2;x.fillText(d.cd+" 取得時点の目安・PR（アフィリエイト）",70,505);
- x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを毎日比較",70,598);return c}
+ x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);return c}
 function saved(){var bm=bload(),tot=0,n=0;Object.keys(bm).forEach(function(id){hist(bm[id]).forEach(function(r){if(r[2]>0){tot+=r[2];n++}})});return{t:tot,n:n}}
 var MS=[1000,3000,5000,10000,30000];
 function renderSavings(){var el=document.getElementById("savings");if(!el)return;var S=saved();if(!S.n){el.innerHTML="";return}
@@ -1186,7 +1186,7 @@ function shareSaved(S){var c=document.createElement("canvas");c.width=1200;c.hei
  x.fillStyle="#1f2328";x.font="700 44px "+F2;x.fillText("ペット用品、ショップ選びで",70,110);
  x.fillStyle="#c2255c";x.font="800 150px "+F2;var s=yen(S.t);x.fillText(s,70,300);var w=x.measureText(s).width;x.font="700 64px "+F2;x.fillText("円 節約",90+w,300);
  x.fillStyle="#6b7280";x.font="400 28px "+F2;x.fillText(S.n+"回の購入記録・取得したショップの中央値との差の合計（目安）",70,380);
- x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを毎日比較",70,598);
+ x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);
  var txt="ペット用品のショップ選びで、これまでに "+yen(S.t)+"円 節約できました（取得価格の中央値との差・目安）",url=location.origin+location.pathname.replace(/[^\/]*$/,"")+"index.html";ga("share",{kind:"savings",value:S.t});
  c.toBlob(function(b){var f=new File([b],"petsite-savings.png",{type:"image/png"});
   if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt,url:url}).catch(function(){});

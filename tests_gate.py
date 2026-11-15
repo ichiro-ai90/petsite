@@ -75,7 +75,7 @@ class T(unittest.TestCase):
         # 商品ページ: 最安＝2,000円（A店）、ポイント込みは B店（10倍）が安い
         self.assertIn("今回取得した2ショップ中の最安値", item)
         self.assertIn("<b>2,000</b>円", item)
-        self.assertIn("ポイント込みなら <b>B店</b>", item)
+        self.assertIn("の店：<b>B店</b>", item)
         self.assertEqual(item.count('rel="sponsored nofollow"'), 4)  # 最安ボタン＋ショップ2件＋全ショップ
         self.assertIn("1Lあたり", item)
         self.assertNotIn("最安値挑戦", item)

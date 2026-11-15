@@ -36,7 +36,7 @@ jobs:
           pip install --quiet pillow fonttools
           sudo apt-get install -y -q fonts-noto-cjk >/dev/null
           git config --global user.name "ichiro-ai90"; git config --global user.email "ichiro-ai90@users.noreply.github.com"
-          git fetch -q origin main && git show origin/main:data/prices.json > /dev/null
+          python auto/get_prices.py
       - name: checkout PR branch（監査に答える回）
         if: steps.c.outputs.mode == 'fix'
         run: |

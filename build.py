@@ -750,8 +750,7 @@ def item_body(p, g, fetched):
                f'<p class="bought-msg" id="bought-msg" hidden></p><div id="pushbox"></div>')
     alt = ""
     if oe is not o:
-        alt = (f'<p class="alt">ポイント込みなら <b>{E(oe["shop"])}</b> が {oe["effective"]:,}円でいちばんお得です'
-               f'（{oe["pointRate"]}倍・{oe["points"]:,}ポイント）。</p>')
+        alt = (f'<p class="alt">ポイント{oe["pointRate"]}倍の店：<b>{E(oe["shop"])}</b>（{oe["price"]:,}円・{oe["points"]:,}pt）{PT_NOTE}</p>')
     allshops = (f'<a class="sub-link" href="{E(p["productUrl"])}" rel="sponsored nofollow" target="_blank">楽天市場の商品ページで全{p.get("itemCount", 0):,}ショップを見る</a>'
                 if p.get("productUrl") else "")
     summary = (f'<p class="facts">要点：{E(show_name(p["name"])[:60])}は、楽天市場で取得した{len(offers)}ショップのうち最安 {o["price"]:,}円（{E(o["shop"])}・{"送料無料" if o.get("shipping") == "送料無料" else "送料別"}）。'

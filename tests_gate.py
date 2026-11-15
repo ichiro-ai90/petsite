@@ -104,28 +104,21 @@ class T(unittest.TestCase):
         self.assertNotIn('class="save"', out)  # 最安が訳あり品ならお得額を出さない
         self.assertIn('class="outlet"', out)
 
-    def test_history(self):
+    def test_no_price_history(self):
+        """楽天の規約（価格情報の保存は24時間まで）：過去の価格を読まず、お得は今の平均価格との差だけで出す"""
         sys.path.insert(0, HERE)
-        import build, record_history as rh
-        day, rows = rh.rows_from({"fetched_at": "2026-11-05 05:17 JST", "products": [
-            prod("cat-litter-tofu", "x", "猫砂 7L", [offer("A", 1000, ship="送料別"), offer("B", 1200, 10, "送料無料")]),
-            dict(prod("cat-litter-tofu", "y", "猫砂 7L", [offer("A", 900)]), fetched_at="2026-11-04 05:17 JST")]})  # y は引き継ぎ
-        self.assertEqual(day, "2026-11-05")
-        self.assertEqual(rows, {"x": ["2026-11-05", 1000, 991, 2, 1200]})  # ポイント込み最安は A店（1000−9）
-        h = rh.merge({"items": {"x": [["2026-11-05", 999, 999, 1, None]]}}, day, rows)
-        self.assertEqual(h["items"]["x"], [rows["x"]])  # 同じ日は上書き
-        build.HISTORY = {"p": [[f"2026-11-{d:02d}", v, v, 3, None] for d, v in zip(range(1, 8), [1200, 1100, 1150, 1100, 1300, 1100, 1000])]}
-        t = build.trend("p", 1000)
-        self.assertTrue(t["is_low"] and not t["is_high"] and t["diff_prev"] == -100 and t["days"] == 7)
-        self.assertIn("いちばん安い", build.trend_badge(t))
-        self.assertIn("今日は過去7日でいちばん安い", build.trend_block("p", {"price": 1000}))
-        self.assertIn("根拠: 当サイトが毎日1回取得", build.trend_block("p", {"price": 1000}))
-        self.assertIn("いちばん高い", build.trend_badge(build.trend("p", 1300)))
-        self.assertEqual(build.trend_badge(build.trend("p", 1150)), "")
-        build.HISTORY = {"p": [["2026-11-05", 1000, 1000, 3, None]]}
-        self.assertIn("記録を始めました（1日目", build.trend_block("p", {"price": 1000}))
-        self.assertEqual(build.trend_badge(build.trend("p", 1000)), "")
+        import build
+        build.HISTORY = {"p": [["2026-11-01", 1200, 1200, 3, None], ["2026-11-02", 1000, 1000, 3, None]]}
+        build.load_history() if hasattr(build, "load_history") else None
+        self.assertEqual(build.HISTORY, {}) if hasattr(build, "load_history") else None
         build.HISTORY = {}
+        self.assertEqual(build.trend_block("p", {"price": 1000}), "")
+        p = prod("cat-litter-tofu", "p", "猫砂 7L", [offer("A", 900), offer("B", 1000)])
+        self.assertIsNone(build.deal(p))
+        d = build.deal(dict(p, avgPrice=1000))
+        self.assertEqual((d["hi"], d["now"], d["d"]), (1000, 900, 100))
+        self.assertIsNone(build.deal(dict(p, avgPrice=920)))   # 3%未満は出さない
+        self.assertIsNone(build.deal(dict(p, avgPrice=5000)))  # 40%超は別商品の混入とみなす
 
     def test_free_shipping(self):
         ps = [prod("cat-litter-tofu", f"f{i}", f"猫砂 7L 商品{i}", [offer("A店", 1000, ship="送料別", name="猫砂 7L"), offer("B店", 1300, 10, "送料無料", name="猫砂 7L")]) for i in range(3)]

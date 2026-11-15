@@ -2,6 +2,7 @@ name: daily-price-update
 on:
   schedule:
     - cron: "17 20 * * *"   # 毎日 05:17 JST（UTC 20:17）。混雑を避けて分をずらす
+    - cron: "17 8 * * *"    # 毎日 17:17 JST。楽天の規約（価格情報は24時間まで）を、予約の遅れがあっても守るため1日2回
   workflow_dispatch:
 permissions:
   contents: write
@@ -31,8 +32,6 @@ jobs:
           YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
           VC_AFFILIATE_ID: ${{ secrets.VC_AFFILIATE_ID }}
         run: python fetch_prices.py
-      - name: record history（価格の履歴を data/history.json に積む）
-        run: python record_history.py
       - name: guard（本番でサンプル・空データを公開しない）
         run: |
           python - <<'PY'
@@ -58,7 +57,7 @@ jobs:
       - name: commit price snapshot（価格履歴を残す）
         run: |
           git config user.name "ichiro-bot"; git config user.email "ichiro-bot@users.noreply.github.com"
-          git add data/prices.json data/history.json; [ -f push/vapid_public.txt ] && git add push/vapid_public.txt; git commit -m "prices $(date -u +%F)" || echo "no change"
+          git add data/prices.json; [ -f push/vapid_public.txt ] && git add push/vapid_public.txt; git commit -m "prices $(date -u +%F)" || echo "no change"
           git push
       - name: deploy to Cloudflare Pages（プロジェクトが無ければ作る。2回目以降は「既にある」で先へ進む）
         env:

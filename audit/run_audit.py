@@ -90,6 +90,9 @@ def shots():
             png = pg.screenshot(full_page=full, clip=None if not full else {"x": 0, "y": 0, "width": 390, "height": 2400})
             meta = pg.evaluate("""() => { const m = n => (document.querySelector(`meta[property="${n}"],meta[name="${n}"]`) || {}).content || "（なし）";
               return `【head】title: ${document.title}／og:title: ${m("og:title")}／og:description: ${m("og:description")}／og:image: ${m("og:image")}／robots: ${m("robots")}`; }""")
+            fv = pg.evaluate("""() => { let n = 0; document.querySelectorAll('body *').forEach(e => { if (!e.children.length) { const r = e.getBoundingClientRect();
+              if (r.top < innerHeight && r.bottom > 0 && r.width > 0) n += (e.innerText || '').length } }); return n }""")
+            meta += f"／【文字量】最初の1画面 {fv}字・ページ全体 {len(pg.inner_text('body').replace(chr(10), ''))}字（目安：最初の1画面 250字以内）"
             text = meta + "\n" + pg.inner_text("body")[:2300] + "\n（本文はここで切っています。末尾の途切れは監査用の切り取りで、実際のページは続きがあります）"
             out.append((name, path, png, text))
             if pg.query_selector("#freeonly"):  # 切り替え ON の状態も見せる（OFF の画面だけでは判断できないため）

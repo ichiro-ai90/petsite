@@ -36,7 +36,6 @@ jobs:
         run: |
           git fetch -q origin main
           git show origin/main:data/prices.json > data/prices.json 2>/dev/null || python fetch_prices.py
-          git show origin/main:data/history.json > data/history.json 2>/dev/null || true
           pip install -q pillow
           [ -f push/vapid_public.txt ] || echo BHWbLnpUhP2fZcN6oHm2bGkTbmMtcKJZ2hFHx8u7fW0ZUz7p8YnCKUlL1hDvC4E0EaQk1kVvYtm0oVqV7xfXz1A > push/vapid_public.txt  # 監査の画面に通知ボタンを出すための見本の公開鍵（本番では使わない）
           python build.py

@@ -639,8 +639,8 @@ def product_row(p, g, fn):
     buy = f'・購入単位 {fmt_amount(p["amount"], g["unit"])}' if p.get("amount") else ""
     same = same_size(p["offers"], g["unit"])
     gap = max(x["price"] for x in same) - o["price"]
-    gapt = (f'<span class="save-s">同じ内容量の店で最大 {gap:,}円の差</span>'
-            if len(same) >= 2 and gap > 0 and not OUTLET.search(o["name"]) else "")
+    _d = deal(p, g["unit"])
+    gapt = (f'<span class="save-s">他店より {_d["d"]:,}円安い</span>' if _d and not OUTLET.search(o["name"]) else "")
     fb = free_best(p["offers"])
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
@@ -715,7 +715,7 @@ def item_body(p, g, fetched):
         f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop"><span class="sn">{E(x["shop"])}</span>{hi_tag(x["pointRate"])}'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{x["points"]:,}pt（{x["pointRate"]}倍）・実質 約{x["effective"]:,}円{PT_NOTE}</span></div>'
+        f'<span class="pt">{x["points"]:,}pt（{x["pointRate"]}倍）{PT_NOTE}</span></div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -1047,7 +1047,7 @@ function row(x,extra){var s5=STAR+STAR+STAR+STAR+STAR,st=x.rv?'<span class="rv">
  '<a class="row" href="item-'+esc(x.id)+'.html"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
  '<span class="nm">'+esc(x.n)+'</span><span class="meta">'+esc(x.m)+(x.m?"・":"")+esc(x.ct)+'</span>'+st+
  '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh==="送料無料"?" free":" paid")+'">'+esc(x.sh)+'</span></span>'+
- '<span class="pt">'+(x._free?'':yen(x.pt)+'pt（'+x.r+'倍）・')+'実質 約'+yen(x.e)+'円<span class="kome">※</span></span>'+
+ (x._free?'':'<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span>')+
  '<span class="meta">'+x.s+'店中の最安'+(unit(x)?"・"+unit(x):"")+'</span>'+(extra||"")+'</span></a></li>'}
 function fill(sel,opts,val){var el=document.getElementById(sel);opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];el.appendChild(op)});el.value=val||""}
 function search(){var f=document.getElementById("sf");if(!f)return;var u=new URLSearchParams(location.search);

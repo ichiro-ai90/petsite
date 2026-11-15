@@ -11,7 +11,7 @@ export async function onRequest({ request, env }) {
   if (request.method === "DELETE") { await env.SUBS.delete(k); await env.SUBS.delete("m:" + k.slice(2)); return J({ ok: true }); }
   const old = (await env.SUBS.get(k, "json")) || {};
   const items = clean(d.items);
-  const n = old.n || {};  // 通知済みの価格（同じ値下がりで何度も送らない）
+  const n = old.n || {};  // 通知した日時（価格は保存しない）
   await env.SUBS.put(k, JSON.stringify({ e: ep, i: items, n, t: Date.now(), last: old.last || 0 }));
   return J({ ok: true, count: Object.keys(items).length });
 }

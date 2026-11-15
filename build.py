@@ -316,8 +316,10 @@ WINDOW = 14
 
 
 HAS_YAHOO = False  # Yahoo!ショッピングの価格が1件でもあるとき True（main で設定）。False のとき表示は楽天だけの従来どおり
-YAHOO_CREDIT = ('<!-- Begin Yahoo! JAPAN Web Services Attribution Snippet --><a href="https://developer.yahoo.co.jp/sitemap/">'
-                'Web Services by Yahoo! JAPAN</a><!-- End Yahoo! JAPAN Web Services Attribution Snippet -->')
+# 公式のテキスト版スニペット（改変禁止。https://developer.yahoo.co.jp/attribution/ 2026-11-16 確認）。ページ下部に置く
+YAHOO_CREDIT = ('<!-- Begin Yahoo! JAPAN Web Services Attribution Snippet -->\n'
+                '<span style="margin:15px 15px 15px 15px"><a href="https://developer.yahoo.co.jp/sitemap/">Webサービス by Yahoo! JAPAN</a></span>\n'
+                '<!-- End Yahoo! JAPAN Web Services Attribution Snippet -->')
 
 
 def yahoo_foot():
@@ -325,7 +327,7 @@ def yahoo_foot():
         return ""
     return ('<p>Yahoo!ショッピングの価格・ポイント（PayPayポイント等の付与予定。条件により変わります）は Yahoo!ショッピングの API の取得結果です。'
             '購入時に Yahoo!ショッピングのページに表示されている価格が適用されます。LINEヤフー株式会社とは関係のない個人運営の比較サイトです。</p>'
-            f'<p>{YAHOO_CREDIT}</p>')
+            f'{YAHOO_CREDIT}')
 
 
 def too_old(fetched_at, hours=24):

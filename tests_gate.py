@@ -116,7 +116,7 @@ class T(unittest.TestCase):
         self.assertIn('<span class="mall r">楽天</span><span class="sn">A店</span>', item)
         self.assertIn("楽天の最安 1,000円／Yahoo!の最安 900円：Yahoo!が <b>100円安い</b>", item)
         self.assertIn("楽天・Yahoo!3店を比較", item)
-        self.assertIn("Web Services by Yahoo! JAPAN", item)
+        self.assertIn('<span style="margin:15px 15px 15px 15px"><a href="https://developer.yahoo.co.jp/sitemap/">Webサービス by Yahoo! JAPAN</a></span>', item)  # 公式スニペットを改変なしで
         self.assertIn("Supported by Rakuten Developers", item)  # 楽天のクレジットは残す
 
     def test_no_price_history(self):

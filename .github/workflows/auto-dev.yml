@@ -39,7 +39,9 @@ jobs:
           git fetch -q origin main && git show origin/main:data/prices.json > /dev/null
       - name: checkout PR branch（監査に答える回）
         if: steps.c.outputs.mode == 'fix'
-        run: git checkout -q "${{ steps.c.outputs.branch }}"
+        run: |
+          git checkout -q "${{ steps.c.outputs.branch }}"
+          gh api "repos/${{ github.repository }}/issues/${{ steps.c.outputs.pr }}/comments?per_page=100" --jq '[.[]|select(.body|startswith("<!-- ichiro-audit round="))][-1].body' > /tmp/audit.md
       - name: Claude（新しい項目を作る）
         if: steps.c.outputs.mode == 'new'
         uses: anthropics/claude-code-action@v1
@@ -48,8 +50,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             auto/RULES.md を最初に読み、そのルールと手順どおりに、auto/backlog.md の先頭の未完了項目（「（人）」付きは飛ばす）を1件だけ実装して PR を出してください。
-            ブランチ名は dev/auto-<英小文字とハイフンで内容> 。PR のタイトルと本文は日本語。作業が終わったら何もせず終了してください。
+            ブランチ名は dev/auto-<英小文字とハイフンで内容>（main から作る）。push まで行い、PR は作らないでください（後の手順が作ります）。
+            代わりに /tmp/pr.md に、1行目に PR のタイトル、2行目以降に本文（何を・なぜ・確認してほしい点。日本語）を書いてください。作業が終わったら何もせず終了してください。
           claude_args: '--max-turns 80 --allowedTools "Bash,Read,Edit,Write,Glob,Grep"'
+          show_full_output: true
       - name: Claude（監査に答える）
         if: steps.c.outputs.mode == 'fix'
         uses: anthropics/claude-code-action@v1
@@ -58,12 +62,17 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             auto/RULES.md を最初に読んでください。今いるブランチは PR #${{ steps.c.outputs.pr }} のブランチです。
-            `gh pr view ${{ steps.c.outputs.pr }} --comments` で最新の監査コメント（<!-- ichiro-audit round= で始まる）を読み、
-            指摘ごとに 採用／保留／不採用（理由）を1つの PR コメントにまとめて投稿し（gh pr comment）、採用した分を実装・テストして同じブランチに push してください。
+            /tmp/audit.md に最新の監査コメントがあります。指摘ごとに 採用／保留／不採用（理由）を /tmp/reply.md に書き（後の手順が PR に投稿します）、
+            採用した分を実装・テストして同じブランチに push してください。
             重要度「高」はルールに反しない限り採用してください。作業が終わったら何もせず終了してください。
           claude_args: '--max-turns 80 --allowedTools "Bash,Read,Edit,Write,Glob,Grep"'
-      - name: start audit（GITHUB_TOKEN で作った PR は監査が自動で始まらないため、ここで起動）
-        if: steps.c.outputs.mode == 'new' || steps.c.outputs.mode == 'fix'
+          show_full_output: true
+      - name: open PR（新しい項目の回。Claude が push したブランチを PR にして監査を起動）
+        if: steps.c.outputs.mode == 'new'
+        run: python3 auto/controller.py orphan
+      - name: start audit（監査に答えた回。GITHUB_TOKEN の push では監査が自動で始まらないため、ここで起動）
+        if: steps.c.outputs.mode == 'fix'
         run: |
+          [ -s /tmp/reply.md ] && gh pr comment "${{ steps.c.outputs.pr }}" --body-file /tmp/reply.md || gh pr comment "${{ steps.c.outputs.pr }}" --body "自動開発：監査に答えて修正しました（回答文の作成に失敗したため、内容はコミットを参照）"
           n=$(python3 auto/controller.py latest)
           [ -n "$n" ] && gh workflow run audit.yml -f pr="$n" && echo "監査を起動 PR #$n" || echo "PR が見つかりません"

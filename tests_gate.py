@@ -17,6 +17,7 @@ def run(data):
     shutil.copy(os.path.join(HERE, "build.py"), d)
     shutil.copy(os.path.join(HERE, "products.json"), d)
     shutil.copy(os.path.join(HERE, "concerns.json"), d)
+    shutil.copy(os.path.join(HERE, "brands.json"), d)
     os.makedirs(os.path.join(d, "data"))
     json.dump(data, open(os.path.join(d, "data", "prices.json"), "w", encoding="utf-8"), ensure_ascii=False)
     os.makedirs(os.path.join(d, "site"))
@@ -81,7 +82,7 @@ class T(unittest.TestCase):
         self.assertIn("の店：<b>B店</b>", item)
         self.assertEqual(item.count('rel="sponsored nofollow"'), 4)  # 最安ボタン＋ショップ2件＋全ショップ
         self.assertIn("1Lあたり", item)
-        self.assertIn("楽天カード払いなら <b>+38pt</b>", item)  # 2,000円：通常分20＋特典分（税抜1,818円）18
+        self.assertIn("楽天カード払いなら <b>+約38pt</b>", item)  # 2,000円：通常分20＋特典分（税抜1,818円）18
         self.assertNotIn("最安値挑戦", item)
         sj = json.load(open(os.path.join(site, "search.json"), encoding="utf-8"))  # 検索・お気に入り用データ
         self.assertEqual(len(sj["items"]), 3)
@@ -138,6 +139,17 @@ class T(unittest.TestCase):
         self.assertLess(idx.index("悩みから探す"), idx.index("sd-cta"))  # 一番上（ペットのタブの直後）に出す
         self.assertNotIn("5,000円以上", idx)
         self.assertIn('id="notes"', open(os.path.join(d, "site", "about.html"), encoding="utf-8").read())
+
+    def test_brands(self):
+        """海外ブランド：製造国を確認済み（show）のブランドだけ、3商品以上でページを作る"""
+        ps = [prod("dog-food-small", f"b{i}", f"モグワン ドッグフード 1.8kg 商品{i}", [offer("A店", 5000 + i, name="モグワン 1.8kg")]) for i in range(3)]
+        ps += [prod("dog-food-small", f"k{i}", f"カナガン ドッグフード 2kg 商品{i}", [offer("A店", 5000 + i, name="カナガン 2kg")]) for i in range(3)]
+        d, p = run({"fetched_at": "2026-11-05 05:17 JST", "products": ps})
+        self.assertEqual(p.returncode, 0, p.stderr)
+        idx = open(os.path.join(d, "site", "index.html"), encoding="utf-8").read()
+        self.assertIn("海外ブランド", idx)
+        self.assertIn("モグワン<small>イギリス</small>", idx)
+        self.assertNotIn("カナガン<small>", idx)  # 製造国が未確認（show=false）は出さない
 
     def test_no_price_history(self):
         """楽天の規約（価格情報の保存は24時間まで）：過去の価格を読まず、お得は今の平均価格との差だけで出す"""

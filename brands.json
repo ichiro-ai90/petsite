@@ -1,0 +1,11 @@
+{"_note": "海外ブランド（11/16 オーナー提案）。製造国（原産国）を販売元・公式の表示で確認できたものだけ show=true。一郎が在席時に管理し、自動開発では編集しない。すでに載せている商品（楽天・Yahoo の正規品）から、商品名・メーカー名に words がある商品を並べる",
+ "brands": [
+  {"name": "ジウィピーク", "words": ["ジウィピーク", "ZIWI", "ジウィ"], "country": "ニュージーランド", "importer": "", "show": true, "src": "https://ziwipets.com/ja-jp/ ・国内正規品の表示（原産国 ニュージーランド）"},
+  {"name": "モグワン", "words": ["モグワン"], "country": "イギリス", "importer": "株式会社レティシアン", "show": true, "src": "https://item.rakuten.co.jp/laetitien/rakuten-mgw-01/（販売元の楽天公式ショップ：原産国名 イギリス）"},
+  {"name": "アカナ", "words": ["アカナ", "ACANA"], "country": "カナダ", "importer": "アカナファミリージャパン", "show": true, "src": "製造 Champion Petfoods（カナダ）・販売会社 アカナファミリージャパン（2026-11-16 確認。二次情報を含む）"},
+  {"name": "ニュートロ", "words": ["ニュートロ", "Nutro"], "country": "アメリカ", "importer": "マース ジャパン リミテッド", "show": true, "src": "マース ジャパンの発表資料・商品表示（原産国 アメリカ）"},
+  {"name": "ナウフレッシュ", "words": ["ナウフレッシュ", "NOW FRESH"], "country": "カナダ", "importer": "", "show": true, "src": "商品説明（カナダ食品検査庁の基準）。輸入元は未確認"},
+  {"name": "オリジン", "words": ["オリジン", "ORIJEN"], "country": "", "importer": "", "show": false, "src": "製造国が商品により異なる可能性（未確認）"},
+  {"name": "カナガン", "words": ["カナガン"], "country": "", "importer": "株式会社レティシアン", "show": false, "src": "製造国を販売元の表示で未確認"},
+  {"name": "ファルミナ N&D", "words": ["ファルミナ", "Farmina", "N&D"], "country": "", "importer": "Farmina Pet Foods Japan", "show": false, "src": "製造国（イタリア・セルビア等）が商品により異なる可能性（未確認）"}
+ ]}

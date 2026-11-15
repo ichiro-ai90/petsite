@@ -24,6 +24,7 @@
 - 期待値テスト: python3 tests_amount.py ／ 公開判定・表示テスト: python3 tests_gate.py
 """
 import datetime
+import hashlib
 import html
 import json
 import shutil
@@ -815,7 +816,7 @@ def item_body(p, g, fetched):
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
-            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a></p>')
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a></p>')
             + f'<p class="shop-l">{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
             f'{shipnote}{save}{mall_cmp(offers)}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
@@ -945,11 +946,34 @@ def main():
                  sample, ((pet[1], f"index.html#{pet[0]}"), (g0["title"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
         files.append(fn)
         nayami.append(f'<li><a href="{fn}">{E(c["pet"])}｜{E(c["title"])}<small>{len(cps)}</small></a></li>')
+    # 海外ブランド：製造国を確認できたブランド（brands.json の show）だけ。すでに載せている国内の正規品から
+    kaigai = []
+    try:
+        brands = [b for b in json.load(open(os.path.join(ROOT, "brands.json"), encoding="utf-8"))["brands"] if b.get("show") and b.get("country")]
+    except (OSError, ValueError):
+        brands = []
+    allp = {p["productId"]: (p, gmap[p["group"]]) for ps_ in by_group.values() for p in ps_}
+    for b in brands:
+        bps = [(p, g_) for p, g_ in allp.values() if any(w.lower() in (p["name"] + " " + (p.get("maker") or "")).lower() for w in b["words"])]
+        if len(bps) < MIN_PRODUCTS:
+            print(f"  不公開 brand {b['name']}: 商品{len(bps)}件 < {MIN_PRODUCTS}件")
+            continue
+        fn = "brand-" + hashlib.md5(b["name"].encode()).hexdigest()[:8] + ".html"
+        rows = "".join(product_row(p, g_, f"item-{p['productId']}.html") for p, g_ in sorted(bps, key=lambda x: -x[0].get("reviewCount", 0)))
+        body = (f'<h1 class="ttl">{E(b["name"])}<span class="cty">{E(b["country"])}製</span></h1>'
+                f'<p class="fresh1">{len(bps)}商品・国内の正規販売店の価格</p><ul class="list">{rows}</ul>')
+        open(os.path.join(out, fn), "w", encoding="utf-8").write(
+            page(f'{b["name"]}（{b["country"]}）の価格比較 {len(bps)}商品｜{SITE}', body,
+                 f'{b["name"]}（{b["country"]}製）のペットフード{len(bps)}商品を、国内のショップの価格とポイントで比較（{fdate}取得）。',
+                 sample, (("海外ブランド", None), (b["name"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
+        files.append(fn)
+        kaigai.append(f'<li><a href="{fn}">{E(b["name"])}<small>{E(b["country"])}</small></a></li>')
+    kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド</h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す</h2><ul class="nayami-l">{"".join(nayami)}</ul>'
                   '<p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p></section>' if nayami else "")
     idx = ('<div class="vp"><p class="vp-t">楽天のペット用品、<b>どのショップがいちばん安い？</b></p>'
            f'<p class="vp-s">{sum(len(x[1]) for x in published)}商品・ショップごとの価格を1日2回チェック</p></div>'
-           f'<ul class="tabs">{"".join(tabs)}</ul>' + nayami_sec
+           f'<ul class="tabs">{"".join(tabs)}</ul>' + nayami_sec + kaigai_sec
            + '<a class="sd-cta" href="shindan.html" data-ga="shindan_cta"><span class="sd-cta-t">うちの子の消耗品、月いくら？</span><span class="sd-cta-s">いつもの商品を選ぶだけ・1分でわかる</span><span class="sd-cta-b">診断する</span></a>'
            + '<div id="welcome"></div>' + today_strip(published, fdate) + spotlight(published, fdate) + drop_section(published, fdate)
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
@@ -1405,6 +1429,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tb.new{background:var(--win-bg);color:var(--win);border:1px solid #f3b6c9;font-weight:700}
 .more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.cty{margin-left:8px;font-size:12px;font-weight:700;color:var(--sub);border:1px solid var(--line,#e5e7eb);border-radius:4px;padding:1px 6px;vertical-align:middle}
 .card-pt{margin:2px 0;font-size:13px}.card-pt b{color:#bf0000}
 .nayami-n{margin:2px 16px 8px;font-size:11px;color:var(--sub)}
 .nayami{margin:12px 0 4px}.nayami-h{margin:0 16px 6px;font-size:16px;font-weight:800}

@@ -645,13 +645,14 @@ def product_row(p, g, fn):
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
     mr = max(x["pointRate"] for x in p["offers"])
-    hit = f'<span class="hi-pt">ショップポイント{mr}倍（目安）の店あり</span>' if mr >= HI_RATE else ""
+    hit = ""  # 倍率だけが独り歩きしないよう、カテゴリ一覧では「◯倍の店あり」タグを出さない（監査#1）
+    ftime = str(p.get("fetched_at") or FETCHED_FOR_LD)[5:16]
     return (f'<li data-pop="{p.get("reviewCount", 0)}" data-price="{o["price"]}" data-eff="{oe["effective"]}" data-unit="{up or 0:.4f}" data-aprice="{o["price"]}" data-aeff="{oe["effective"]}"{fattr}>'
             f'<button type="button" class="fav mini" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false" aria-label="お気に入りに追加">{icon("star", 18)}</button>'
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
             f'<span class="nm">{E(show_name(p["name"]))}</span>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'<span class="pr"><small class="scope">取得{len(p["offers"])}店中の最安</small><b class="pv">{o["price"]:,}</b>円 <span class="shipv">{ship(o["shipping"])}</span>{tbadge}</span>'
-            f'<span class="pt"><span class="ptv">{o["points"]:,}ポイント（{o["pointRate"]}倍）</span> {PT_NOTE}</span>{hit}'
+            f'<span class="pt"><span class="ptv">{o["points"]:,}ポイント（{o["pointRate"]}倍・目安）</span> <span class="ptt">{E(ftime)} 時点・要確認</span> {PT_NOTE}</span>{hit}'
             f'<span class="meta">{buy.lstrip("・")}{"・" + upt + "（商品名の内容量から計算）" if upt else ""}</span>{gapt}</span></a></li>')
 
 
@@ -766,7 +767,7 @@ def item_body(p, g, fetched):
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
-            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p><p class="shop-l">{E(o["shop"])}</p>'
+            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍・目安）<span class="ptt">{E(str(p.get("fetched_at") or fetched))} 時点・要確認</span>{PT_NOTE}</p><p class="shop-l">{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
             f'{shipnote}{save}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
             f'<h2 class="h2">この商品を売っているショップ</h2>'
@@ -1191,6 +1192,7 @@ function shareSaved(S){var c=document.createElement("canvas");c.width=1200;c.hei
  x.fillStyle="#1f2328";x.font="700 44px "+F2;x.fillText("ペット用品、ショップ選びで",70,110);
  x.fillStyle="#c2255c";x.font="800 150px "+F2;var s=yen(S.t);x.fillText(s,70,300);var w=x.measureText(s).width;x.font="700 64px "+F2;x.fillText("円 節約",90+w,300);
  x.fillStyle="#6b7280";x.font="400 28px "+F2;x.fillText(S.n+"回の購入記録・取得したショップの中央値との差の合計（目安）",70,380);
+ x.font="400 24px "+F2;x.fillText("このブラウザの記録のみ｜取得ショップ中央値との差｜送料・SPU・クーポン除く目安｜"+String(DATA&&DATA.fetched_at||"").slice(0,10)+" 時点",70,425);
  x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを毎日比較",70,598);
  var txt="ペット用品のショップ選びで、これまでに "+yen(S.t)+"円 節約できました（取得価格の中央値との差・目安）",url=location.origin+location.pathname.replace(/[^\/]*$/,"")+"index.html";ga("share",{kind:"savings",value:S.t});
  c.toBlob(function(b){var f=new File([b],"petsite-savings.png",{type:"image/png"});
@@ -1332,6 +1334,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .save b{color:var(--win);font-size:20px}
 .stale{margin:0;padding:10px 16px;font-size:13px;line-height:1.6;color:var(--warn);background:var(--warn-bg);border-bottom:1px solid #e7c27a;font-weight:600}.ship .ic{margin-right:3px}
 .pt{font-size:12px;color:var(--brand);margin:4px 0 0;line-height:1.5}.pt b{color:var(--txt)}
+.ptt{font-size:10px;color:#6b7280;font-weight:400}
 .ptn{display:block;font-size:11px;color:var(--sub);font-weight:400}
 .shop-l{margin:2px 0 0;font-size:13px;color:var(--txt)}
 .up{font-size:12px;color:var(--sub);margin:4px 0 0}

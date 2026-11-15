@@ -509,8 +509,8 @@ def spotlight(published, fdate):
         li = "".join(f'<li><a class="dr" href="item-{E(x["p"]["productId"])}.html" data-ga="premium_drop" data-rank="{i}"><span class="info"><span class="nm">{E(show_name(x["p"]["name"]))}</span>'
                      f'<span class="dr-pr"><s>{x["hi"]:,}円</s> → <b>{x["now"]:,}</b>円</span></span><span class="dr-d">−{x["d"]:,}円<small>{round(x["d"] / x["hi"] * 100)}%</small></span></a></li>'
                      for i, x in enumerate(prem, 1))
-        out += (f'<section class="drop-sec"><h2 class="h2">ちょっといい物が安くなっています<span class="h2s">5,000円以上の商品</span></h2>'
-                f'<p class="ptn drop-basis">「気になっていたけど高くて…」という商品を試すなら、下がっている今が目安です（直近7日の最高値と比べた事実）</p><ol class="drops">{li}</ol></section>')
+        out += (f'<section class="drop-sec"><h2 class="h2">5,000円以上で値下がりした商品<span class="h2s">当サイトが取得したショップ内・送料別</span></h2>'
+                f'<p class="ptn drop-basis">直近7日に当サイトが記録した最高値と比べて、取得したショップの最安が下がった商品です（送料別）</p><ol class="drops">{li}</ol></section>')
     return out
 
 
@@ -623,7 +623,8 @@ def item_ld(p, g, pet_name, fn):
     prod = {"@context": "https://schema.org", "@type": "Product", "name": show_name(p["name"]),
             "category": g["title"], "image": img(p.get("image"), 300) or None,
             "offers": {"@type": "AggregateOffer", "priceCurrency": "JPY", "lowPrice": min(o["price"] for o in offers),
-                       "highPrice": max(o["price"] for o in offers), "offerCount": len(offers)}}
+                       "highPrice": max(o["price"] for o in offers), "offerCount": len(offers),
+                       "description": f'楽天市場で当サイトが取得した{len(offers)}ショップの税込価格の範囲（送料別）。{str(p.get("fetched_at") or "")} JST 取得時点の目安'}}
     if p.get("maker"):
         prod["brand"] = {"@type": "Brand", "name": p["maker"]}
     if p.get("jan"):

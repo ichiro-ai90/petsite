@@ -135,6 +135,7 @@ class T(unittest.TestCase):
         idx = open(os.path.join(d, "site", "index.html"), encoding="utf-8").read()
         self.assertIn('href="nayami-dog-tear.html"', idx)
         self.assertLess(idx.index("悩みから探す"), idx.index("sd-cta"))  # 一番上（ペットのタブの直後）に出す
+        self.assertNotIn("5,000円以上", idx)
         self.assertIn('id="notes"', open(os.path.join(d, "site", "about.html"), encoding="utf-8").read())
 
     def test_no_price_history(self):

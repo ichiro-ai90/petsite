@@ -624,7 +624,7 @@ def item_ld(p, g, pet_name, fn):
             "category": g["title"], "image": img(p.get("image"), 300) or None,
             "offers": {"@type": "AggregateOffer", "priceCurrency": "JPY", "lowPrice": min(o["price"] for o in offers),
                        "highPrice": max(o["price"] for o in offers), "offerCount": len(offers),
-                       "description": f'楽天市場で当サイトが取得した{len(offers)}ショップの税込価格の範囲（送料別）。{str(p.get("fetched_at") or "")} JST 取得時点の目安'}}
+                       "description": f'楽天市場で当サイトが取得した{len(offers)}ショップの税込価格の範囲（送料別）。{str(p.get("fetched_at") or FETCHED_FOR_LD)} 取得時点の目安'}}
     if p.get("maker"):
         prod["brand"] = {"@type": "Brand", "name": p["maker"]}
     if p.get("jan"):
@@ -639,6 +639,7 @@ def item_ld(p, g, pet_name, fn):
 
 
 ORIGIN_FOR_LD = ""
+FETCHED_FOR_LD = ""
 
 
 def item_body(p, g, fetched):
@@ -729,8 +730,9 @@ def main():
     os.makedirs(out, exist_ok=True)
     fetched = E(str(data.get("fetched_at", "不明")))
     fdate = str(data.get("fetched_at", ""))[:10] or "取得日不明"
-    global ORIGIN_FOR_LD
+    global ORIGIN_FOR_LD, FETCHED_FOR_LD
     ORIGIN_FOR_LD = origin or ""
+    FETCHED_FOR_LD = str(data.get("fetched_at", ""))
     gmap = {g["slug"]: g for g in groups}
     published, files, index_rows = [], [], []
     for g in groups:

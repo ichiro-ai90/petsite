@@ -929,6 +929,8 @@ def main():
         '<ul class="list" id="boughtlist"></ul><p class="empty" id="boughtempty" hidden>まだ記録がありません。いつも買う商品のページで「買った」を押してください。</p>'
         '<h2 class="h2">値下がり待ち</h2><p class="lead">「この値段になったら買う」と決めた商品です。目標に届くと一番上に出します。</p>'
         '<ul class="list" id="wishlist"></ul><p class="empty" id="wishempty" hidden>まだありません。商品ページの「値下がりを待つ」で目標の値段を登録できます。</p>'
+        '<h2 class="h2">最近見た商品（自動）</h2><p class="lead">商品ページを開くと、そのときの価格を自動で覚えます（このブラウザだけ・最大60件）。安くなった商品から並べます。</p>'
+        '<ul class="list" id="seenlist"></ul><p class="empty" id="seenempty" hidden>まだありません。商品ページを開くと自動でここに入ります。</p>'
         '<h2 class="h2">お気に入り</h2>'
         '<ul class="list" id="favlist"></ul><p class="empty" id="favempty" hidden>まだお気に入りがありません。商品の「お気に入り」を押すとここに入ります。</p>'
         f'<div class="note"><p>価格取得日時: {fetched}</p></div>',
@@ -966,7 +968,18 @@ def main():
 
 
 APP_JS = r"""(function(){
-var KEY="petsite_fav_v1",BKEY="petsite_bought_v1",WKEY="petsite_wish_v1",mem={},bmem={},wmem={},DATA=null;
+var KEY="petsite_fav_v1",BKEY="petsite_bought_v1",WKEY="petsite_wish_v1",SKEY="petsite_seen_v1",mem={},bmem={},wmem={},smem={},DATA=null;
+function sload(){try{return JSON.parse(localStorage.getItem(SKEY)||"{}")}catch(e){return smem}}
+function ssave(o){var ids=Object.keys(o).sort(function(a,b){return o[b].t-o[a].t});if(ids.length>60){ids.slice(60).forEach(function(k){delete o[k]})}try{localStorage.setItem(SKEY,JSON.stringify(o))}catch(e){smem=o}}
+function seen(){var b=document.querySelector(".actions [data-fav]");if(!b)return;var id=b.dataset.fav,p=+b.dataset.price||0,o=sload(),r=o[id];
+ if(!r)o[id]={p:p,lo:p,t:Date.now(),v:1,c:0};else{r.t=Date.now();r.v=(r.v||1)+1;if(p&&p<(r.lo||p))r.lo=p}ssave(o)}
+document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');if(!a)return;var b=document.querySelector(".actions [data-fav]");if(!b)return;var o=sload(),r=o[b.dataset.fav];if(r){r.c=(r.c||0)+1;r.ct=Date.now();r.cp=+b.dataset.price||r.p;ssave(o)}},true);
+function renderSeen(){var l=document.getElementById("seenlist");if(!l)return;data(function(d){var o=sload(),by={};d.items.forEach(function(x){by[x.id]=x});
+ var ids=Object.keys(o).filter(function(id){return by[id]}).sort(function(a,b){var da=by[a].p-(o[a].cp||o[a].p),db=by[b].p-(o[b].cp||o[b].p);return(da<0?da:1)-(db<0?db:1)||o[b].t-o[a].t}).slice(0,20);
+ l.innerHTML=ids.map(function(id){var x=by[id],r=o[id],base=r.cp||r.p,dd=x.p-base,day=new Date(r.ct||r.t).toLocaleDateString("ja-JP");
+  var msg=(dd<0?'<span class="badge win">'+(r.ct?'楽天で見たとき':'前に見たとき')+'より '+yen(-dd)+'円安い</span> ':dd>0?'<span class="badge up2">▲'+yen(dd)+'円</span> ':'')+(r.ct?'楽天で見た日 ':'見た日 ')+day+'・'+yen(base)+'円';
+  return row(x,'<span class="diff">'+msg+'</span>')}).join("");
+ var e=document.getElementById("seenempty");if(e)e.hidden=ids.length>0;paint()})}
 function wload(){try{return JSON.parse(localStorage.getItem(WKEY)||"{}")}catch(e){return wmem}}
 function wsave(v){wmem=v;try{localStorage.setItem(WKEY,JSON.stringify(v))}catch(e){}}
 function hist(r){return r.h&&r.h.length?r.h:[[r.t,r.p]]}
@@ -1069,13 +1082,14 @@ function renderWish(){var l=document.getElementById("wishlist");if(!l)return;dat
   if(x.lo&&x.p<x.lo&&x.hd>=5)msg+='<br><span class="tb low">記録した'+x.hd+'日間でいちばん安い</span>';
   return row(x,'<span class="diff">'+msg+'</span>').replace(/<\/li>$/,'<div class="mini-acts">'+(reach?'<button type="button" class="link" data-kind="wish" data-url="item-'+esc(id)+'.html" data-share="'+esc(x.n.slice(0,40)+" が待っていた "+yen(r.g)+"円以下（いま "+yen(x.p)+"円・取得時点）になりました")+'">シェアする</button>':'')+'<button type="button" class="link" data-wdel="'+esc(id)+'">外す</button></div></li>')}).join("");
  document.getElementById("wishempty").hidden=ids.length>0;paint()})}
-function welcome(){var el=document.getElementById("welcome");if(!el)return;var bm=bload(),w=wload(),f=load();if(!Object.keys(bm).length&&!Object.keys(w).length&&!Object.keys(f).length)return;
+function welcome(){var el=document.getElementById("welcome");if(!el)return;var bm=bload(),w=wload(),f=load(),sv=sload();if(!Object.keys(bm).length&&!Object.keys(w).length&&!Object.keys(f).length&&!Object.keys(sv).length)return;
  data(function(d){var by={};d.items.forEach(function(x){by[x.id]=x});var a=0,as=0,b=0,c=0,cs=0;
   Object.keys(bm).forEach(function(id){var x=by[id];if(x&&x.p<bm[id].p){a++;as+=bm[id].p-x.p}});
   Object.keys(w).forEach(function(id){var x=by[id];if(x&&x.p<=w[id].g)b++});
   Object.keys(f).forEach(function(id){var x=by[id];if(x&&f[id].p&&x.p<f[id].p){c++;cs+=f[id].p-x.p}});
-  if(!a&&!b&&!c)return;var parts=[];if(a)parts.push('いつもの商品 <b>'+a+'件</b>が前回より計 <b class="win">'+yen(as)+'円</b>安い');if(b)parts.push('値下がり待ち <b>'+b+'件</b>が目標価格に到達');if(c)parts.push('お気に入り <b>'+c+'件</b>が登録時より計 '+yen(cs)+'円安い');
-  el.innerHTML='<a class="welcome" href="favorites.html" data-ga="welcome_click"><span class="wl-k">おかえりなさい</span><span class="wl-t">'+parts.join('、')+'</span><span class="wl-b">マイリストを見る</span></a>';ga("welcome_show",{routine:a,wish:b,fav:c})})}
+  var s2=0,ss=0;Object.keys(sv).forEach(function(id){var x=by[id],base=sv[id].cp||sv[id].p;if(x&&!bm[id]&&!f[id]&&!w[id]&&base&&x.p<base){s2++;ss+=base-x.p}});
+  if(!a&&!b&&!c&&!s2)return;var parts=[];if(a)parts.push('いつもの商品 <b>'+a+'件</b>が前回より計 <b class="win">'+yen(as)+'円</b>安い');if(b)parts.push('値下がり待ち <b>'+b+'件</b>が目標価格に到達');if(c)parts.push('お気に入り <b>'+c+'件</b>が登録時より計 '+yen(cs)+'円安い');if(s2)parts.push('前に見た商品 <b>'+s2+'件</b>が見たときより計 <b class="win">'+yen(ss)+'円</b>安い');
+  el.innerHTML='<a class="welcome" href="favorites.html" data-ga="welcome_click"><span class="wl-k">おかえりなさい</span><span class="wl-t">'+parts.join('、')+'</span><span class="wl-b">マイリストを見る</span></a>';ga("welcome_show",{routine:a,wish:b,fav:c,seen:s2})})}
 function ago(){document.querySelectorAll("time[data-fetched]").forEach(function(t){var m=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(t.dataset.fetched);if(!m)return;
  var d=Date.UTC(+m[1],m[2]-1,+m[3],+m[4]-9,+m[5]),h=Math.floor((Date.now()-d)/36e5);if(h<0)return;var s=h<1?"1時間以内":h<24?"約"+h+"時間前":"約"+Math.floor(h/24)+"日前";
  t.textContent=t.dataset.fetched+"・"+s;if(h>=48&&!document.getElementById("stale")){var hd=document.querySelector("header");if(hd)hd.insertAdjacentHTML("afterend",'<p class="stale" id="stale" role="status">表示の価格は約'+Math.floor(h/24)+'日前（'+esc(t.dataset.fetched)+'）の取得です。最新の価格は楽天市場のページでご確認ください。</p>');ga("stale_banner",{hours:h})}})}
@@ -1164,7 +1178,7 @@ function shareSaved(S){var c=document.createElement("canvas");c.width=1200;c.hei
   else{var a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="petsite-savings.png";a.click();toast("画像を保存しました。X や LINE に貼ってシェアできます")}})}
 function happy(k,t){var el=document.getElementById("bought-msg");if(!el)return;var b=document.querySelector(".actions [data-card]");if(!b)return;
  el.insertAdjacentHTML("afterend",'<p class="happy" id="happy"><span>'+esc(t)+'</span><button type="button" class="link" data-share="'+esc(t+"。"+b.dataset.share)+'" data-card="1" data-kind="happy" data-cn="'+esc(b.dataset.cn)+'" data-cp="'+b.dataset.cp+'" data-ck="'+esc(b.dataset.ck)+'" data-cv="'+esc(b.dataset.cv)+'" data-cd="'+esc(b.dataset.cd)+'">シェアする</button></p>');ga("happy_show",{kind:k})}
-function init(){var hr=document.querySelector(".hero");if(hr)countUp(hr);var wu=document.querySelector(".wk-share");if(wu)ga("weekly_view",{});ago();keepOrig();renderBought();renderWish();renderSavings();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
+function init(){seen();renderSeen();var hr=document.querySelector(".hero");if(hr)countUp(hr);var wu=document.querySelector(".wk-share");if(wu)ga("weekly_view",{});ago();keepOrig();renderBought();renderWish();renderSavings();welcome();shindan();var h=document.getElementById("hq");if(h){var q=new URLSearchParams(location.search).get("q");if(q&&!document.getElementById("sf"))h.value=q}
  paint();search();renderFav()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 """

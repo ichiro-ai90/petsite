@@ -18,7 +18,7 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 PR = os.environ.get("PR_NUMBER", "")
-MODEL = os.environ.get("OPENAI_MODEL") or "gpt-5-mini"
+MODEL = os.environ.get("OPENAI_MODEL") or "gpt-5"  # 11/15 Taku 承認: 採点が画面の変化に反応しないため mini から変更（1回 約¥10 の見込み）
 MAX_ROUNDS = int(os.environ.get("AUDIT_MAX_ROUNDS") or 3)
 MARK = "<!-- ichiro-audit"
 
@@ -104,6 +104,13 @@ def shots():
             pg.goto("http://localhost:8000/favorites.html", wait_until="networkidle", timeout=30000)
             pg.wait_for_timeout(1200)
             out.append(("マイリスト（2回目以降の利用者・記録2回の例。初訪問では出ない）", "favorites.html", pg.screenshot(), pg.inner_text("body")[:1500]))
+            if len(items) > 1:  # 何も押していない再訪者：前に商品ページを見ただけ（自動で覚えた価格より今が安い例）
+                sec = items[1]
+                pg.evaluate("""a => { localStorage.removeItem('petsite_bought_v1'); localStorage.removeItem('petsite_fav_v1');
+                  localStorage.setItem('petsite_seen_v1', JSON.stringify({[a[0]]: {p: a[1] + 300, lo: a[1] + 300, t: Date.now() - 7*864e5, v: 1, c: 1, ct: Date.now() - 7*864e5, cp: a[1] + 300}})); }""", [sec["id"], sec["p"]])
+                pg.goto("http://localhost:8000/index.html", wait_until="networkidle", timeout=30000)
+                pg.wait_for_timeout(1200)
+                out.append(("トップ（何も押していない再訪者の例：前に見た商品が安くなった。ボタン操作なしで自動表示）", "index.html", pg.screenshot(), ""))
         b.close()
     for nm, fn in (("共有したときのプレビュー画像（トップ og-today.png・毎朝自動生成）", "og-today.png"),
                    ("共有したときのプレビュー画像（今週のランキング og-weekly.png）", "og-weekly.png"),

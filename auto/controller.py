@@ -47,12 +47,19 @@ def safe_to_merge(n):
     return True, ""
 
 
+BOT = "github-actions[bot]"  # 自動開発（GITHUB_TOKEN）が作った PR だけを対象にする。在席の一郎が作った dev/auto-* は数えない
+
+
+def mine(p):
+    return p["head"]["ref"].startswith("dev/auto-") and p["user"]["login"] == BOT
+
+
 def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     if os.path.exists(os.path.join(ROOT, "auto", "STOP")):
         print("auto/STOP があるので止めています")
         return out(mode="none", pr="")
-    prs = [p for p in gh("pulls?state=open&per_page=50") if p["head"]["ref"].startswith("dev/auto-")]
+    prs = [p for p in gh("pulls?state=open&per_page=50") if mine(p)]
     if prs:
         p = sorted(prs, key=lambda x: x["number"])[0]
         n = p["number"]
@@ -89,7 +96,7 @@ def main():
             return out(mode="none", pr=n)
         return out(mode="fix", pr=n, branch=p["head"]["ref"])
     recent = [p for p in gh("pulls?state=all&per_page=30&sort=created&direction=desc")
-              if p["head"]["ref"].startswith("dev/auto-") and now - ts(p["created_at"]) < datetime.timedelta(hours=20)]
+              if mine(p) and now - ts(p["created_at"]) < datetime.timedelta(hours=20)]
     if recent:
         print("今日はもう1件作ったので、新しい項目は明日")
         return out(mode="none", pr="")
@@ -101,4 +108,8 @@ def main():
 
 
 if __name__ == "__main__":
+    if sys.argv[1:] == ["latest"]:  # 監査を起動する対象（自動開発が作った、開いている PR の番号）
+        ps = sorted((p for p in gh("pulls?state=open&per_page=50") if mine(p)), key=lambda x: x["number"])
+        print(ps[0]["number"] if ps else "")
+        sys.exit(0)
     sys.exit(main())

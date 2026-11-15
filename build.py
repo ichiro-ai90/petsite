@@ -306,13 +306,28 @@ def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noinde
 <main>{bc}{body}</main>
 <footer id="notes"><p class="fn">※ ポイント＝税抜価格の1%×ショップの倍率（目安。SPU・クーポンは含みません）／実質＝価格−ポイント（支払額ではありません）／単価＝商品名の内容量から計算／「N店中の最安」＝当サイトが取得したショップの中での最安／「他店」＝同じ内容量のショップ（3店以上）の価格の中央値／価格は取得時点・送料はショップにより別</p><p>このサイトで掲載されている情報は、ペット用品 最安ナビの作成者により運営されています。価格、販売可能情報は、変更される場合があります。購入時に楽天市場店舗（www.rakuten.co.jp）に表示されている価格が、その商品の販売に適用されます。楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。</p>
 <p>運営: 合同会社にこのて（価格の取得・ページ作成は AI〈一郎〉が自動で行っています）</p>{ga_note()}
-<p>{CREDIT}</p></footer>
+<p>{CREDIT}</p>{yahoo_foot()}</footer>
 </body></html>"""
 
 
 HISTORY = {}
 MIN_HISTORY_DAYS = 7   # これ未満のあいだは「記録中」とだけ出す
 WINDOW = 14
+
+
+HAS_YAHOO = False  # Yahoo!ショッピングの価格が1件でもあるとき True（main で設定）。False のとき表示は楽天だけの従来どおり
+# 公式のテキスト版スニペット（改変禁止。https://developer.yahoo.co.jp/attribution/ 2026-11-16 確認）。ページ下部に置く
+YAHOO_CREDIT = ('<!-- Begin Yahoo! JAPAN Web Services Attribution Snippet -->\n'
+                '<span style="margin:15px 15px 15px 15px"><a href="https://developer.yahoo.co.jp/sitemap/">Webサービス by Yahoo! JAPAN</a></span>\n'
+                '<!-- End Yahoo! JAPAN Web Services Attribution Snippet -->')
+
+
+def yahoo_foot():
+    if not HAS_YAHOO:
+        return ""
+    return ('<p>Yahoo!ショッピングの価格・ポイント（PayPayポイント等の付与予定。条件により変わります）は Yahoo!ショッピングの API の取得結果です。'
+            '購入時に Yahoo!ショッピングのページに表示されている価格が適用されます。LINEヤフー株式会社とは関係のない個人運営の比較サイトです。</p>'
+            f'{YAHOO_CREDIT}')
 
 
 def too_old(fetched_at, hours=24):
@@ -422,8 +437,8 @@ def item_meta(p, g, fetched_date):
     n = len(offers)
     nm = show_name(p["name"])
     short = nm if len(nm) <= 40 else nm[:39] + "…"
-    title = f"{short}の最安値（楽天{n}店を比較）｜{SITE}"
-    desc = (f"{nm[:50]}を楽天市場の{n}ショップで比較（{fetched_date}取得）。今回取得した{n}店のうち最安は{o['price']:,}円"
+    title = f"{short}の最安値（{ML(offers)}{n}店を比較）｜{SITE}"
+    desc = (f"{nm[:50]}を{MLL(offers)}の{n}ショップで比較（{fetched_date}取得）。今回取得した{n}店のうち最安は{o['price']:,}円"
             f"（{ship_word(o['shipping'])}）、ポイント分を引いた目安では約{oe['effective']:,}円。")
     return title, desc
 
@@ -627,6 +642,7 @@ def same_size(offers, unit):
 
 PT_INFO = ''
 PT_NOTE = '<a class="kome" href="#notes" aria-label="注記を見る">※</a>'
+YPT_NOTE = PT_NOTE  # Yahoo!ショッピングのポイントは API の付与予定（注記はフッターに併記）
 
 
 def product_row(p, g, fn):
@@ -686,7 +702,7 @@ def item_ld(p, g, pet_name, fn):
             "category": g["title"], "image": img(p.get("image"), 300) or None,
             "offers": {"@type": "AggregateOffer", "priceCurrency": "JPY", "lowPrice": min(o["price"] for o in offers),
                        "highPrice": max(o["price"] for o in offers), "offerCount": len(offers),
-                       "description": f'楽天市場で当サイトが取得した{len(offers)}ショップの税込価格の範囲（送料別）。{str(p.get("fetched_at") or FETCHED_FOR_LD)} 取得時点の目安'}}
+                       "description": f'{MLL(offers)}で当サイトが取得した{len(offers)}ショップの税込価格の範囲（送料別）。{str(p.get("fetched_at") or FETCHED_FOR_LD)} 取得時点の目安'}}
     if p.get("maker"):
         prod["brand"] = {"@type": "Brand", "name": p["maker"]}
     if p.get("jan"):
@@ -704,6 +720,38 @@ ORIGIN_FOR_LD = ""
 FETCHED_FOR_LD = ""
 
 
+def is_y(o):
+    return o.get("mall") == "yahoo"
+
+
+def ML(offers):
+    """比較した範囲の短い名前（Yahoo!ショッピングの価格があるときだけ併記。無ければ従来どおり「楽天」）"""
+    return "楽天・Yahoo!" if any(is_y(o) for o in offers) else "楽天"
+
+
+def MLL(offers):
+    return "楽天市場・Yahoo!ショッピング" if any(is_y(o) for o in offers) else "楽天市場"
+
+
+def mall_tag(o, offers):
+    if not any(is_y(x) for x in offers):
+        return ""
+    return '<span class="mall y">Yahoo!</span>' if is_y(o) else '<span class="mall r">楽天</span>'
+
+
+def mall_cmp(offers):
+    """楽天と Yahoo! それぞれの最安（両方あるときだけ）"""
+    r = [o for o in offers if not is_y(o)]
+    y = [o for o in offers if is_y(o)]
+    if not r or not y:
+        return ""
+    a, b = min(r, key=lambda o: o["price"]), min(y, key=lambda o: o["price"])
+    d = abs(a["price"] - b["price"])
+    win = "同じ価格" if d == 0 else (f'{"Yahoo!" if b["price"] < a["price"] else "楽天"}が <b>{d:,}円安い</b>')
+    return (f'<p class="mallcmp">楽天の最安 {a["price"]:,}円／Yahoo!の最安 {b["price"]:,}円：{win}'
+            f'<small>（取得時点・税込・送料別。ポイントは含みません）</small></p>')
+
+
 def item_body(p, g, fetched):
     offers = sorted(p["offers"], key=lambda o: o["price"])
     o = offers[0]
@@ -712,10 +760,10 @@ def item_body(p, g, fetched):
     pic = f'<img src="{E(big)}" alt="" width="240" height="240">' if big else '<span class="noimg big" aria-hidden="true"></span>'
     up = unit_price(p, g)
     rows = "".join(
-        f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop"><span class="sn">{E(x["shop"])}</span>{hi_tag(x["pointRate"])}'
+        f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop">{mall_tag(x, offers)}<span class="sn">{E(x["shop"])}</span>{hi_tag(x["pointRate"])}'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{x["points"]:,}pt（{x["pointRate"]}倍）{PT_NOTE}</span></div>'
+        f'<span class="pt">{x["points"]:,}pt（{x["pointRate"]}倍）{YPT_NOTE if is_y(x) else PT_NOTE}</span></div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -737,10 +785,10 @@ def item_body(p, g, fetched):
     elif save:
         card_k, card_v = f'同じ内容量の{len(same)}ショップで', f'最大{hi["price"] - o["price"]:,}円の差'
     else:
-        card_k, card_v = f'楽天{len(offers)}ショップを比較', ''
+        card_k, card_v = f'{ML(offers)}{len(offers)}ショップを比較', ''
     card_attr = (f' data-cn="{E(show_name(p["name"])[:60])}" data-cp="{o["price"]}" data-ck="{E(card_k)}" data-cv="{E(card_v)}"'
                  f' data-cd="{E(str(p.get("fetched_at") or fetched)[:10])}"')
-    share_text = (f'{show_name(p["name"])[:50]}｜楽天{len(offers)}ショップの価格比較（{str(p.get("fetched_at") or fetched)[:10]} 取得分）。取得した中で最安 {o["price"]:,}円'
+    share_text = (f'{show_name(p["name"])[:50]}｜{ML(offers)}{len(offers)}ショップの価格比較（{str(p.get("fetched_at") or fetched)[:10]} 取得分）。取得した中で最安 {o["price"]:,}円'
                   + (f'（同じ内容量で最大 {hi["price"] - o["price"]:,}円の差）' if save else "") + '※価格・ポイントは取得時点の目安。PR（アフィリエイト）サイト')
     actions = (f'<div class="actions"><button type="button" class="fav" data-fav="{E(p["productId"])}" data-price="{o["price"]}" aria-pressed="false">{icon("star", 18)}お気に入り</button>'
                f'<button type="button" class="bought" data-bought="{E(p["productId"])}" data-price="{o["price"]}" data-md="{md}" aria-pressed="false">{icon("bag", 18)}買った日をメモ</button>'
@@ -753,7 +801,7 @@ def item_body(p, g, fetched):
         alt = (f'<p class="alt">ポイント{oe["pointRate"]}倍の店：<b>{E(oe["shop"])}</b>（{oe["price"]:,}円・{oe["points"]:,}pt）{PT_NOTE}</p>')
     allshops = (f'<a class="sub-link" href="{E(p["productUrl"])}" rel="sponsored nofollow" target="_blank">楽天市場の商品ページで全{p.get("itemCount", 0):,}ショップを見る</a>'
                 if p.get("productUrl") else "")
-    summary = (f'<p class="facts">要点：{E(show_name(p["name"])[:60])}は、楽天市場で取得した{len(offers)}ショップのうち最安 {o["price"]:,}円（{E(o["shop"])}・{"送料無料" if o.get("shipping") == "送料無料" else "送料別"}）。'
+    summary = (f'<p class="facts">要点：{E(show_name(p["name"])[:60])}は、{MLL(offers)}で取得した{len(offers)}ショップのうち最安 {o["price"]:,}円（{E(o["shop"])}・{"送料無料" if o.get("shipping") == "送料無料" else "送料別"}）。'
                + (f'同じ内容量のショップ間で最大{hi["price"] - o["price"]:,}円の差。' if save else "")
                + f'価格は{E(str(p.get("fetched_at") or fetched))}時点。</p>')
     return (f'<div class="item"><div class="item-pic">{pic}</div><div class="item-info">'
@@ -766,7 +814,7 @@ def item_body(p, g, fetched):
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p><p class="shop-l">{E(o["shop"])}</p>'
             + (f'<p class="up">{LABEL[g["unit"]]} {up:,.1f}円（内容量 {fmt_amount(p["amount"], g["unit"])}・商品名「{E(detail(o["name"]) or fmt_amount(p["amount"], g["unit"]))}」から読み取り）</p>' if up else "") +
-            f'{shipnote}{save}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
+            f'{shipnote}{save}{mall_cmp(offers)}{tr}<a class="btn big" href="{E(o["url"])}" rel="sponsored nofollow" target="_blank">取得した中で最安のショップで見る</a>{alt}</div></div></div>'
             f'<h2 class="h2">この商品を売っているショップ</h2>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<label class="free-only"><input type="checkbox" id="freeonly"> 送料無料だけ</label>'
@@ -781,6 +829,8 @@ def main():
     data = json.load(open(os.path.join(ROOT, "data", "prices.json"), encoding="utf-8"))
     sample = str(data.get("fetched_at", "")).startswith("SAMPLE")
     load_history()
+    global HAS_YAHOO
+    HAS_YAHOO = any(is_y(o) for p in data.get("products", []) for o in p.get("offers", []))
     if sample:
         HISTORY.clear()
     origin = os.environ.get("SITE_ORIGIN", "").rstrip("/")
@@ -1378,6 +1428,8 @@ details.about{margin:24px 0 0;font-size:12px;color:var(--sub)}details.about summ
 .shops li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px}
 .shop{display:flex;flex-direction:column;gap:2px;min-width:0}
 .sn{font-size:13px;color:var(--link);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mall{font-size:10px;font-weight:700;border-radius:4px;padding:0 5px;margin-right:4px;align-self:flex-start}.mall.r{color:#bf0000;background:#fdecec}.mall.y{color:#c2185b;background:#fde7f0}
+.mallcmp{font-size:13px;margin:8px 0}.mallcmp small{display:block;color:var(--sub);font-size:11px}
 .outlet{font-size:11px;color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:0 6px;align-self:flex-start}
 .sub-link{display:block;margin:0 16px 8px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:var(--r);color:var(--link);font-size:13px;text-align:center}
 /* 検索・お気に入り */

@@ -154,6 +154,53 @@ def search_offers(product):
     return sorted(best.values(), key=lambda o: o["price"])[:MAX_OFFERS]
 
 
+YAHOO_URL = "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch"
+YAHOO_OFFERS = 5      # 製品あたりに残す Yahoo!ショッピングのストア数（安い順）
+_ylast = {"t": -1e9}
+
+
+def yahoo_offers(product):
+    """同じ JAN の Yahoo!ショッピングの商品（安い順）。YAHOO_APP_ID が無い・JAN が無い・失敗のときは []（楽天だけで続ける）。"""
+    appid = os.environ.get("YAHOO_APP_ID")
+    if not appid or not re.fullmatch(r"\d{8,14}", product.get("jan") or ""):
+        return []
+    p = {"appid": appid, "jan_code": product["jan"], "results": 20, "sort": "+price", "in_stock": "true"}
+    if os.environ.get("VC_AFFILIATE_ID"):
+        p.update(affiliate_type="vc", affiliate_id=os.environ["VC_AFFILIATE_ID"])
+    wait = INTERVAL - (time.monotonic() - _ylast["t"])  # Yahoo も 1秒1回まで（楽天とは別枠）
+    if wait > 0:
+        time.sleep(wait)
+    _ylast["t"] = time.monotonic()
+    try:
+        d = _get(YAHOO_URL, p)
+    except Exception as e:
+        print(f"  Yahoo 取得を省略（{product['jan']}）: {type(e).__name__} {str(e)[:80]}")
+        return []
+    return parse_yahoo(d, product["minPrice"])
+
+
+def parse_yahoo(d, min_price):
+    lo = min_price * 0.7
+    best = {}
+    for h in d.get("hits") or []:
+        price = int(h.get("price") or 0)
+        url = h.get("url") or ""
+        shop = (h.get("seller") or {}).get("name") or ""
+        if price <= 0 or not url or not shop or price < lo or h.get("inStock") is False:
+            continue
+        pt = int((h.get("point") or {}).get("amount") or 0)
+        code = (h.get("shipping") or {}).get("code")
+        o = {"mall": "yahoo", "shop": shop, "name": h.get("name") or "", "price": price,
+             "pointRate": int((h.get("point") or {}).get("times") or 1), "points": pt, "effective": price - pt,
+             "shipping": "送料無料" if code == 2 else ("条件付き送料無料" if code == 3 else "送料別"),
+             "url": url, "reviewCount": int((h.get("review") or {}).get("count") or 0),
+             "reviewAverage": float((h.get("review") or {}).get("rate") or 0),
+             "image": (h.get("image") or {}).get("medium") or ""}
+        if shop not in best or price < best[shop]["price"]:
+            best[shop] = o
+    return sorted(best.values(), key=lambda o: o["price"])[:YAHOO_OFFERS]
+
+
 def fetch_group(group):
     """人気順に製品を見て、ショップが見つかり内容量が読めるものを最大 MAX_PRODUCTS 件。API 呼び出しは製品 MAX_TRIES 件まで。"""
     from build import amount
@@ -168,6 +215,9 @@ def fetch_group(group):
         a = amount(offers[0]["name"], group["unit"]) or amount(p["name"], group["unit"])  # 買う商品（最安ショップ）の内容量を優先
         if not a or (group.get("min") and a < group["min"]):
             continue  # 内容量が読めない（別ジャンルの商品が混ざることが多い）・大袋の下限未満は載せない
+        # 同じ JAN の Yahoo!ショッピングも合わせる（内容量が楽天の最安と同じものだけ＝別サイズの混入を防ぐ）
+        ys = [y for y in yahoo_offers(p) if abs((amount(y["name"], group["unit"]) or 0) - a) < 1e-6]
+        offers = sorted(offers + ys, key=lambda o: o["price"])
         p = dict(p, group=group["slug"], offers=offers, amount=a)
         if not p["image"]:
             p["image"] = offers[0]["image"]

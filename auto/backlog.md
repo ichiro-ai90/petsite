@@ -12,3 +12,5 @@
 - [ ] （人）楽天の買い時表示：お買い物マラソン等の開催期間は楽天の公式ページで確認が必要なため、オーナーが期間を auto/campaigns.json に書いたら表示する仕組みだけ作る（期間の推測はしない）
 - [x] 不公開の10カテゴリを公開できるように：products.json の keyword・pkeyword・exclude・min を見直し、build.py の amount() が内容量を読めない商品名のパターン（例：「◯kg×◯袋」「◯L入」「◯枚入り×◯」「◯匹」）を tests_amount.py にテスト付きで追加。対象：dog-treat-large・hamster-bedding-paper・dried-cricket・dubia-live・reptile-substrate・cat-litter-mineral・cat-litter-wood・small-animal-wood-bedding・tropical-fish-food・parakeet-pellet
 - [x] 売れ筋の大カテゴリを深く：ドッグフード・キャットフード・ペットシーツ・猫砂の各カテゴリだけ、製品検索を5ページ・1カテゴリ最大100商品に（fetch_prices.py にカテゴリ別の上限 "max" を追加。1秒1回のまま、1回の取得が90分を超えないこと）
+- [ ] Yahoo!ショッピングの価格があるとき（build.py の HAS_YAHOO）のサイト全体の文言：トップ・カテゴリ・検索・OG画像・llms.txt の「楽天の〜」を、事実に合う表現（楽天・Yahoo!）に。HAS_YAHOO が False のときは今のまま。Yahoo の価格・在庫も楽天と同じ扱い（24時間を超えて保存しない）
+- [ ] 一覧・ランキングのカードに、最安が Yahoo!ショッピングのときの印（.mall.y）を出す（HAS_YAHOO のときだけ）

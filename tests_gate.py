@@ -104,6 +104,21 @@ class T(unittest.TestCase):
         self.assertNotIn('class="save"', out)  # 最安が訳あり品ならお得額を出さない
         self.assertIn('class="outlet"', out)
 
+    def test_yahoo(self):
+        """Yahoo!ショッピングの価格があるときだけ、モールの印・両モールの最安・Yahoo のクレジットが出る"""
+        ps = [prod("cat-litter-tofu", f"y{i}", f"おからの猫砂 7L 商品{i}",
+                   [offer("A店", 1000, name="猫砂 7L"), offer("B店", 1300, name="猫砂 7L"),
+                    dict(offer("Yストア", 900, name="猫砂 7L"), mall="yahoo", url="https://ck.jp.ap.valuecommerce.com/x")]) for i in range(3)]
+        d, p = run({"fetched_at": "2026-11-05 05:17 JST", "products": ps})
+        self.assertEqual(p.returncode, 0, p.stderr)
+        item = open(os.path.join(d, "site", "item-y0.html"), encoding="utf-8").read()
+        self.assertIn('<span class="mall y">Yahoo!</span><span class="sn">Yストア</span>', item)
+        self.assertIn('<span class="mall r">楽天</span><span class="sn">A店</span>', item)
+        self.assertIn("楽天の最安 1,000円／Yahoo!の最安 900円：Yahoo!が <b>100円安い</b>", item)
+        self.assertIn("楽天・Yahoo!3店を比較", item)
+        self.assertIn('<span style="margin:15px 15px 15px 15px"><a href="https://developer.yahoo.co.jp/sitemap/">Webサービス by Yahoo! JAPAN</a></span>', item)  # 公式スニペットを改変なしで
+        self.assertIn("Supported by Rakuten Developers", item)  # 楽天のクレジットは残す
+
     def test_no_price_history(self):
         """楽天の規約（価格情報の保存は24時間まで）：過去の価格を読まず、お得は今の平均価格との差だけで出す"""
         sys.path.insert(0, HERE)

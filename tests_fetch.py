@@ -96,5 +96,21 @@ d, m = setup(PREV); rc, log, _ = run(m, R, b_fail)
 out = load(d); pb = [p for p in out["products"] if p["group"] == "b"]
 check("B だけ失敗 → B は前回引き継ぎ（元日時つき）", rc == 0 and out["carried"] == ["b"] and pb and pb[0]["fetched_at"] == PREV["fetched_at"])
 
+# Yahoo!ショッピング（商品検索 v3）の応答の読み取り
+import fetch_prices as _fp
+_y = {"hits": [
+    {"name": "猫砂 7L", "url": "https://ck.jp.ap.valuecommerce.com/a", "price": 900, "inStock": True, "seller": {"name": "Yストア"},
+     "shipping": {"code": 2}, "point": {"amount": 9, "times": 1}, "review": {"rate": 4.5, "count": 12}, "image": {"medium": "https://item-shopping.c.yimg.jp/a.jpg"}},
+    {"name": "猫砂 7L", "url": "https://ck.jp.ap.valuecommerce.com/b", "price": 950, "inStock": True, "seller": {"name": "Yストア"}, "shipping": {"code": 1}},
+    {"name": "猫砂 スコップ", "url": "https://x", "price": 100, "inStock": True, "seller": {"name": "付属品店"}},
+    {"name": "猫砂 7L", "url": "https://y", "price": 980, "inStock": False, "seller": {"name": "在庫なし店"}},
+    {"name": "猫砂 7L", "url": "https://z", "price": 1000, "seller": {"name": "Z店"}, "shipping": {"code": 3}},
+]}
+_o = _fp.parse_yahoo(_y, 1000)
+check("Yahoo: 同じストアは最安1件・付属品（大幅に安い）と在庫なしを除く", [(o["shop"], o["price"]) for o in _o] == [("Yストア", 900), ("Z店", 1000)])
+check("Yahoo: mall・送料・ポイント", _o[0]["mall"] == "yahoo" and _o[0]["shipping"] == "送料無料" and _o[0]["effective"] == 891 and _o[1]["shipping"] == "条件付き送料無料")
+os.environ.pop("YAHOO_APP_ID", None)
+check("Yahoo: ID 未設定なら呼ばない", _fp.yahoo_offers({"jan": "4901234567894", "minPrice": 1000}) == [])
+
 print("FAILS", fails)
 sys.exit(1 if fails else 0)

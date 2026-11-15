@@ -21,7 +21,7 @@ jobs:
           import json, fetch_prices as f
           from build import amount
           f.PRODUCT_PAGES = 1
-          slugs = ["dog-treat-large","hamster-bedding-paper","dried-cricket","dubia-live","reptile-substrate","cat-litter-mineral","cat-litter-wood","small-animal-wood-bedding","tropical-fish-food","parakeet-pellet"]
+          slugs = ["dog-treat-large","hamster-bedding-paper","dried-cricket","reptile-substrate","cat-litter-mineral","cat-litter-wood","small-animal-wood-bedding","tropical-fish-food","parakeet-pellet"]
           gs = {g["slug"]: g for g in json.load(open("products.json", encoding="utf-8"))["groups"]}
           for s in slugs:
               g = gs[s]
@@ -29,7 +29,8 @@ jobs:
                   ps = f.search_products(g)
               except Exception as e:
                   print("##", s, "ERROR", str(e)[:100]); continue
-              print("##", s, g["unit"], "min", g.get("min"), "kw", g.get("pkeyword"), "candidates", len(ps))
-              for p in ps[:12]:
-                  print("  ", amount(p["name"], g["unit"]), "|", p["name"][:70])
+              ok = [p for p in ps if amount(p["name"], g["unit"])]
+              print("##", s, g["unit"], "candidates", len(ps), "amount-readable", len(ok))
+              for p in [p for p in ps if not amount(p["name"], g["unit"])][:5]:
+                  print("   NG |", p["name"][:70])
           PY

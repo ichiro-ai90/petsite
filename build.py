@@ -639,7 +639,7 @@ def product_row(p, g, fn):
     buy = f'・購入単位 {fmt_amount(p["amount"], g["unit"])}' if p.get("amount") else ""
     same = same_size(p["offers"], g["unit"])
     gap = max(x["price"] for x in same) - o["price"]
-    gapt = (f'<span class="save-s">店によって最大 {gap:,}円の差</span>'
+    gapt = (f'<span class="save-s">同じ内容量の店で最大 {gap:,}円の差</span>'
             if len(same) >= 2 and gap > 0 and not OUTLET.search(o["name"]) else "")
     fb = free_best(p["offers"])
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
@@ -666,7 +666,7 @@ def category_body(g, prods, pet, fetched, carried):
     rows = "".join(product_row(p, g, f"item-{p['productId']}.html") for p in prods)
     cheapest = min(prods, key=lambda p: best_offer(p)["price"])
     return (f'<h1 class="ttl">{E(g["title"])}</h1>'
-            f'<p class="fresh1">{len(prods)}商品・<time data-fetched="{fetched}">{fetched}</time>・毎朝更新</p>'
+            f'<p class="fresh1">{len(prods)}商品・<time data-fetched="{fetched}">{fetched}</time>・1日2回更新</p>'
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<label class="free-only"><input type="checkbox" id="freeonly"> 送料無料のショップだけ</label>'
             f'<button type="button" data-k="pop" aria-pressed="true">人気順</button>'

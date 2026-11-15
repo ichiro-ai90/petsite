@@ -54,11 +54,42 @@ def mine(p):
     return p["head"]["ref"].startswith("dev/auto-") and p["user"]["login"] == BOT
 
 
+def orphan_to_pr():
+    """Claude が push したが PR になっていない dev/auto-* ブランチがあれば、ここで PR にして監査を起動する
+    （PR の作成者を github-actions[bot] にそろえるため。タイトル・本文は /tmp/pr.md〈1行目がタイトル〉か、最後のコミット）"""
+    owner = REPO.split("/")[0]
+    for b in gh("branches?per_page=100"):
+        name = b["name"]
+        if not name.startswith("dev/auto-") or name in ("dev/auto-dev", "dev/auto-watch"):
+            continue
+        if gh(f"pulls?state=all&head={owner}:{name}"):
+            continue
+        cmp = gh(f"compare/main...{name}")
+        if not cmp.get("ahead_by"):
+            continue
+        msg = cmp["commits"][-1]["commit"]["message"]
+        pf = "/tmp/pr.md"
+        if os.path.exists(pf):
+            t = open(pf, encoding="utf-8").read().strip().split("\n", 1)
+            title, body = t[0].lstrip("# ").strip(), (t[1] if len(t) > 1 else "")
+        else:
+            title, body = msg.split("\n")[0], msg
+        body += "\n\n（自動開発：Claude が作成。監査に合格し、マージ前の機械チェックを通ったら自動でマージ・公開します。止めるときは main に auto/STOP）"
+        p = gh("pulls", "POST", {"title": title[:120], "head": name, "base": "main", "body": body})
+        gh("actions/workflows/audit.yml/dispatches", "POST", {"ref": "main", "inputs": {"pr": str(p["number"])}})
+        print(f"PR #{p['number']} を作成し監査を起動しました（{name}）")
+        return p["number"]
+    return None
+
+
 def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     if os.path.exists(os.path.join(ROOT, "auto", "STOP")):
         print("auto/STOP があるので止めています")
         return out(mode="none", pr="")
+    opened = orphan_to_pr()
+    if opened:
+        return out(mode="none", pr=opened)
     prs = [p for p in gh("pulls?state=open&per_page=50") if mine(p)]
     if prs:
         p = sorted(prs, key=lambda x: x["number"])[0]
@@ -108,6 +139,9 @@ def main():
 
 
 if __name__ == "__main__":
+    if sys.argv[1:] == ["orphan"]:
+        print(orphan_to_pr() or "PR にするブランチはありません")
+        sys.exit(0)
     if sys.argv[1:] == ["latest"]:  # 監査を起動する対象（自動開発が作った、開いている PR の番号）
         ps = sorted((p for p in gh("pulls?state=open&per_page=50") if mine(p)), key=lambda x: x["number"])
         print(ps[0]["number"] if ps else "")

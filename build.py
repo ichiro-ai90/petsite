@@ -470,12 +470,13 @@ DEAL_MIN = 0.10  # 他店より10%以上安いものだけ「お得」に出す�
 
 def drops(published):
     """同じ内容量の他店より安い商品（差額の大きい順）"""
-    out = []
+    out, seen_ = [], set()
     for g, prods in published:
         for p in prods:
             GROUP_UNIT[p.get("group") or g["slug"]] = g["unit"]
             x = deal(p, g["unit"])
-            if x:
+            if x and p["productId"] not in seen_:  # 同じ商品が2つのカテゴリにあっても1回だけ（11/16 Taku のスクショで重複）
+                seen_.add(p["productId"])
                 out.append(dict(x, p=p, g=g))
     return sorted(out, key=lambda x: (-x["d"], x["now"]))
 
@@ -566,7 +567,7 @@ def record_low(pid, now):
 
 
 def spotlight(published, fdate):
-    """人気（レビュー件数）×値下がり率の上位1件と、5,000円以上の商品の値下がり上位3件。すべて取得した事実から"""
+    """人気（レビュー件数）×他店との差の上位1件（5,000円以上の枠は 11/16 オーナー判断で削除）"""
     ds = drops(published)
     import math
     pop = [x for x in ds if x["p"].get("reviewCount", 0) >= 30]
@@ -584,13 +585,6 @@ def spotlight(published, fdate):
                 f'<span class="hero-pr"><b>{x["now"]:,}</b>円</span>'
                 + (f'<span class="tb low">記録した{rl}日間でいちばん安い</span>' if rl else "") +
                 '</span></a><p class="ptn">人気（レビュー数）×他店との差で選出・送料別</p></section>')
-    prem = sorted([x for x in ds if x["now"] >= 5000], key=lambda x: -x["d"] / x["hi"])[:3]
-    if prem:
-        li = "".join(f'<li><a class="dr" href="item-{E(x["p"]["productId"])}.html" data-ga="premium_drop" data-rank="{i}"><span class="info"><span class="nm">{E(show_name(x["p"]["name"]))}</span>'
-                     f'<span class="dr-pr"><small>他店</small><s>{x["hi"]:,}円</s> → <b>{x["now"]:,}</b>円</span></span><span class="dr-d">−{x["d"]:,}円<small>{round(x["d"] / x["hi"] * 100)}%</small></span></a></li>'
-                     for i, x in enumerate(prem, 1))
-        out += (f'<section class="drop-sec"><h2 class="h2">5,000円以上でお得な商品<span class="h2s">同じ内容量の他店と比べて・送料別</span></h2>'
-                f'<ol class="drops">{li}</ol></section>')
     return out
 
 

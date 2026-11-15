@@ -88,7 +88,9 @@ def shots():
             pg.goto("http://localhost:8000/" + path, wait_until="networkidle", timeout=30000)
             pg.wait_for_timeout(800)
             png = pg.screenshot(full_page=full, clip=None if not full else {"x": 0, "y": 0, "width": 390, "height": 2400})
-            text = pg.inner_text("body")[:2500]
+            meta = pg.evaluate("""() => { const m = n => (document.querySelector(`meta[property="${n}"],meta[name="${n}"]`) || {}).content || "（なし）";
+              return `【head】title: ${document.title}／og:title: ${m("og:title")}／og:description: ${m("og:description")}／og:image: ${m("og:image")}／robots: ${m("robots")}`; }""")
+            text = meta + "\n" + pg.inner_text("body")[:2300]
             out.append((name, path, png, text))
             if pg.query_selector("#freeonly"):  # 切り替え ON の状態も見せる（OFF の画面だけでは判断できないため）
                 pg.check("#freeonly")

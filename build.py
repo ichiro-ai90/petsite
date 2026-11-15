@@ -847,6 +847,7 @@ def main():
     FETCHED_FOR_LD = str(data.get("fetched_at", ""))
     gmap = {g["slug"]: g for g in groups}
     published, files, index_rows = [], [], []
+    by_group = {}
     for g in groups:
         prods = []
         for p in data.get("products", []):
@@ -876,6 +877,7 @@ def main():
                  sample, crumbs, canonical=(f"{origin}/{fn}" if origin else ""),
                  og_image=img(min(prods, key=lambda p: best_offer(p)["price"]).get("image"), 300) or ""))
         files.append(fn)
+        by_group[g["slug"]] = prods
         for p in prods:
             ifn = f"item-{p['productId']}.html"
             o, oe, up = best_offer(p), best_offer(p, "effective"), unit_price(p, g)
@@ -915,11 +917,37 @@ def main():
     from collections import Counter
     makers = [m for m, n in Counter(r["m"] for r in index_rows if r["m"]).most_common(10) if n >= 2]
     mk = "".join(f'<li><a href="search.html?maker={urllib.parse.quote(m)}">{E(m)}</a></li>' for m in makers)
+    # 悩みから探す：すでに載せている商品のうち、商品名に語がある商品だけ（追加の取得なし・効果はうたわない）
+    nayami = []
+    try:
+        concerns = json.load(open(os.path.join(ROOT, "concerns.json"), encoding="utf-8"))["concerns"]
+    except (OSError, ValueError):
+        concerns = []
+    for c in concerns:
+        src = [s_ for s_ in c["from"] if s_ in by_group]
+        cps = [p for s_ in src for p in by_group[s_]
+               if any(w in p["name"] or w in best_offer(p)["name"] for w in c["words"])]
+        if len(cps) < MIN_PRODUCTS:
+            print(f"  不公開 {c['slug']}: 商品{len(cps)}件 < {MIN_PRODUCTS}件")
+            continue
+        g0 = dict(gmap[src[0]], slug=c["slug"], title=f'{c["title"]}（{c["pet"]}のフード）')
+        pet = next((pt for pt in PETS if c["pet"] in pt[3]), PETS[0])
+        fn = c["slug"] + ".html"
+        body = category_body(g0, cps, pet, fetched, "").replace(
+            "</h1>", f'</h1><p class="nayami-n">商品名に「{E(c["words"][0])}」などの記載がある商品です。効果を示すものではありません。気になる症状は動物病院へ</p>', 1)
+        open(os.path.join(out, fn), "w", encoding="utf-8").write(
+            page(f'{c["pet"]}の{c["title"]}｜商品名に記載のあるフード{len(cps)}商品の価格比較｜{SITE}', body,
+                 f'商品名に「{c["words"][0]}」などの記載がある{c["pet"]}用フード{len(cps)}商品を、ショップごとの価格とポイントで比較（{fdate}取得）。効果を示すものではありません。',
+                 sample, ((pet[1], f"index.html#{pet[0]}"), (g0["title"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
+        files.append(fn)
+        nayami.append(f'<li><a href="{fn}">{E(c["pet"])}｜{E(c["title"])}<small>{len(cps)}</small></a></li>')
+    nayami_sec = (f'<section class="mk-sec"><h2 class="h2">悩みから探す</h2><ul class="chips">{"".join(nayami)}</ul></section>' if nayami else "")
     idx = ('<div class="vp"><p class="vp-t">楽天のペット用品、<b>どのショップがいちばん安い？</b></p>'
            f'<p class="vp-s">{sum(len(x[1]) for x in published)}商品・ショップごとの価格を1日2回チェック</p></div>'
            f'<ul class="tabs">{"".join(tabs)}</ul>'
            + '<a class="sd-cta" href="shindan.html" data-ga="shindan_cta"><span class="sd-cta-t">うちの子の消耗品、月いくら？</span><span class="sd-cta-s">いつもの商品を選ぶだけ・1分でわかる</span><span class="sd-cta-b">診断する</span></a>'
            + '<div id="welcome"></div>' + today_strip(published, fdate) + spotlight(published, fdate) + drop_section(published, fdate)
+           + nayami_sec
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
            + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div>')
     _ds = drops(published)
@@ -1354,6 +1382,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tb.new{background:var(--win-bg);color:var(--win);border:1px solid #f3b6c9;font-weight:700}
 .more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.nayami-n{margin:2px 16px 8px;font-size:12px;color:var(--sub)}
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}
 .wl-wrap{position:relative}.wl-sh{display:block;margin:4px 16px 0 auto;padding:4px 0}

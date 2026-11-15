@@ -69,6 +69,9 @@ def shots():
         pages += [("カテゴリの商品一覧", f"{first['c']}.html", False), ("商品ごとのショップ比較", f"item-{first['id']}.html", True)]
         kw = (first.get("m") or first["n"]).split(" ")[0]
         pages += [("検索結果", f"search.html?q={urllib.request.quote(kw)}", False)]
+    for nm, fn in (("今週の値下がりランキング", "weekly.html"), ("1分診断", "shindan.html")):
+        if os.path.exists(os.path.join(ROOT, "site", fn)):
+            pages.append((nm, fn, False))
     pages += [("お気に入り（登録後）", "favorites.html", False)]
     out = []
     with sync_playwright() as p:
@@ -78,6 +81,9 @@ def shots():
         if first:  # お気に入り画面を空でなく見せるため、1件登録しておく
             pg.goto("http://localhost:8000/index.html")
             pg.evaluate("id => localStorage.setItem('petsite_fav_v1', JSON.stringify({[id]: {p: 0, t: Date.now()}}))", first["id"])
+            pg.goto("http://localhost:8000/index.html", wait_until="networkidle", timeout=30000)
+            pg.wait_for_timeout(800)  # 初訪問のファーストビューの下（スクロール2画面目）も見せる
+            out.append(("トップ（初訪問・下にスクロールした2画面目）", "index.html", pg.screenshot(clip={"x": 0, "y": 660, "width": 390, "height": 1320}, full_page=True), ""))
         for name, path, full in pages:
             pg.goto("http://localhost:8000/" + path, wait_until="networkidle", timeout=30000)
             pg.wait_for_timeout(800)
@@ -92,7 +98,19 @@ def shots():
                 pg.click(".pinfo summary")
                 pg.wait_for_timeout(300)
                 out.append((name + "（ポイントの？を開いた状態）", path, pg.screenshot(), ""))
+        if first:  # 2回目以降の利用者の画面（記録あり）。初訪問の画面とは分けて評価してもらう
+            pg.evaluate("""id => { const t = Date.now(), d = 864e5;
+              localStorage.setItem('petsite_bought_v1', JSON.stringify({[id]: {p: 1, t: t - 30*d, h: [[t - 60*d, 1, 300], [t - 30*d, 1, 450]]}})); }""", first["id"])
+            pg.goto("http://localhost:8000/favorites.html", wait_until="networkidle", timeout=30000)
+            pg.wait_for_timeout(1200)
+            out.append(("マイリスト（2回目以降の利用者・記録2回の例。初訪問では出ない）", "favorites.html", pg.screenshot(), pg.inner_text("body")[:1500]))
         b.close()
+    for nm, fn in (("共有したときのプレビュー画像（トップ og-today.png・毎朝自動生成）", "og-today.png"),
+                   ("共有したときのプレビュー画像（今週のランキング og-weekly.png）", "og-weekly.png"),
+                   ("共有したときのプレビュー画像（1分診断 og-shindan.png）", "og-shindan.png")):
+        fp = os.path.join(ROOT, "site", fn)
+        if os.path.exists(fp):
+            out.append((nm, fn, open(fp, "rb").read(), ""))
     return out
 
 

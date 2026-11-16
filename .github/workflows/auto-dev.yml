@@ -23,6 +23,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
+      - name: watchdog（価格更新の予約が抜けたら代わりに起動する。楽天の24時間ルールを守るため）
+        run: |
+          # GitHub の予約は混雑時に抜けることがある（11/16 17:17 JST の回が起動せず）。auto-dev は3時間ごとに動いているので、
+          # 最後の価格更新の開始から13時間を超えていて、実行中・待機中も無ければ update.yml を起動する
+          last=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/update.yml/runs?per_page=5" \
+                 --jq '[.workflow_runs[] | select(.conclusion != "cancelled")][0] | "\(.status) \(.created_at)"' || echo "")
+          echo "最後の価格更新: ${last:-不明}"
+          st=${last%% *}; at=${last#* }
+          if [ -z "$last" ]; then exit 0; fi
+          if [ "$st" != "completed" ]; then echo "実行中・待機中のため起動しない"; exit 0; fi
+          age=$(( $(date -u +%s) - $(date -u -d "$at" +%s) ))
+          echo "経過 $((age/3600)) 時間"
+          if [ "$age" -gt $((13*3600)) ]; then
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/workflows/update.yml/dispatches" -f ref=main && echo "update.yml を起動しました"
+          fi
       - name: decide（呼ぶ必要があるときだけ Claude を呼ぶ。合格 PR のマージと監査の起動はここで行う）
         id: c
         env:

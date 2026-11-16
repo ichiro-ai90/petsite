@@ -496,7 +496,7 @@ def today_strip(published, fdate):
     if not n:
         return ""
     return (f'<a class="today" href="#drops" data-ga="today_strip"><span class="td-k">{E(fdate[5:].replace("-", "/"))}のお得</span>'
-            f'<span class="td-n">他店より安い <b>{n}</b>件</span><span class="td-b">ランキングを見る</span></a>')
+            f'<span class="td-n">他店より安い <b>{n}</b>件</span><span class="td-f">同じ内容量のショップ（3店以上）の中央値と比べて・取得時点</span><span class="td-b">ランキングを見る</span></a>')
 
 
 def og_card(path, title, big, sub, foot="ペット用品 最安ナビ　楽天のショップを比較"):
@@ -820,7 +820,7 @@ def item_body(p, g, fetched):
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
-            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら 最大 <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
                          + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")
                          + '</p>')
             + f'<p class="shop-l">{E(o["shop"])}</p>'
@@ -1470,7 +1470,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .cty{margin-left:8px;font-size:12px;font-weight:700;color:var(--sub);border:1px solid var(--line,#e5e7eb);border-radius:4px;padding:1px 6px;vertical-align:middle}
-.card-pt{margin:2px 0;font-size:13px}.card-ln{margin-left:8px;font-size:12px}.card-pt b{color:#bf0000}
+.card-pt{margin:2px 0;font-size:13px}.td-f{display:block;font-size:11px;color:var(--sub);font-weight:400}.card-ln{margin-left:8px;font-size:12px}.card-pt b{color:#bf0000}
 .nayami-n{margin:2px 16px 8px;font-size:11px;color:var(--sub)}
 .nayami{margin:12px 0 4px}.nayami-h{margin:0 16px 6px;font-size:16px;font-weight:800}
 .nayami-l{display:flex;gap:8px;overflow-x:auto;list-style:none;margin:0;padding:0 16px 4px;scrollbar-width:none}

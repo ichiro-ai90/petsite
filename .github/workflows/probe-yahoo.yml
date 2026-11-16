@@ -8,23 +8,27 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: その場検索の本番確認
+        run: |
+          for q in 首輪 ちゅーる; do
+            curl -s "https://petnavi.niconote.jp/api/msearch?q=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" $q)" -o r.json -w "HTTP %{http_code}\n"
+            python3 -c "import json;d=json.load(open('r.json'));it=d.get('items',[]);print('$q', len(it), 'rakuten', sum(1 for x in it if x['m']=='r'), 'yahoo', sum(1 for x in it if x['m']=='y'), 'err', d.get('err'), 'min', it[0]['p'] if it else None, (it[0]['n'][:30] if it else ''))"
+          done
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: Yahoo の商品検索が動くか（値は出さない）
-        env:
-          YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
-          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
-          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
-          SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
+      - name: 画面
         run: |
-          python3 - <<'PY'
-          import os, json
-          import fetch_prices as f
-          d = f._get(f.YAHOO_URL, {"appid": os.environ["YAHOO_APP_ID"], "query": "首輪", "results": 3, "genre_category_id": 2147})
-          print("Y 2147 total", d.get("totalResultsAvailable"), [ (h.get("genreCategory") or {}).get("name") for h in d.get("hits",[])], [(h.get("parentGenreCategories") or [{}])[0].get("name") for h in d.get("hits",[])])
-          d = f._get(f.YAHOO_URL, {"appid": os.environ["YAHOO_APP_ID"], "query": "首輪", "results": 3})
-          print("Y nogenre", [((h.get("parentGenreCategories") or [{}])[0].get("id"), (h.get("parentGenreCategories") or [{}])[0].get("name")) for h in d.get("hits",[])])
-          r = f._call(f.ITEM_URL, {"keyword": "首輪", "hits": 3, "genreId": 101213, "availability": 1})
-          print("R 101213 count", r.get("count"), [it.get("genreId") for it in r.get("Items",[])], list((r.get("Items") or [{}])[0].keys())[:40])
+          pip -q install playwright && python -m playwright install --with-deps chromium >/dev/null 2>&1
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              b = p.chromium.launch()
+              for w, h, n in ((1440, 900, "pc"), (390, 844, "sp")):
+                  pg = b.new_page(viewport={"width": w, "height": h})
+                  pg.goto("https://petnavi.niconote.jp/?v=1117"); pg.wait_for_timeout(2500); pg.screenshot(path=f"home_{n}.png")
+              pg = b.new_page(viewport={"width": 390, "height": 1400})
+              pg.goto("https://petnavi.niconote.jp/search.html?q=%E9%A6%96%E8%BC%AA"); pg.wait_for_timeout(5000); pg.screenshot(path="search_sp.png")
+              b.close()
           PY
+      - uses: actions/upload-artifact@v4
+        with: { name: shots, path: "*.png", retention-days: 1 }

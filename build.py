@@ -1072,6 +1072,7 @@ def main():
         '<li>「N店中の最安」＝当サイトが取得したショップの中での最安</li>'
         '<li>「他店」＝同じ内容量のショップ（3店以上）の価格の中央値</li>'
         '<li>価格は取得時点・税込。送料はショップにより別</li>'
+        '<li id="ios">iPhone の通知＝Safari の共有→「ホーム画面に追加」→ホーム画面のアイコンから開く、の順で使えます（iOS 16.4 以降）</li>'
         '<li id="card">楽天カード払いなら＝楽天市場で楽天カードで支払ったときに増えるポイントの目安（楽天カード通常分：税込100円につき1pt・上限なし／'
         '楽天カード特典分：税抜100円につき1pt・期間限定ポイント・月1,000ptまで。楽天カード公式の条件による）。その月の他の買い物で上限に達していると少なくなります</li></ul>'
         '<h2 class="h2">運営</h2><p>合同会社にこのて。価格の取得とページ作成は AI〈一郎〉が自動で行っています。'
@@ -1333,8 +1334,14 @@ function happy(k,t){var el=document.getElementById("bought-msg");if(!el)return;v
 function pushItems(){var o={};[sload(),load(),wload(),bload()].forEach(function(m){Object.keys(m).forEach(function(id){o[id]=1})});return o}  // 商品IDだけ送る（価格は送らない・保存しない）
 function pushSync(sub,method){return fetch("/api/subscribe",{method:method||"POST",headers:{"content-type":"application/json"},body:JSON.stringify({endpoint:sub.endpoint,items:pushItems()})}).then(function(r){return r.ok})}
 function u8(b){var p="=".repeat((4-b.length%4)%4),r=atob((b+p).replace(/-/g,"+").replace(/_/g,"/")),a=new Uint8Array(r.length);for(var i=0;i<r.length;i++)a[i]=r.charCodeAt(i);return a}
+function iosGuide(el){var K="petsite_ios_guide_t";try{if(Date.now()-(+localStorage.getItem(K)||0)<7*864e5)return}catch(e){}
+ var S='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+ I=[S+'<path d="M12 15V4M8 8l4-4 4 4"/><path d="M6 11H5v9h14v-9h-1"/></svg>',S+'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>',S+'<rect x="6" y="3" width="12" height="18" rx="3"/><path d="M12 7v6M9.5 10.5L12 13l2.5-2.5"/></svg>'],
+ T=["Safari の共有","ホーム画面に追加","そこから開く"];
+ el.innerHTML='<div class="ios-g"><p class="push-h">iPhone で値下がり通知を受け取る※</p><ol>'+T.map(function(t,i){return'<li>'+I[i]+'<span>'+(i+1)+". "+t+'</span></li>'}).join("")+'</ol><button type="button" class="link" id="ios-x">閉じる</button></div>';
+ document.getElementById("ios-x").onclick=function(){try{localStorage.setItem(K,Date.now())}catch(e){}el.innerHTML="";ga("ios_guide_close",{})};ga("ios_guide_show",{})}
 function pushUI(){var el=document.getElementById("pushbox");if(!el||!VAPID)return;var ios=/iPhone|iPad/.test(navigator.userAgent),sa=window.navigator.standalone||matchMedia("(display-mode: standalone)").matches;
- if(!("serviceWorker" in navigator)||!("PushManager" in window)||!window.Notification){if(ios&&!sa)el.innerHTML='<p class="push-h">iPhone は、Safari の共有ボタンから「ホーム画面に追加」して開くと、値下がりの通知を受け取れます</p>';return}
+ if(!("serviceWorker" in navigator)||!("PushManager" in window)||!window.Notification){if(ios&&!sa)iosGuide(el);return}
  navigator.serviceWorker.register("/sw.js").then(function(reg){return reg.pushManager.getSubscription().then(function(sub){
   var D='<details class="push-d"><summary>通知のしくみ・保存する情報</summary><p>条件：他店（中央値）より、取得時点の最安（税込・送料別）が安いとき。価格は保存しません。</p><p>保存するもの：通知の宛先（ブラウザが発行するURL）と、見た商品・お気に入り等の商品IDだけです。氏名・メールアドレス・楽天のアカウントは受け取りません。</p><p>使い道：価格の更新のあと、他店より安い商品があるときに、1日1回まで通知を送るためだけに使います。</p><p>保存場所：Cloudflare（本サイトの配信事業者）のデータ保存領域。</p><p>消し方：このボタンの「通知をやめる」で、宛先と商品の記録をすぐに消します。ブラウザの設定で通知を切った場合も、次の送信時に届かなくなった宛先として自動で消します。</p></details>';
   function draw(on){el.innerHTML=(on?'<p class="push-on">🔔 値下がり通知オン<button type="button" class="link" id="push-off">やめる</button></p>':
@@ -1447,6 +1454,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .wl-wrap{position:relative}.wl-sh{display:block;margin:4px 16px 0 auto;padding:4px 0}
 .wl-n{display:block;margin-top:4px;font-size:11px;font-weight:400;color:var(--sub)}
 .push-d{margin:0 0 12px;font-size:12px;color:var(--sub)}.push-d summary{cursor:pointer;color:var(--link)}.push-d p{margin:6px 0}
+.ios-g ol{display:flex;gap:8px;list-style:none;margin:0 0 6px;padding:0}.ios-g li{flex:1;text-align:center;font-size:12px;color:var(--brand)}.ios-g li svg{display:block;margin:0 auto 2px}.ios-g li span{color:var(--sub)}
 .push-btn{width:100%;margin:8px 0 4px}.push-n,.push-h{margin:0 0 8px;font-size:12px;color:var(--sub)}.push-on{margin:8px 0;font-size:13px;color:var(--brand);font-weight:700}
 .kome{color:var(--sub);text-decoration:none;font-size:11px;margin-left:2px;vertical-align:super}
 .fn{font-size:11px;color:var(--sub)}.fresh1{margin:0 16px 8px;font-size:12px;color:var(--sub)}

@@ -12,7 +12,7 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def run(data):
+def run(data, env=None):
     d = tempfile.mkdtemp()
     shutil.copy(os.path.join(HERE, "build.py"), d)
     shutil.copy(os.path.join(HERE, "products.json"), d)
@@ -22,7 +22,7 @@ def run(data):
     json.dump(data, open(os.path.join(d, "data", "prices.json"), "w", encoding="utf-8"), ensure_ascii=False)
     os.makedirs(os.path.join(d, "site"))
     open(os.path.join(d, "site", "item-old.html"), "w").write("old")  # 前回の古いページ
-    p = subprocess.run([sys.executable, "build.py"], cwd=d, capture_output=True, text=True)
+    p = subprocess.run([sys.executable, "build.py"], cwd=d, capture_output=True, text=True, env=dict(os.environ, **(env or {})))
     return d, p
 
 
@@ -150,6 +150,13 @@ class T(unittest.TestCase):
         self.assertIn("海外ブランド", idx)
         self.assertIn("モグワン<small>イギリス</small>", idx)
         self.assertNotIn("カナガン<small>", idx)  # 製造国が未確認（show=false）は出さない
+
+    def test_card_link(self):
+        """楽天カードの申込リンクは、楽天の正規のアフィリエイト URL のときだけ出す"""
+        for url, shown in (("https://hb.afl.rakuten.co.jp/hsc/x/?pc=card", True), ("https://example.com/x", False)):
+            d, p = run(prod_data(), {"RAKUTEN_CARD_URL": url})
+            item = open(os.path.join(d, "site", "item-lit1.html"), encoding="utf-8").read()
+            self.assertEqual('class="card-ln"' in item, shown)
 
     def test_no_price_history(self):
         """楽天の規約（価格情報の保存は24時間まで）：過去の価格を読まず、お得は今の平均価格との差だけで出す"""

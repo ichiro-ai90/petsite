@@ -78,9 +78,20 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CF_PROJECT: ${{ vars.CF_PROJECT || 'petsite-ichiro' }}
+          # その場検索（/api/msearch）が楽天・Yahoo の API を呼ぶための値。GitHub Secrets から Cloudflare Pages の Secret に写す（値はログに出ない）
+          S_RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          S_RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          S_RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          S_RAKUTEN_ORIGIN: ${{ vars.SITE_ORIGIN }}
+          S_YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
+          S_VC_AFFILIATE_ID: ${{ secrets.VC_AFFILIATE_ID }}
         run: |
           test -n "$CLOUDFLARE_API_TOKEN" -a -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Cloudflare の Secrets（CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID）が未設定です"; exit 1; }
           npx --yes wrangler@3 pages project create "$CF_PROJECT" --production-branch=main || echo "project exists"
+          for k in RAKUTEN_APP_ID RAKUTEN_ACCESS_KEY RAKUTEN_AFFILIATE_ID RAKUTEN_ORIGIN YAHOO_APP_ID VC_AFFILIATE_ID; do
+            v=$(printenv "S_$k" || true)
+            if [ -n "$v" ]; then printf '%s' "$v" | npx --yes wrangler@3 pages secret put "$k" --project-name="$CF_PROJECT" >/dev/null && echo "secret $k: ok" || echo "secret $k: 失敗（その場検索だけ止まる。公開は続ける）"; fi
+          done
           npx --yes wrangler@3 pages deploy site --project-name="$CF_PROJECT" --branch=main --commit-dirty=true
       - name: send price-drop notifications（通知が有効なときだけ。1宛先につき1日1回まで）
         if: env.PUSH == '1'

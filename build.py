@@ -1022,6 +1022,8 @@ def main():
         '<label class="free-only"><input type="checkbox" name="free" id="free"> 送料無料のショップだけ</label><label>並べ替え<select name="sort" id="sort"><option value="pop">人気順</option><option value="price">安い順</option>'
         '<option value="eff">ポイント込みで安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
         '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
+        '<section id="msec" hidden><h2 class="h2">楽天・Yahoo!の全商品から</h2><p class="meta" id="mcount" aria-live="polite"></p><ul class="list" id="mres"></ul>'
+        '<p class="nayami-n">リンク先のモールの商品ページへ移動します。価格は検索した時点のもので、購入時にリンク先に表示されている価格が適用されます。</p></section>'
         f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
         "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して価格とポイントを比較", sample, (("商品を探す", None),), noindex=True))
     open(os.path.join(out, "shindan.html"), "w", encoding="utf-8").write(page(
@@ -1194,9 +1196,20 @@ function search(){var f=document.getElementById("sf");if(!f)return;var u=new URL
    document.getElementById("results").innerHTML=r.map(function(x){return row(x)}).join("");
    document.getElementById("count").textContent=r.length?r.length+"件の商品":"見つかりませんでした。言葉を短くするか、条件を「すべて」に戻してください。";
    var p=new URLSearchParams();["q","pet","cat","maker","sort"].forEach(function(k){var v=f[k].value;if(v&&!(k==="sort"&&v==="pop"))p.set(k,v)});if(fo)p.set("free","1");
-   history.replaceState(null,"",location.pathname+(p.toString()?"?"+p:""));paint();
+   history.replaceState(null,"",location.pathname+(p.toString()?"?"+p:""));paint();msearch(document.getElementById("q").value.trim());
    clearTimeout(run._t);run._t=setTimeout(function(){ga("search",{search_term:q,pet:pet,category:cat,maker:m,sort:s,results:r.length})},1500)}
   f.free.addEventListener("change",function(){ga("free_only",{on:f.free.checked})});f.addEventListener("input",run);f.addEventListener("change",run);f.addEventListener("submit",function(e){e.preventDefault();run()});run()})}
+var MQ="";function msearch(q){var sec=document.getElementById("msec");if(!sec)return;clearTimeout(msearch._t);
+ if(q.length<2){sec.hidden=true;MQ="";return}if(q===MQ)return;
+ msearch._t=setTimeout(function(){MQ=q;var c=document.getElementById("mcount"),l=document.getElementById("mres");sec.hidden=false;c.textContent="楽天市場・Yahoo!ショッピングを検索しています…";l.innerHTML="";
+  fetch("/api/msearch?q="+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(d){if(q!==MQ)return;var it=d.items||[];
+   c.textContent=it.length?"楽天・Yahoo!のペット用品 "+it.length+"件（安い順）":"楽天・Yahoo!でも見つかりませんでした。";ga("msearch",{search_term:q,results:it.length});
+   l.innerHTML=it.slice(0,40).map(function(x){return '<li><a class="row" href="'+esc(x.u)+'" target="_blank" rel="sponsored nofollow noopener" data-m="'+x.m+'"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
+    '<span class="nm"><span class="mall '+x.m+'">'+(x.m==="y"?"Yahoo!":"楽天")+'</span>'+esc(x.n)+'</span><span class="meta">'+esc(x.s)+'</span>'+
+    '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh?" free":" paid")+'">'+(x.sh?"送料無料":"送料別")+'</span></span>'+
+    '<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span></span></a></li>'}).join("")})
+  .catch(function(){if(q===MQ)c.textContent="今は楽天・Yahoo!の検索ができません。時間をおいてお試しください。"})},700)}
+document.addEventListener("click",function(e){var a=e.target.closest("#mres a[data-m]");if(a)ga("click_mall",{mall:a.dataset.m==="y"?"yahoo":"rakuten",from:"msearch"})});
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';

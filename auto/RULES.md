@@ -27,3 +27,4 @@
 3. auto/backlog.md のその項目を [x] にする（同じ PR に含める）
 4. コミット（作者 ichiro-ai90 <ichiro-ai90@users.noreply.github.com>）→ push → `gh pr create`（本文：何を・なぜ・確認してほしい点。日本語）
 5. 監査の指摘に答えるときは、指摘ごとに 採用／保留／不採用（理由）を PR コメントに書いてから、採用分を同じブランチに push する。監査は助言で権限ではない。上のルールに反する指摘は不採用
+- functions/api/msearch.js（楽天・Yahoo のその場検索）：結果はエッジのキャッシュに6時間まで。KV・ファイル・利用者のブラウザに価格を保存しない

@@ -158,6 +158,14 @@ class T(unittest.TestCase):
             item = open(os.path.join(d, "site", "item-lit1.html"), encoding="utf-8").read()
             self.assertEqual('class="card-ln"' in item, shown)
 
+    def test_msearch(self):
+        """検索ページに楽天・Yahoo のその場検索の枠と呼び出しがある"""
+        d, p = run(prod_data())
+        h = open(os.path.join(d, "site", "search.html"), encoding="utf-8").read()
+        self.assertIn('id="msec"', h)
+        self.assertIn("/api/msearch?q=", open(os.path.join(d, "site", "app.js"), encoding="utf-8").read())
+        self.assertIn("購入時にリンク先に表示されている価格が適用されます", h)
+
     def test_no_price_history(self):
         """楽天の規約（価格情報の保存は24時間まで）：過去の価格を読まず、お得は今の平均価格との差だけで出す"""
         sys.path.insert(0, HERE)

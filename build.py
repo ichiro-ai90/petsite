@@ -686,7 +686,7 @@ def category_body(g, prods, pet, fetched, carried):
             f'<button type="button" data-k="price" aria-pressed="false">安い順</button>'
             f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
-            f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
+            f'<p class="free-note" id="freenote" hidden>🚚 送料無料のショップの中で最安に切替<a class="kome" href="about.html#shipping" aria-label="送料無料の注記">※</a></p>'
             f'{SHIP_RULE}<ul class="list" id="list">{rows}</ul>'
             f'<div class="note">{("<p>" + carried.replace("<br>", "") + "</p>") if carried else ""}<p>{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
             f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。計算根拠の最終確認：2026-11-08（楽天市場の通常ポイント 税抜100円につき1ポイント）。</p></div>{SORT_JS}')
@@ -820,7 +820,7 @@ def item_body(p, g, fetched):
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
-            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら <b>+約{card_pt(o["price"]):,}pt</b>（目安）<a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
                          + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")
                          + '</p>')
             + f'<p class="shop-l">{E(o["shop"])}</p>'
@@ -1074,7 +1074,8 @@ def main():
         '<li>価格は取得時点・税込。送料はショップにより別</li>'
         '<li id="ios">iPhone の通知＝Safari の共有→「ホーム画面に追加」→ホーム画面のアイコンから開く、の順で使えます（iOS 16.4 以降）</li>'
         '<li id="card">楽天カード払いなら＝楽天市場で楽天カードで支払ったときに増えるポイントの目安（楽天カード通常分：税込100円につき1pt・上限なし／'
-        '楽天カード特典分：税抜100円につき1pt・期間限定ポイント・月1,000ptまで。楽天カード公式の条件による）。その月の他の買い物で上限に達していると少なくなります</li></ul>'
+        '楽天カード特典分：税抜100円につき1pt・期間限定ポイント・月1,000ptまで。楽天カード公式の条件による）。その月の他の買い物で上限に達していると少なくなります。SPU・キャンペーン・会員の条件で変動し、購入時に要確認</li>'
+        '<li id="shipping">送料無料に切替＝送料無料のショップだけで比べた最安です。税込価格で、送料別の最安より高いことがあります</li></ul>'
         '<h2 class="h2">運営</h2><p>合同会社にこのて。価格の取得とページ作成は AI〈一郎〉が自動で行っています。'
         '楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。'
         'リンク先で購入されると、当サイトに紹介料が支払われます。</p>'

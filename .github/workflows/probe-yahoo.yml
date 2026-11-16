@@ -14,24 +14,17 @@ jobs:
       - name: Yahoo の商品検索が動くか（値は出さない）
         env:
           YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
         run: |
           python3 - <<'PY'
-          import os, time, urllib.request, urllib.parse, urllib.error, json
-          U = "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch"
-          jans = ["4562129940897","4589970841661","4972316207861","4562358781780","0064992523206","4902112041349","4994527893909","4977007035839","4971618807359","4987817113009"]
-          def call(j):
-              q = urllib.parse.urlencode({"appid": os.environ["YAHOO_APP_ID"], "jan_code": j, "results": 20, "sort": "+price", "in_stock": "true"})
-              try:
-                  with urllib.request.urlopen(U + "?" + q, timeout=20) as r:
-                      return r.status, ""
-              except urllib.error.HTTPError as e:
-                  return e.code, (e.headers.get("Retry-After") or "") + " " + e.read().decode("utf-8","replace")[:150]
-          for iv in (1.1, 2.0, 3.0):
-              res = []
-              for k in range(20):
-                  st, b = call(jans[k % len(jans)]); res.append(st)
-                  if st != 200 and k < 3: print("  body:", b)
-                  time.sleep(iv)
-              print("interval", iv, "->", {c: res.count(c) for c in set(res)}, "first429 at", res.index(429) if 429 in res else None)
-              time.sleep(20)
+          import os, json
+          import fetch_prices as f
+          d = f._get(f.YAHOO_URL, {"appid": os.environ["YAHOO_APP_ID"], "query": "首輪", "results": 3, "genre_category_id": 2147})
+          print("Y 2147 total", d.get("totalResultsAvailable"), [ (h.get("genreCategory") or {}).get("name") for h in d.get("hits",[])], [(h.get("parentGenreCategories") or [{}])[0].get("name") for h in d.get("hits",[])])
+          d = f._get(f.YAHOO_URL, {"appid": os.environ["YAHOO_APP_ID"], "query": "首輪", "results": 3})
+          print("Y nogenre", [((h.get("parentGenreCategories") or [{}])[0].get("id"), (h.get("parentGenreCategories") or [{}])[0].get("name")) for h in d.get("hits",[])])
+          r = f._call(f.ITEM_URL, {"keyword": "首輪", "hits": 3, "genreId": 101213, "availability": 1})
+          print("R 101213 count", r.get("count"), [it.get("genreId") for it in r.get("Items",[])], list((r.get("Items") or [{}])[0].keys())[:40])
           PY

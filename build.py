@@ -1043,7 +1043,7 @@ def main():
         '<label class="free-only"><input type="checkbox" name="free" id="free"> 送料無料のショップだけ</label><label>並べ替え<select name="sort" id="sort"><option value="pop">人気順</option><option value="price">安い順</option>'
         '<option value="eff">ポイント込みで安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
         '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
-        '<section id="msec" hidden><h2 class="h2">楽天・Yahoo!の全商品から</h2><p class="meta" id="mcount" aria-live="polite"></p><ul class="list" id="mres"></ul>'
+        '<section id="msec" hidden><h2 class="h2">楽天・Yahoo!の全商品から</h2><p class="meta" id="mcount" aria-live="polite" style="padding:0 16px"></p><ul class="list" id="mres"></ul>'
         '<p class="nayami-n">リンク先のモールの商品ページへ移動します。価格は検索した時点のもので、購入時にリンク先に表示されている価格が適用されます。</p></section>'
         f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
         "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して価格とポイントを比較", sample, (("商品を探す", None),), noindex=True))
@@ -1215,7 +1215,7 @@ function search(){var f=document.getElementById("sf");if(!f)return;var u=new URL
    r=r.map(function(x){return fo?Object.assign({},x,{p:x.fp,e:x.fe,sh:"送料無料",pt:x.pt,r:x.r,_free:true}):x});
    r.sort(function(a,b){return s==="price"?a.p-b.p:s==="eff"?a.e-b.e:s==="unit"?((a.u||1e12)-(b.u||1e12)):b.rv-a.rv});
    document.getElementById("results").innerHTML=r.map(function(x){return row(x)}).join("");
-   document.getElementById("count").textContent=r.length?r.length+"件の商品":"見つかりませんでした。言葉を短くするか、条件を「すべて」に戻してください。";
+   document.getElementById("count").textContent=r.length?r.length+"件の商品":(document.getElementById("q").value.trim().length>=2?"このサイトの一覧にはありません。下に楽天・Yahoo!の検索結果を出します。":"見つかりませんでした。言葉を短くするか、条件を「すべて」に戻してください。");
    var p=new URLSearchParams();["q","pet","cat","maker","sort"].forEach(function(k){var v=f[k].value;if(v&&!(k==="sort"&&v==="pop"))p.set(k,v)});if(fo)p.set("free","1");
    history.replaceState(null,"",location.pathname+(p.toString()?"?"+p:""));paint();msearch(document.getElementById("q").value.trim());
    clearTimeout(run._t);run._t=setTimeout(function(){ga("search",{search_term:q,pet:pet,category:cat,maker:m,sort:s,results:r.length})},1500)}
@@ -1228,7 +1228,7 @@ var MQ="";function msearch(q){var sec=document.getElementById("msec");if(!sec)re
    l.innerHTML=it.slice(0,40).map(function(x){return '<li><a class="row" href="'+esc(x.u)+'" target="_blank" rel="sponsored nofollow noopener" data-m="'+x.m+'"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
     '<span class="nm"><span class="mall '+x.m+'">'+(x.m==="y"?"Yahoo!":"楽天")+'</span>'+esc(x.n)+'</span><span class="meta">'+esc(x.s)+'</span>'+
     '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh?" free":" paid")+'">'+(x.sh?"送料無料":"送料別")+'</span></span>'+
-    '<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span></span></a></li>'}).join("")})
+    (x.pt>0?'<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span>':'')+'</span></a></li>'}).join("")})
   .catch(function(){if(q===MQ)c.textContent="今は楽天・Yahoo!の検索ができません。時間をおいてお試しください。"})},700)}
 document.addEventListener("click",function(e){var a=e.target.closest("#mres a[data-m]");if(a)ga("click_mall",{mall:a.dataset.m==="y"?"yahoo":"rakuten",from:"msearch"})});
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
@@ -1494,8 +1494,8 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
  .side ul{list-style:none;margin:0;padding:0}.side-h{margin:8px 14px 4px;font-size:11px;font-weight:700;color:var(--sub)}
  .side-pet>a{display:flex;gap:8px;align-items:center;padding:8px 14px;font-weight:800;color:var(--txt)}.side-pet>a .ic{color:var(--brand)}
  .side-pet li a,.side-x a{display:block;padding:5px 14px 5px 40px;font-size:13px;color:var(--txt)}.side-x a{padding-left:14px}.side a:hover{background:var(--brand-bg)}
- .home-main .hx{margin:12px 0 8px;padding:32px 32px}.hx-t{font-size:34px}.hx-pics{grid-template-columns:repeat(3,120px)}.hx-pics li:nth-child(n+4){display:block}.hx-pics img{width:108px;height:108px}
- .circ{padding:0;justify-content:space-between;overflow:visible}.circ a{width:110px}.circ-p{width:100px;height:100px}.circ-p img{width:78px;height:78px}}
+ .home-main .hx{margin:12px 0 8px;padding:32px 32px}.hx-t{font-size:34px}.hx-pics{grid-template-columns:repeat(2,120px)}.hx-pics li:nth-child(4){display:block}.hx-pics img{width:108px;height:108px}
+ .circ{padding:0;justify-content:flex-start;gap:20px;flex-wrap:wrap;overflow:visible}.circ a{width:110px}.circ-p{width:100px;height:100px}.circ-p img{width:78px;height:78px}}
 @media (max-width:600px){.hx{flex-direction:column;align-items:stretch;padding:18px 16px}.hx-t{font-size:21px}.hx-pics{grid-template-columns:repeat(3,1fr)}.hx-pics a{padding:4px}.hx-pics img{width:100%;height:auto;aspect-ratio:1}}
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}

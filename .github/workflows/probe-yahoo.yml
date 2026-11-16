@@ -3,11 +3,12 @@ on:
   push:
     branches: [dev/probe-yahoo]
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: その場検索の本番確認
         run: |
           for q in 首輪 ちゅーる; do
@@ -30,5 +31,7 @@ jobs:
               pg.goto("https://petnavi.niconote.jp/search.html?q=%E9%A6%96%E8%BC%AA"); pg.wait_for_timeout(5000); pg.screenshot(path="search_sp.png")
               b.close()
           PY
-      - uses: actions/upload-artifact@v4
-        with: { name: shots, path: "*.png", retention-days: 1 }
+      - name: 画像を一時ブランチへ
+        run: |
+          git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com
+          mkdir -p shots && mv *.png shots/ && git add shots && git commit -qm "shots [skip ci]" && git push -q origin HEAD:dev/probe-shots --force

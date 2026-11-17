@@ -820,7 +820,7 @@ def item_body(p, g, fetched):
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
-            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら 最大 <b>+約{card_pt(o["price"]):,}pt</b><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら 最大 <b>+約{card_pt(o["price"]):,}pt</b><span class="card-c">（会員条件・企画で変動）</span><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
                          + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")
                          + '</p>')
             + f'<p class="shop-l">{E(o["shop"])}</p>'
@@ -1038,11 +1038,21 @@ def main():
                     + f'<span class="dc-b">{round(x["d"] / x["hi"] * 100)}%安い※</span></span><span class="dc-n">{E(show_name(x["p"]["name"]))}</span>'
                     f'<span class="dc-pr"><b>{x["now"]:,}</b>円</span><span class="dc-o">他店 {x["hi"]:,}円</span></a></li>' for x in _ds[:12])
     deal_sec = (f'<section class="dc-sec"><h2 class="h2">他店より安い商品<a class="h2a" href="weekly.html">すべて見る</a></h2><p class="h2n">※同じ内容量の他店中央値との差・取得時点・送料別</p><ul class="dcs">{deals}</ul></section>' if deals else "")
+    _gs = sorted(_ds, key=lambda x: -x["d"] / x["hi"])[:300]
+    gdata = json.dumps([{"i": x["p"]["productId"], "n": show_name(x["p"]["name"])[:40], "m": img(x["p"].get("image"), 200) or "",
+                         "p": x["now"], "h": x["hi"], "c": round(x["d"] / x["hi"] * 100)} for x in _gs], ensure_ascii=False).replace("</", "<\\/")
+    _fm = re.search(r"(\d{1,2}):\d{2}", str(data.get("fetched_at", "")))
+    gacha = ((f'<section class="gc" id="gacha"><div class="gc-hd"><b>お得ガチャ</b><span class="gc-s">{_fm.group(0) + "の取得で見つかった" if _fm else ""}お得 {len(_gs):,}件から1つ</span>'
+              '<span class="gc-new" id="gnew" hidden></span></div>'
+              '<div class="gc-st"><div class="gc-cap" id="gcap" aria-hidden="true"><i></i></div><a class="gc-card" id="gcard" hidden data-ga="gacha_card"></a></div>'
+              '<div class="gc-ft"><button type="button" class="gc-btn" id="gbtn" data-ga="gacha_pull">ガチャを引く</button><span class="gc-dex" id="gdex"></span></div>'
+              '<p class="h2n">★3＝25%以上・★2＝12%以上安い（同じ内容量の他店中央値との差※・取得時点・送料別）</p>'
+              f'<script type="application/json" id="gdata">{gdata}</script></section>') if _gs else "")
     SEL = ' aria-selected="true"'
     pt = "".join(f'<li><button type="button" data-tab="{pid}"{SEL if k == 0 else ""}>{n}</button></li>' for k, (pid, n) in enumerate(pet_names))
     idx = ('<div class="home"><aside class="side" aria-label="カテゴリ"><p class="side-h">カテゴリ</p><ul>' + "".join(side) + '</ul>'
            '<p class="side-h">ほかの探し方</p><ul class="side-x"><li><a href="weekly.html">お得ランキング</a></li><li><a href="shindan.html">1分診断</a></li><li><a href="search.html">商品を探す</a></li></ul></aside>'
-           '<div class="home-main">' + hero + quick + f'<ul class="circ">{"".join(circ)}</ul>'
+           '<div class="home-main">' + hero + quick + gacha + f'<ul class="circ">{"".join(circ)}</ul>'
            + '<div id="welcome"></div>' + tiles_sec + deal_sec + nayami_sec + kaigai_sec
            + f'<section class="cat-sec"><h2 class="h2">カテゴリから探す</h2><ul class="ptabs" role="tablist">{pt}</ul>{"".join(secs)}</section>'
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
@@ -1286,6 +1296,24 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
   var f=cs.querySelector(".ptabs button");if(f)tab(f.dataset.tab);
   cs.addEventListener("click",function(e){var x=e.target.closest(".ptabs button");if(x)tab(x.dataset.tab)});
   document.querySelectorAll(".circ a[data-tab]").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();tab(a.dataset.tab);cs.scrollIntoView({behavior:"smooth"})})})}})();
+(function(){var el=document.getElementById("gdata");if(!el)return;var G=JSON.parse(el.textContent),K="pn_gdex",S="pn_gseen";
+ function ld(k){try{return JSON.parse(localStorage.getItem(k)||"[]")}catch(e){return[]}}function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v.slice(-2000)))}catch(e){}}
+ var seen=ld(S),fresh=G.filter(function(g){return seen.indexOf(g.i)<0}),nw=document.getElementById("gnew");
+ if(seen.length&&fresh.length){nw.textContent="前回から新しいお得 "+fresh.length+"件";nw.hidden=false}
+ sv(S,seen.concat(fresh.map(function(g){return g.i})));
+ var dex=ld(K),dx=document.getElementById("gdex");function dd(){var n=G.filter(function(g){return dex.indexOf(g.i)>=0}).length;dx.textContent="ずかん "+n+"/"+G.length}dd();
+ var cap=document.getElementById("gcap"),card=document.getElementById("gcard"),btn=document.getElementById("gbtn"),box=cap.parentNode,busy=0;
+ function rar(c){return c>=25?3:c>=12?2:1}
+ function pick(){var pool=fresh.length?fresh:G,u=pool.filter(function(g){return dex.indexOf(g.i)<0});if(!u.length)u=pool;
+  var w=u.map(function(g){return 1+rar(g.c)}),t=w.reduce(function(a,b){return a+b},0),r=Math.random()*t;for(var k=0;k<u.length;k++){r-=w[k];if(r<=0)return u[k]}return u[0]}
+ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+ btn.addEventListener("click",function(){if(busy)return;busy=1;card.hidden=true;cap.hidden=false;cap.classList.remove("go");void cap.offsetWidth;cap.classList.add("go");
+  setTimeout(function(){var g=pick(),r=rar(g.c);cap.hidden=true;card.className="gc-card r"+r;card.href="item-"+encodeURIComponent(g.i)+".html";
+   card.innerHTML=(g.m?'<img src="'+esc(g.m)+'" alt="">':'')+'<span><span class="r">'+"★★★".slice(0,r)+' 他店より'+g.c+'%安い※</span><span class="nm" style="display:block">'+esc(g.n)+'</span><span class="pc">'+g.p.toLocaleString()+'円<small>他店 '+g.h.toLocaleString()+'円</small></span></span>';
+   card.hidden=false;if(dex.indexOf(g.i)<0){dex.push(g.i);sv(K,dex);dd()}
+   if(r>=2){for(var k=0;k<(r==3?28:14);k++){var f=document.createElement("i");f.className="gc-fx";f.style.background=["#facc15","#f472b6","#a78bfa","#34d399"][k%4];
+    f.style.setProperty("--x",(Math.random()*240-120)+"px");f.style.setProperty("--y",(Math.random()*-160-20)+"px");box.appendChild(f);setTimeout(function(x){x.remove()}.bind(null,f),1100)}}
+   btn.textContent="もう1回引く";busy=0;if(window.gtag)gtag("event","gacha_result",{rarity:r})},700)});})();
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
@@ -1556,6 +1584,28 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .bn-d .bn-ph::after{background:linear-gradient(90deg,rgba(13,110,100,.88),rgba(13,110,100,.05) 75%)}
 .bn-e .bn-ph::after{background:linear-gradient(90deg,rgba(30,41,99,.88),rgba(30,41,99,.05) 75%)}
 .bn-dots{display:flex;justify-content:center;gap:6px;margin:8px 0 4px}.bn-dots i{width:6px;height:6px;border-radius:3px;background:#d6d3d1;transition:width .2s}.bn-dots i.on{width:18px;background:#ea580c}
+.card-c{font-size:11px;color:var(--sub);margin-left:4px}
+.gc{margin:12px 12px 4px;padding:12px;border-radius:18px;background:linear-gradient(135deg,#2e1065,#7c3aed 55%,#db2777);color:#fff;position:relative;overflow:hidden}
+.gc .h2n{color:#e9d5ff;margin:8px 0 0}
+.gc-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px}.gc-hd b{font-size:20px;letter-spacing:.5px;text-shadow:0 0 12px #f0abfc}.gc-s{font-size:11px;opacity:.9}
+.gc-new{background:#facc15;color:#3b0764;font-weight:800;font-size:11px;border-radius:999px;padding:2px 8px;animation:gpulse 1.2s infinite}
+@keyframes gpulse{50%{transform:scale(1.08)}}
+.gc-st{height:118px;display:grid;place-items:center;margin-top:6px}
+.gc-cap{width:80px;height:80px;border-radius:50%;background:linear-gradient(#fde047 50%,#fff 50%);border:4px solid #fff;box-shadow:0 0 24px rgba(253,224,71,.7);position:relative}
+.gc-cap i{position:absolute;left:-4px;right:-4px;top:36px;height:8px;background:#7c3aed}
+.gc-cap.go{animation:gshake .7s}@keyframes gshake{20%{transform:rotate(-18deg)}40%{transform:rotate(16deg)}60%{transform:rotate(-12deg)}80%{transform:rotate(8deg) scale(1.1)}100%{transform:scale(1.25);opacity:0}}
+.gc-card{display:flex;gap:10px;align-items:center;width:100%;max-width:420px;background:#fff;color:var(--txt);border-radius:14px;padding:10px;text-decoration:none;animation:gin .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes gin{from{transform:scale(.4) rotate(-6deg);opacity:0}}
+.gc-card img{width:84px;height:84px;object-fit:contain;flex:none}.gc-card .r{font-size:13px;font-weight:800;color:#a16207}.gc-card .nm{font-size:12px;line-height:1.35;max-height:2.7em;overflow:hidden}
+.gc-card .pc{font-size:20px;font-weight:800;color:#e11d48}.gc-card .pc small{font-size:12px;margin-left:6px;color:var(--sub);text-decoration:line-through;font-weight:400}
+.gc-card.r3{box-shadow:0 0 0 3px #facc15,0 0 28px #facc15}.gc-card.r2{box-shadow:0 0 0 3px #c084fc,0 0 18px #c084fc}
+.gc-ft{display:flex;align-items:center;gap:10px;margin-top:8px}
+.gc-btn{flex:1;height:48px;border:0;border-radius:999px;background:linear-gradient(#fde047,#f59e0b);color:#3b0764;font-size:17px;font-weight:900;box-shadow:0 4px 0 #b45309;cursor:pointer}
+.gc-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b45309}
+.gc-dex{font-size:11px;font-weight:700;white-space:nowrap}
+.gc-fx{position:absolute;width:8px;height:8px;border-radius:2px;top:40%;left:50%;animation:gfx 1s ease-out forwards;pointer-events:none}
+@keyframes gfx{to{transform:translate(var(--x),var(--y)) rotate(540deg);opacity:0}}
+@media (min-width:1024px){.gc{margin:12px 0 4px}}
 .qk{list-style:none;margin:6px 0 2px;padding:0 12px;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .qk a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;line-height:1.25;text-align:center;color:var(--txt);text-decoration:none}
 .qk-i{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:#fff}.qk-1{background:linear-gradient(135deg,#f59e0b,#ef4444)}.qk-2{background:linear-gradient(135deg,#ec4899,#a855f7)}.qk-3{background:linear-gradient(135deg,#06b6d4,#2563eb)}.qk-4{background:linear-gradient(135deg,#10b981,#0d9488)}.qk-5{background:linear-gradient(135deg,#facc15,#f97316)}

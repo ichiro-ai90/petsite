@@ -921,7 +921,8 @@ def main():
         rp = max((p for _, ps in cats for p in ps), key=lambda p: p.get("reviewCount", 0))
         rth = img(rp.get("image"), 128)
         n_p = sum(len(ps) for _, ps in cats)
-        circ.append(f'<li><a href="#{pid}"><span class="circ-p">' + (f'<img src="{E(rth)}" alt="" width="88" height="88" loading="lazy">' if rth else globals()["icon"](icon, 32))
+        _pp = f"pets/{pid}.jpg" if os.path.exists(os.path.join(ROOT, "assets", "pets", f"{pid}.jpg")) else rth
+        circ.append(f'<li><a href="#{pid}"><span class="circ-p">' + (f'<img src="{E(_pp)}" alt="{name}" width="100" height="100" loading="lazy">' if _pp else globals()["icon"](icon, 32))
                     + f'</span><span class="circ-n">{name}</span><span class="circ-c">{n_p}商品</span></a></li>')
         side.append(f'<li class="side-pet"><a href="#{pid}">{globals()["icon"](icon, 18)}{name}</a><ul>'
                     + "".join(f'<li><a href="{g["slug"]}.html">{E(g["title"])}</a></li>'
@@ -987,16 +988,15 @@ def main():
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド</h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す</h2><ul class="nayami-l">{"".join(nayami)}</ul>'
                   '<p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p></section>' if nayami else "")
-    _hd = drops(published)[:5]
-    hero_pics = "".join(f'<li><a href="item-{x["p"]["productId"]}.html"><img src="{E(img(x["p"].get("image"), 160))}" alt="{E(show_name(x["p"]["name"])[:30])}" width="112" height="112" loading="lazy"></a></li>'
-                        for x in _hd if x["p"].get("image"))
+    mc = data.get("mall_counts") or {}
+    tot = (mc.get("r") or 0) + (mc.get("y") or 0)
     mall_s = "楽天市場・Yahoo!ショッピング" if HAS_YAHOO else "楽天市場"
-    hero = ('<section class="hx"><div class="hx-txt"><p class="hx-k">' + globals()["icon"]("paw", 16) + 'ペット用品専門の価格比較</p>'
-            '<p class="hx-t">いちばん安いショップが、<b>すぐ見つかる。</b></p>'
-            f'<p class="hx-s">{mall_s}の{sum(len(x[1]) for x in published):,}商品を1日2回チェック</p>'
+    big = (f'{mall_s}のペット用品 約{tot // 10000:,}万点から検索' if tot >= 10000 else f'{mall_s}を横断して比較')
+    hero = ('<section class="hx"><div class="hx-ph" role="img" aria-label="犬と猫"></div><div class="hx-txt"><p class="hx-k">' + globals()["icon"]("paw", 16) + 'ペット用品専門の価格比較</p>'
+            '<p class="hx-t">うちの子のごはんも砂も、<br><b>最安のお店</b>がすぐ見つかる。</p>'
+            f'<p class="hx-s">{big}・{sum(len(x[1]) for x in published):,}商品は1日2回チェック</p>'
             '<form class="hx-q" action="search.html" role="search"><label class="sr" for="hq2">商品を探す</label>'
-            '<input type="search" id="hq2" name="q" placeholder="例：猫砂 おから／ドッグフード 小粒" autocomplete="off"><button type="submit">探す</button></form></div>'
-            + (f'<ul class="hx-pics" aria-label="他店より安い商品">{hero_pics}</ul>' if hero_pics else "") + '</section>')
+            '<input type="search" id="hq2" name="q" placeholder="例：猫砂 おから／ドッグフード 小粒" autocomplete="off"><button type="submit">探す</button></form></div></section>')
     idx = ('<div class="home"><aside class="side" aria-label="カテゴリ"><p class="side-h">カテゴリ</p><ul>' + "".join(side) + '</ul>'
            '<p class="side-h">ほかの探し方</p><ul class="side-x"><li><a href="weekly.html">お得ランキング</a></li><li><a href="shindan.html">1分診断</a></li><li><a href="search.html">商品を探す</a></li></ul></aside>'
            '<div class="home-main">' + hero
@@ -1028,6 +1028,9 @@ def main():
     vp = os.path.join(ROOT, "push", "vapid_public.txt")  # 値下がり通知の公開鍵（毎朝の更新処理が KV を使えるときだけ作る。無ければ通知ボタンは出ない）
     vkey = open(vp, encoding="utf-8").read().strip() if os.path.exists(vp) else ""
     open(os.path.join(out, "app.js"), "w", encoding="utf-8").write(APP_JS.replace("__VAPID__", vkey if re.match(r"^[A-Za-z0-9_-]{80,100}$", vkey) else ""))
+    pdir = os.path.join(ROOT, "assets", "pets")
+    if os.path.isdir(pdir):  # 動物の写真（Pexels・商用可。出典は assets/pets/CREDITS.md）
+        shutil.copytree(pdir, os.path.join(out, "pets"), dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.md"))
     if os.path.exists(os.path.join(ROOT, "assets", "sw.js")):
         shutil.copy(os.path.join(ROOT, "assets", "sw.js"), os.path.join(out, "sw.js"))
     json.dump({"fetched_at": str(data.get("fetched_at", "")), "pets": [[p[0], p[1]] for p in PETS],
@@ -1476,27 +1479,28 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .nayami-l{display:flex;gap:8px;overflow-x:auto;list-style:none;margin:0;padding:0 16px 4px;scrollbar-width:none}
 .nayami-l a{display:block;white-space:nowrap;padding:8px 14px;border-radius:999px;background:var(--win-bg,#fff4e5);border:1px solid var(--line,#e5e7eb);color:inherit;text-decoration:none;font-weight:700;font-size:14px}
 .nayami-l small{margin-left:6px;color:var(--sub);font-weight:400}
-.hx-txt{min-width:0}.home-main{min-width:0}.hx{margin:12px 16px 8px;border-radius:16px;background:linear-gradient(135deg,#0f6b62 0%,#14897c 60%,#3aa597 100%);color:#fff;padding:20px 18px;display:flex;gap:16px;align-items:center;justify-content:space-between;overflow:hidden}
-.hx-k{margin:0;font-size:12px;font-weight:700;display:inline-flex;gap:6px;align-items:center;background:rgba(255,255,255,.18);border-radius:999px;padding:3px 10px}
-.hx-t{margin:10px 0 4px;font-size:24px;font-weight:800;line-height:1.35}.hx-t b{color:#ffe08a}
-.hx-s{margin:0 0 12px;font-size:13px;opacity:.95}
-.hx-q{display:flex;max-width:460px}.hx-q input{flex:1;min-width:0;height:46px;border:0;border-radius:999px 0 0 999px;padding:0 16px;font-size:15px}
-.hx-q button{height:46px;border:0;border-radius:0 999px 999px 0;padding:0 20px;background:var(--win);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
-.hx-pics{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,112px);gap:8px;flex-shrink:0}
-.hx-pics li:nth-child(n+4){display:none}.hx-pics a{display:block;background:#fff;border-radius:12px;padding:6px}.hx-pics img{display:block;width:100px;height:100px;object-fit:contain}
+.hx-txt{min-width:0;position:relative;z-index:1}.home-main{min-width:0}
+.hx{margin:12px 16px 8px;border-radius:20px;background:#fff3e2;color:#3b2a1a;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.hx-ph{aspect-ratio:3/2;background:url(pets/hero.jpg) center 35%/cover no-repeat}
+.hx-txt{padding:16px 18px 20px}
+.hx-k{margin:0;font-size:12px;font-weight:700;display:inline-flex;gap:6px;align-items:center;background:#fff;color:#c2410c;border-radius:999px;padding:4px 12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.hx-t{margin:10px 0 6px;font-size:22px;font-weight:800;line-height:1.4}.hx-t b{color:#ea580c}
+.hx-s{margin:0 0 14px;font-size:13px;color:#7c5a3a}
+.hx-q{display:flex;max-width:520px;box-shadow:0 4px 14px rgba(234,88,12,.18);border-radius:999px}.hx-q input{flex:1;min-width:0;height:50px;border:2px solid #fdba74;border-right:0;border-radius:999px 0 0 999px;padding:0 18px;font-size:15px;background:#fff}
+.hx-q button{height:50px;border:0;border-radius:0 999px 999px 0;padding:0 24px;background:#ea580c;color:#fff;font-weight:800;font-size:16px;cursor:pointer}
 .circ{list-style:none;margin:8px 0 4px;padding:0 16px;display:flex;gap:14px;overflow-x:auto;scrollbar-width:none}.circ::-webkit-scrollbar{display:none}
 .circ a{display:flex;flex-direction:column;align-items:center;width:88px;color:var(--txt);text-decoration:none}
 .circ-p{width:80px;height:80px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;color:var(--brand)}
-.circ-p img{width:62px;height:62px;object-fit:contain}.circ-n{margin-top:6px;font-size:13px;font-weight:700}.circ-c{font-size:11px;color:var(--sub)}
+.circ-p img{width:100%;height:100%;object-fit:cover}.circ-n{margin-top:6px;font-size:13px;font-weight:700}.circ-c{font-size:11px;color:var(--sub)}
 .side{display:none}
-@media (min-width:1024px){main:has(.home){max-width:1200px}body:has(.home) .hd-search{display:none}body:has(.home) .hd-in{max-width:1200px}.home{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;padding:0 16px}.home-main{min-width:0}
+body:has(.home) .hd-search{display:none}@media (min-width:1024px){main:has(.home){max-width:1200px}body:has(.home) .hd-in{max-width:1200px}.home{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;padding:0 16px}.home-main{min-width:0}
  .side{display:block;position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 0;margin-top:12px}
  .side ul{list-style:none;margin:0;padding:0}.side-h{margin:8px 14px 4px;font-size:11px;font-weight:700;color:var(--sub)}
  .side-pet>a{display:flex;gap:8px;align-items:center;padding:8px 14px;font-weight:800;color:var(--txt)}.side-pet>a .ic{color:var(--brand)}
  .side-pet li a,.side-x a{display:block;padding:5px 14px 5px 40px;font-size:13px;color:var(--txt)}.side-x a{padding-left:14px}.side a:hover{background:var(--brand-bg)}
- .home-main .hx{margin:12px 0 8px;padding:32px 32px}.hx-t{font-size:34px}.hx-pics{grid-template-columns:repeat(2,120px)}.hx-pics li:nth-child(4){display:block}.hx-pics img{width:108px;height:108px}
- .circ{padding:0;justify-content:flex-start;gap:20px;flex-wrap:wrap;overflow:visible}.circ a{width:110px}.circ-p{width:100px;height:100px}.circ-p img{width:78px;height:78px}}
-@media (max-width:600px){.hx{flex-direction:column;align-items:stretch;padding:18px 16px}.hx-t{font-size:21px}.hx-pics{grid-template-columns:repeat(3,1fr)}.hx-pics a{padding:4px}.hx-pics img{width:100%;height:auto;aspect-ratio:1}}
+ .home-main .hx{margin:12px 0 8px;min-height:360px;justify-content:center}.hx-ph{position:absolute;inset:0 0 0 38%;aspect-ratio:auto;-webkit-mask-image:linear-gradient(to right,transparent,#000 35%);mask-image:linear-gradient(to right,transparent,#000 35%)}.hx-txt{padding:36px 40px;max-width:62%}.hx-t{font-size:32px}
+ .circ{padding:0;justify-content:flex-start;gap:20px;flex-wrap:wrap;overflow:visible}.circ a{width:110px}.circ-p{width:110px;height:110px;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}}
+
 .vp{margin:12px 16px 4px}.vp-t{margin:0;font-size:20px;font-weight:800;line-height:1.4}.vp-t b{color:var(--win)}.vp-s{margin:4px 0 0;font-size:13px;color:var(--sub)}
 .pr-note{margin:4px 0 0;font-size:12px;color:var(--sub)}
 .wl-wrap{position:relative}.wl-sh{display:block;margin:4px 16px 0 auto;padding:4px 0}

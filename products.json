@@ -14,8 +14,8 @@
    ],
    "min": 5,
    "pkeyword": "猫砂 おから",
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "dog-food-large",
@@ -32,8 +32,8 @@
    ],
    "min": 2,
    "pkeyword": "ドッグフード ドライ",
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "dog-pee-sheet-regular",
@@ -47,8 +47,8 @@
    ],
    "min": 50,
    "pkeyword": "ペットシーツ レギュラー",
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "cat-toilet-sheet",
@@ -63,8 +63,8 @@
    ],
    "min": 10,
    "pkeyword": "システムトイレ シート 猫",
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "dog-treat-large",
@@ -99,8 +99,8 @@
    ],
    "min": 1,
    "pkeyword": "キャットフード ドライ",
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "cat-wet-food-box",
@@ -313,8 +313,8 @@
     "おもちゃ"
    ],
    "pkeyword": "ドッグフード ドライ 小型犬",
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "dog-wet-food",
@@ -350,8 +350,8 @@
    ],
    "pkeyword": "ペットシーツ ワイド",
    "min": 30,
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "dog-dental-chew",
@@ -427,8 +427,8 @@
    ],
    "pkeyword": "猫砂 紙",
    "min": 5,
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "cat-litter-wood",
@@ -471,8 +471,8 @@
    ],
    "pkeyword": "システムトイレ 猫砂",
    "min": 2,
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "cat-dry-food-small",
@@ -490,8 +490,8 @@
     "おもちゃ"
    ],
    "pkeyword": "キャットフード ドライ",
-   "max": 100,
-   "pages": 5
+   "max": 150,
+   "pages": 7
   },
   {
    "slug": "cat-treat",

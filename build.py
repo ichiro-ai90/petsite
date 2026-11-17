@@ -1625,7 +1625,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 @keyframes gin{from{transform:scale(.4) rotate(-6deg);opacity:0}}
 .gc-card img{width:84px;height:84px;object-fit:contain;flex:none}.gc-card .r{font-size:13px;font-weight:800;color:#a16207}.gc-card .nm{font-size:12px;line-height:1.35;max-height:2.7em;overflow:hidden}
 .gc-card .pc{font-size:20px;font-weight:800;color:#e11d48}.gc-card .pc small{font-size:12px;margin-left:6px;color:var(--sub);text-decoration:line-through;font-weight:400}
-.gc-card.r3{box-shadow:0 0 0 3px #facc15,0 0 28px #facc15}.gc-card.r2{box-shadow:0 0 0 3px #c084fc,0 0 18px #c084fc}
+.gc-card[hidden],.gc-cap[hidden]{display:none}.gc-card.r3{box-shadow:0 0 0 3px #facc15,0 0 28px #facc15}.gc-card.r2{box-shadow:0 0 0 3px #c084fc,0 0 18px #c084fc}
 .gc-ft{display:flex;align-items:center;gap:10px;margin-top:8px}
 .gc-btn{flex:1;height:48px;border:0;border-radius:999px;background:linear-gradient(#fde047,#f59e0b);color:#3b0764;font-size:17px;font-weight:900;box-shadow:0 4px 0 #b45309;cursor:pointer}
 .gc-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b45309}

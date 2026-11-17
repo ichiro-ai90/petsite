@@ -1039,10 +1039,11 @@ def main():
                     f'<span class="dc-pr"><b>{x["now"]:,}</b>円</span><span class="dc-o">他店 {x["hi"]:,}円</span></a></li>' for x in _ds[:12])
     deal_sec = (f'<section class="dc-sec"><h2 class="h2">他店より安い商品<a class="h2a" href="weekly.html">すべて見る</a></h2><p class="h2n">※同じ内容量の他店中央値との差・取得時点・送料別</p><ul class="dcs">{deals}</ul></section>' if deals else "")
     _gs = sorted(_ds, key=lambda x: -x["d"] / x["hi"])[:300]
-    gdata = json.dumps([{"i": x["p"]["productId"], "n": show_name(x["p"]["name"])[:40], "m": img(x["p"].get("image"), 200) or "",
+    _a2p = {a: pid for pid, _n, _i, ans in PETS for a in ans}
+    gdata = json.dumps([{"t": _a2p.get(x["g"].get("animal"), ""), "i": x["p"]["productId"], "n": show_name(x["p"]["name"])[:40], "m": img(x["p"].get("image"), 200) or "",
                          "p": x["now"], "h": x["hi"], "c": round(x["d"] / x["hi"] * 100)} for x in _gs], ensure_ascii=False).replace("</", "<\\/")
     _fm = re.search(r"(\d{1,2}):\d{2}", str(data.get("fetched_at", "")))
-    gacha = ((f'<section class="gc" id="gacha"><div class="gc-hd"><b>お得ガチャ</b><span class="gc-s">{_fm.group(0) + "の取得で見つかった" if _fm else ""}お得 {len(_gs):,}件から1つ</span>'
+    gacha = ((f'<section class="gc" id="gacha"><div class="uk" id="uk" data-pets="{E(json.dumps(pet_names, ensure_ascii=False))}"></div><div class="gc-hd"><b>お得ガチャ</b><span class="gc-s">{_fm.group(0) + "の取得で見つかった" if _fm else ""}お得 {len(_gs):,}件から1つ</span>'
               '<span class="gc-new" id="gnew" hidden></span></div>'
               '<div class="gc-st"><div class="gc-cap" id="gcap" aria-hidden="true"><i></i></div><a class="gc-card" id="gcard" hidden data-ga="gacha_card"></a></div>'
               '<div class="gc-ft"><button type="button" class="gc-btn" id="gbtn" data-ga="gacha_pull">ガチャを引く</button><span class="gc-dex" id="gdex"></span></div>'
@@ -1293,9 +1294,28 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
  t=setInterval(nx,4000);["touchstart","mouseenter"].forEach(function(e){b.addEventListener(e,function(){clearInterval(t)},{passive:true})})}
  var cs=document.querySelector(".cat-sec");if(cs){cs.classList.add("js");function tab(id){cs.querySelectorAll(".ptabs button").forEach(function(x){x.setAttribute("aria-selected",x.dataset.tab===id?"true":"false")});
   cs.querySelectorAll(".pet-sec").forEach(function(x){x.classList.toggle("on",x.dataset.pet===id)})}
-  var f=cs.querySelector(".ptabs button");if(f)tab(f.dataset.tab);
+  var mp=null;try{mp=JSON.parse(localStorage.getItem("pn_pet")||"null")}catch(e){}
+  var f=(mp&&cs.querySelector('.ptabs button[data-tab="'+mp.t+'"]'))||cs.querySelector(".ptabs button");if(f)tab(f.dataset.tab);
   cs.addEventListener("click",function(e){var x=e.target.closest(".ptabs button");if(x)tab(x.dataset.tab)});
   document.querySelectorAll(".circ a[data-tab]").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();tab(a.dataset.tab);cs.scrollIntoView({behavior:"smooth"})})})}})();
+(function(){var u=document.getElementById("uk");if(!u)return;var P=JSON.parse(u.dataset.pets||"[]");
+ function ld(k,d){try{return JSON.parse(localStorage.getItem(k)||"null")||d}catch(e){return d}}function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+ var td=new Date().toISOString().slice(0,10),yd=new Date(Date.now()-864e5).toISOString().slice(0,10),v=ld("pn_visit",{d:"",s:0,x:0,g:0,gd:""});
+ if(v.d!==td){v.s=v.d===yd?v.s+1:1;v.d=td;v.x+=2;sv("pn_visit",v)}
+ window.pnXP=function(){if(v.gd!==td){v.gd=td;v.g=0}if(v.g<10){v.g++;v.x++;sv("pn_visit",v);draw()}};
+ function lv(x){return Math.floor(Math.sqrt(x/3))+1}
+ var TT=["はじめまして","なかよし","ともだち","あいぼう","家族","ずっと一緒"];
+ function draw(){var p=ld("pn_pet",null);if(!p){u.innerHTML='<button type="button" class="uk-add" data-ga="uk_open">＋ うちの子を登録（お得をうちの子向けに）</button>';return}
+  var L=lv(v.x),lo=3*(L-1)*(L-1),hi=3*L*L,pc=Math.round((v.x-lo)/(hi-lo)*100),nm=null;P.forEach(function(q){if(q[0]===p.t)nm=q[1]});
+  u.innerHTML='<div class="uk-me"><span class="uk-n">'+esc(p.n||"うちの子")+'<small>'+esc(nm||"")+'</small></span><span class="uk-s">連続'+v.s+'日</span><span class="uk-l">Lv'+L+' '+TT[Math.min(L-1,TT.length-1)]+'</span><button type="button" class="uk-ed" aria-label="うちの子を変更">変更</button></div><div class="uk-b"><i style="width:'+pc+'%"></i></div>'}
+ function form(){var p=ld("pn_pet",{t:"",n:""});u.innerHTML='<div class="uk-f"><div class="uk-c">'+P.map(function(q){return'<button type="button" data-t="'+esc(q[0])+'" aria-pressed="'+(q[0]===p.t)+'">'+esc(q[1])+'</button>'}).join("")+'</div><input id="ukn" maxlength="12" placeholder="名前（なくてもOK）" value="'+esc(p.n||"")+'"><button type="button" class="uk-ok" data-ga="uk_save">登録</button></div>'}
+ u.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+  if(b.classList.contains("uk-add")||b.classList.contains("uk-ed"))form();
+  else if(b.dataset.t){u.querySelectorAll(".uk-c button").forEach(function(x){x.setAttribute("aria-pressed",x===b)})}
+  else if(b.classList.contains("uk-ok")){var s=u.querySelector('.uk-c [aria-pressed="true"]');if(!s)return;sv("pn_pet",{t:s.dataset.t,n:(document.getElementById("ukn").value||"").trim()});draw();
+   var tb=document.querySelector('.ptabs button[data-tab="'+s.dataset.t+'"]');if(tb)tb.click();if(window.gtag)gtag("event","uk_register",{pet:s.dataset.t})}});
+ draw()})();
 (function(){var el=document.getElementById("gdata");if(!el)return;var G=JSON.parse(el.textContent),K="pn_gdex",S="pn_gseen";
  function ld(k){try{return JSON.parse(localStorage.getItem(k)||"[]")}catch(e){return[]}}function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v.slice(-2000)))}catch(e){}}
  var seen=ld(S),fresh=G.filter(function(g){return seen.indexOf(g.i)<0}),nw=document.getElementById("gnew");
@@ -1305,7 +1325,8 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
  var cap=document.getElementById("gcap"),card=document.getElementById("gcard"),btn=document.getElementById("gbtn"),box=cap.parentNode,busy=0;
  function rar(c){return c>=25?3:c>=12?2:1}
  function pick(){var pool=fresh.length?fresh:G,u=pool.filter(function(g){return dex.indexOf(g.i)<0});if(!u.length)u=pool;
-  var w=u.map(function(g){return 1+rar(g.c)}),t=w.reduce(function(a,b){return a+b},0),r=Math.random()*t;for(var k=0;k<u.length;k++){r-=w[k];if(r<=0)return u[k]}return u[0]}
+  var mp=null;try{mp=JSON.parse(localStorage.getItem("pn_pet")||"null")}catch(e){}
+  var w=u.map(function(g){return (1+rar(g.c))*(mp&&g.t===mp.t?3:1)}),t=w.reduce(function(a,b){return a+b},0),r=Math.random()*t;for(var k=0;k<u.length;k++){r-=w[k];if(r<=0)return u[k]}return u[0]}
  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
  btn.addEventListener("click",function(){if(busy)return;busy=1;card.hidden=true;cap.hidden=false;cap.classList.remove("go");void cap.offsetWidth;cap.classList.add("go");
   setTimeout(function(){var g=pick(),r=rar(g.c);cap.hidden=true;card.className="gc-card r"+r;card.href="item-"+encodeURIComponent(g.i)+".html";
@@ -1313,7 +1334,7 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
    card.hidden=false;if(dex.indexOf(g.i)<0){dex.push(g.i);sv(K,dex);dd()}
    if(r>=2){for(var k=0;k<(r==3?28:14);k++){var f=document.createElement("i");f.className="gc-fx";f.style.background=["#facc15","#f472b6","#a78bfa","#34d399"][k%4];
     f.style.setProperty("--x",(Math.random()*240-120)+"px");f.style.setProperty("--y",(Math.random()*-160-20)+"px");box.appendChild(f);setTimeout(function(x){x.remove()}.bind(null,f),1100)}}
-   btn.textContent="もう1回引く";busy=0;if(window.gtag)gtag("event","gacha_result",{rarity:r})},700)});})();
+   btn.textContent="もう1回引く";busy=0;if(window.pnXP)pnXP();if(window.gtag)gtag("event","gacha_result",{rarity:r})},700)});})();
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
@@ -1587,6 +1608,12 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .card-c{font-size:11px;color:var(--sub);margin-left:4px}
 .gc{margin:12px 12px 4px;padding:12px;border-radius:18px;background:linear-gradient(135deg,#2e1065,#7c3aed 55%,#db2777);color:#fff;position:relative;overflow:hidden}
 .gc .h2n{color:#e9d5ff;margin:8px 0 0}
+.uk{margin-bottom:8px}.uk-add{width:100%;height:38px;border:1.5px dashed #f0abfc;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-weight:800;font-size:13px;cursor:pointer}
+.uk-me{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}.uk-n{font-size:15px;font-weight:900}.uk-n small{font-size:10px;margin-left:4px;opacity:.85}
+.uk-s{background:#f97316;border-radius:999px;padding:1px 8px}.uk-l{background:#facc15;color:#3b0764;border-radius:999px;padding:1px 8px}.uk-ed{margin-left:auto;background:none;border:0;color:#e9d5ff;font-size:11px;text-decoration:underline;cursor:pointer}
+.uk-b{height:6px;border-radius:3px;background:rgba(255,255,255,.25);margin-top:6px;overflow:hidden}.uk-b i{display:block;height:100%;background:linear-gradient(90deg,#facc15,#f472b6)}
+.uk-f{display:flex;flex-wrap:wrap;gap:6px}.uk-c{display:flex;flex-wrap:wrap;gap:6px;width:100%}.uk-c button{border:1px solid #f0abfc;background:none;color:#fff;border-radius:999px;padding:5px 12px;font-weight:700;font-size:12px;cursor:pointer}
+.uk-c button[aria-pressed="true"]{background:#facc15;color:#3b0764;border-color:#facc15}.uk-f input{flex:1;min-width:0;height:36px;border-radius:10px;border:0;padding:0 10px;font-size:14px}.uk-ok{height:36px;border:0;border-radius:10px;background:#facc15;color:#3b0764;font-weight:900;padding:0 16px;cursor:pointer}
 .gc-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px}.gc-hd b{font-size:20px;letter-spacing:.5px;text-shadow:0 0 12px #f0abfc}.gc-s{font-size:11px;opacity:.9}
 .gc-new{background:#facc15;color:#3b0764;font-weight:800;font-size:11px;border-radius:999px;padding:2px 8px;animation:gpulse 1.2s infinite}
 @keyframes gpulse{50%{transform:scale(1.08)}}

@@ -1007,7 +1007,7 @@ def main():
     slides = []
     slides.append('<a class="bn bn-a" href="search.html" data-ga="bn_search"><span class="bn-ph" style="background-image:url(pets/hero.jpg)"></span>'
                   f'<span class="bn-t"><small>{mall_s}のペット用品</small><b>{man or "全商品"}</b>{"件から" if man else "から"}<br>安いお店を探す</span>'
-                  f'<span class="bn-go">探してみる</span><span class="bn-n">{mall_s}の出品数（同じ商品の別ショップ含む）※</span></a>')
+                  f'<span class="bn-go">探してみる</span><span class="bn-n">件数は出品数（同じ商品の別ショップ含む）※</span></a>')
     if _ds:
         slides.append(f'<a class="bn bn-b" href="weekly.html" data-ga="bn_deals"><span class="bn-t"><small>同じ内容量の他店と比べて</small>他店より<br><b class="cnt" data-to="{top}">{top}</b><i>%</i>安い</span>'
                       + (f'<img class="bn-im" src="{E(_dimg)}" alt="" width="150" height="150">' if _dimg else "")
@@ -1598,7 +1598,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .bn-t{position:absolute;left:16px;top:16px;z-index:1;font-size:19px;font-weight:800;line-height:1.3;text-shadow:0 2px 6px rgba(0,0,0,.35)}
 .bn-t small{display:block;font-size:11px;font-weight:700;opacity:.95;margin-bottom:4px}.bn-t b{font-size:38px;color:#ffd84d;letter-spacing:-.5px}.bn-t i{font-style:normal;font-size:24px;color:#ffd84d}
 .bn-go{position:absolute;left:16px;bottom:14px;z-index:1;background:#fff;color:#c2410c;font-weight:800;font-size:13px;border-radius:999px;padding:6px 14px}
-.bn-n{position:absolute;right:10px;bottom:6px;font-size:10px;opacity:.85;z-index:1}
+.bn-n{position:absolute;right:10px;bottom:8px;max-width:48%;text-align:right;line-height:1.3;font-size:10px;opacity:.9;z-index:1}
 .bn-b{background:radial-gradient(circle at 80% 30%,#ffd84d 0,#ff7a00 40%,#e11d48 100%)}.bn-b .bn-t{text-shadow:none}.bn-b .bn-t b{font-size:64px;color:#fff}.bn-b .bn-t i{color:#fff;font-size:30px}
 .bn-im{position:absolute;right:12px;top:18px;width:120px;height:120px;object-fit:contain;background:#fff;border-radius:14px;padding:6px;transform:rotate(4deg);box-shadow:0 6px 16px rgba(0,0,0,.25)}
 .bn-c .bn-ph::after{background:linear-gradient(90deg,rgba(190,24,93,.85),rgba(190,24,93,.05) 75%)}

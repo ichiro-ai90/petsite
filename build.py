@@ -1006,12 +1006,12 @@ def main():
     _br = next((u for u in brand_urls), "")
     slides = []
     slides.append('<a class="bn bn-a" href="search.html" data-ga="bn_search"><span class="bn-ph" style="background-image:url(pets/hero.jpg)"></span>'
-                  f'<span class="bn-t"><small>{mall_s}のペット用品</small><b>{man or "全商品"}</b>{"件から" if man else "から"}<br>いちばん安いお店へ</span>'
-                  '<span class="bn-go">探してみる</span></a>')
+                  f'<span class="bn-t"><small>{mall_s}のペット用品</small><b>{man or "全商品"}</b>{"件から" if man else "から"}<br>安いお店を探す</span>'
+                  f'<span class="bn-go">探してみる</span><span class="bn-n">{mall_s}の出品数（同じ商品の別ショップ含む）※</span></a>')
     if _ds:
         slides.append(f'<a class="bn bn-b" href="weekly.html" data-ga="bn_deals"><span class="bn-t"><small>同じ内容量の他店と比べて</small>他店より<br><b class="cnt" data-to="{top}">{top}</b><i>%</i>安い</span>'
                       + (f'<img class="bn-im" src="{E(_dimg)}" alt="" width="150" height="150">' if _dimg else "")
-                      + f'<span class="bn-go">{len(_ds):,}件のお得を見る</span><span class="bn-n">最大値・取得時点・送料別</span></a>')
+                      + f'<span class="bn-go">{len(_ds):,}件のお得を見る</span><span class="bn-n">※同じ内容量の他店中央値との差・取得時点・送料別</span></a>')
     if _ny:
         slides.append(f'<a class="bn bn-c" href="{_ny}" data-ga="bn_nayami"><span class="bn-ph" style="background-image:url(pets/cat.jpg)"></span>'
                       '<span class="bn-t"><small>毛玉・下部尿路・シニア・体重</small><b>悩み</b>から<br>フードを探す</span><span class="bn-go">悩みを選ぶ</span></a>')
@@ -1019,7 +1019,7 @@ def main():
                   '<span class="bn-t"><small>いつもの商品を選ぶだけ</small>うちの子の消耗品<br><b>月いくら？</b></span><span class="bn-go">1分診断</span></a>')
     if _br:
         slides.append(f'<a class="bn bn-e" href="{_br}" data-ga="bn_brand"><span class="bn-ph" style="background-image:url(pets/hero2.jpg)"></span>'
-                      '<span class="bn-t"><small>製造国を確かめた</small><b>海外ブランド</b><br>を国内の最安で</span><span class="bn-go">ブランドを見る</span></a>')
+                      '<span class="bn-t"><small>製造国を確かめた</small><b>海外ブランド</b><br>を国内ショップで比べる</span><span class="bn-go">ブランドを見る</span></a>')
     hero = ('<form class="hq" action="search.html" role="search"><label class="sr" for="hq2">ペット用品を探す</label>'
             f'<input type="search" id="hq2" name="q" placeholder="{man + "件の" if man else ""}ペット用品から探す" autocomplete="off"><button type="submit" aria-label="探す">' + globals()["icon"]("search", 20) + '</button></form>'
             f'<div class="bns" id="bns">{"".join(slides)}</div><div class="bn-dots" aria-hidden="true">{"".join("<i></i>" for _ in slides)}</div>')
@@ -1030,14 +1030,14 @@ def main():
              + '<li><a href="shindan.html"><span class="qk-i qk-4">' + globals()["icon"]("bag", 22) + '</span>1分<br>診断</a></li>'
              + '<li><a href="favorites.html"><span class="qk-i qk-5">' + globals()["icon"]("star", 22) + '</span>マイ<br>リスト</a></li></ul>')
     tiles = sorted(deal_tiles, key=lambda t: -t[0])[:10]
-    tiles_sec = ('<section class="tl-sec"><h2 class="h2">カテゴリ別 お得</h2><ul class="tls">'
-                 + "".join(f'<li><a class="tl tl{k % 5}" href="{g["slug"]}.html"><span class="tl-c"><em>{E(pn)}</em>{E(g["title"])}</span><span class="tl-v">最大<b>{v}</b>%安い</span><span class="tl-n">{n}件</span></a></li>'
+    tiles_sec = ('<section class="tl-sec"><h2 class="h2">カテゴリ別 お得</h2><p class="h2n">※同じ内容量の他店（3店以上の中央値）との差・取得時点・送料別</p><ul class="tls">'
+                 + "".join(f'<li><a class="tl tl{k % 5}" href="{g["slug"]}.html" data-ga="tile"><span class="tl-c"><em>{E(pn)}</em>{E(g["title"])}</span><span class="tl-v">最大<b>{v}</b>%安い※</span><span class="tl-n">{n}件</span></a></li>'
                            for k, (v, g, n, pn) in enumerate(tiles)) + '</ul></section>') if tiles else ""
     deals = "".join(f'<li><a class="dc" href="item-{E(x["p"]["productId"])}.html" data-ga="deal_card"><span class="dc-p">'
                     + (f'<img src="{E(img(x["p"].get("image"), 200))}" alt="" width="120" height="120" loading="lazy">' if x["p"].get("image") else "")
-                    + f'<span class="dc-b">{round(x["d"] / x["hi"] * 100)}%安い</span></span><span class="dc-n">{E(show_name(x["p"]["name"]))}</span>'
+                    + f'<span class="dc-b">{round(x["d"] / x["hi"] * 100)}%安い※</span></span><span class="dc-n">{E(show_name(x["p"]["name"]))}</span>'
                     f'<span class="dc-pr"><b>{x["now"]:,}</b>円</span><span class="dc-o">他店 {x["hi"]:,}円</span></a></li>' for x in _ds[:12])
-    deal_sec = (f'<section class="dc-sec"><h2 class="h2">他店より安い商品<a class="h2a" href="weekly.html">すべて見る</a></h2><ul class="dcs">{deals}</ul></section>' if deals else "")
+    deal_sec = (f'<section class="dc-sec"><h2 class="h2">他店より安い商品<a class="h2a" href="weekly.html">すべて見る</a></h2><p class="h2n">※同じ内容量の他店中央値との差・取得時点・送料別</p><ul class="dcs">{deals}</ul></section>' if deals else "")
     SEL = ' aria-selected="true"'
     pt = "".join(f'<li><button type="button" data-tab="{pid}"{SEL if k == 0 else ""}>{n}</button></li>' for k, (pid, n) in enumerate(pet_names))
     idx = ('<div class="home"><aside class="side" aria-label="カテゴリ"><p class="side-h">カテゴリ</p><ul>' + "".join(side) + '</ul>'
@@ -1567,6 +1567,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .dc{display:flex;flex-direction:column;width:136px;color:var(--txt);text-decoration:none}.dc-p{position:relative;width:136px;height:136px;background:#fff;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center}
 .dc-p img{width:116px;height:116px;object-fit:contain}.dc-b{position:absolute;left:6px;top:6px;background:#e11d48;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px}
 .dc-n{margin-top:6px;font-size:12px;line-height:1.35;max-height:2.7em;overflow:hidden}.dc-pr{font-size:12px}.dc-pr b{font-size:17px;color:#e11d48}.dc-o{font-size:11px;color:var(--sub);text-decoration:line-through}
+.h2n{margin:-6px 12px 8px;font-size:11px;color:var(--sub)}@media (min-width:1024px){.h2n{margin:-6px 0 8px}}
 .h2a{margin-left:auto;font-size:12px;font-weight:700}.h2:has(.h2a){display:flex;align-items:baseline}
 .ptabs{list-style:none;margin:0 0 8px;padding:0 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.ptabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--txt)}
 .ptabs button[aria-selected="true"]{background:#ea580c;border-color:#ea580c;color:#fff}

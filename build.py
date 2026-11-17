@@ -998,7 +998,7 @@ def main():
     tot = (mc.get("r") or 0) + (mc.get("y") or 0)
     mall_s = "楽天市場・Yahoo!ショッピング" if HAS_YAHOO else "楽天市場"
     man = f"{tot // 10000:,}万" if tot >= 10000 else ""
-    mnote = "「%」は同じ内容量の他店（3店以上の中央値）との差の最大値。" + (f"「{man}件」は{mall_s}のペット用品ジャンルの出品数（同じ商品の別ショップを含む・取得時点）。" if man else "") + "検索欄からすべて探せます"
+    mnote = "「%」は同じ内容量の他店（3店以上の中央値）との差の最大値。" + (f"「{man}件」は{mall_s}のペット用品ジャンルの出品数（同じ商品の別ショップを含む・取得時点）。" if man else "") + f"検索欄からは{mall_s}をその場で検索します（くわしい比較ページは{len(index_rows):,}商品）"
     _ds = drops(published)
     top = max((round(x["d"] / x["hi"] * 100) for x in _ds), default=0)
     _dimg = next((img(x["p"].get("image"), 300) for x in _ds if x["p"].get("image")), "")
@@ -1062,7 +1062,7 @@ def main():
                     f"お得 {today_drops(published)}件", (f"他店（中央値）より最大 −{_ds[0]['d']:,}円（取得時点・送料別）" if _ds else "楽天のショップの価格を比較（1日2回更新）")) if fdate[:2] == "20" else False
     open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(
         page(f"{SITE}｜楽天市場のペット用品を価格・ポイントで比較", idx,
-             f"楽天市場のペット用品{len(index_rows)}商品を、ショップごとの価格とポイントで比較（{fdate}取得）。猫砂・ドッグフード・小動物や爬虫類、小鳥・魚の餌まで。",
+             f"{mall_s}のペット用品を検索して、ショップごとの価格とポイントで比較（{fdate}取得）。猫砂・ドッグフード・小動物や爬虫類、小鳥・魚の餌まで。",
              sample, canonical=(f"{origin}/" if origin else ""),
              og_image=((f"{origin}/og-today.png" if origin else "og-today.png") if og_ok else "")))
     wk, wtop = weekly_page(published, fdate)

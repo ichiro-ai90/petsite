@@ -20,7 +20,7 @@ jobs:
               b = p.chromium.launch()
               for w, h, n in ((1440, 900, "pc"), (390, 1000, "sp")):
                   pg = b.new_page(viewport={"width": w, "height": h})
-                  pg.goto("https://petnavi.niconote.jp/?v=1117b"); pg.wait_for_timeout(3000); pg.screenshot(path=f"home_{n}.png")
+                  pg.goto("https://petnavi.niconote.jp/?v=1118a"); pg.wait_for_timeout(3000); pg.screenshot(path=f"home_{n}.png")
                   print(n, "scrollWidth", pg.evaluate("document.documentElement.scrollWidth"))
               b.close()
           PY

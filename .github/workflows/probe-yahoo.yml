@@ -9,29 +9,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: その場検索の本番確認
-        run: |
-          for q in 首輪 ちゅーる; do
-            curl -s "https://petnavi.niconote.jp/api/msearch?q=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" $q)" -o r.json -w "HTTP %{http_code}\n"
-            python3 -c "import json;d=json.load(open('r.json'));it=d.get('items',[]);print('$q', len(it), 'rakuten', sum(1 for x in it if x['m']=='r'), 'yahoo', sum(1 for x in it if x['m']=='y'), 'err', d.get('err'), 'min', it[0]['p'] if it else None, (it[0]['n'][:30] if it else ''))"
-          done
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: 画面
+      - name: 写真の候補（Pexels・無料・商用可）
         run: |
-          pip -q install playwright && python -m playwright install --with-deps chromium >/dev/null 2>&1
+          pip -q install pillow
+          mkdir -p cand
+          for id in 16395150 7329892 11043682 13424995 19369860 10361808 33757023 5263848 4520484 4520482 3586056 10884423 2013665 7455192 28914189 16147936 27771836 2078845 4365561 2053815 4365564 8434726; do
+            curl -sfL "https://images.pexels.com/photos/$id/pexels-photo-$id.jpeg?auto=compress&cs=tinysrgb&w=1600" -o cand/$id.jpg || echo "fail $id"
+          done
           python - <<'PY'
-          from playwright.sync_api import sync_playwright
-          with sync_playwright() as p:
-              b = p.chromium.launch()
-              for w, h, n in ((1440, 900, "pc"), (390, 844, "sp")):
-                  pg = b.new_page(viewport={"width": w, "height": h})
-                  pg.goto("https://petnavi.niconote.jp/?v=1117"); pg.wait_for_timeout(2500); pg.screenshot(path=f"home_{n}.png")
-              pg = b.new_page(viewport={"width": 390, "height": 1400})
-              pg.goto("https://petnavi.niconote.jp/search.html?q=%E9%A6%96%E8%BC%AA"); pg.wait_for_timeout(5000); pg.screenshot(path="search_sp.png")
-              b.close()
+          from PIL import Image, ImageDraw
+          import glob, os
+          fs = sorted(glob.glob("cand/*.jpg"))
+          W = 300; cols = 6; rows = (len(fs)+cols-1)//cols
+          sheet = Image.new("RGB", (W*cols, (W+20)*rows), "white"); d = ImageDraw.Draw(sheet)
+          for i, f in enumerate(fs):
+              im = Image.open(f).convert("RGB"); im.thumbnail((W, W)); x, y = (i%cols)*W, (i//cols)*(W+20)
+              sheet.paste(im, (x, y)); d.text((x+4, y+W+4), os.path.basename(f)+f" {Image.open(f).size}", fill="black")
+          sheet.save("sheet.jpg", quality=80)
           PY
-      - name: 画像を一時ブランチへ
-        run: |
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com
-          mkdir -p shots && mv *.png shots/ && git add shots && git commit -qm "shots [skip ci]" && git push -q origin HEAD:dev/probe-shots --force
+          git checkout -b tmp && git add cand sheet.jpg && git commit -qm "cand [skip ci]" && git push -q origin HEAD:dev/probe-shots --force

@@ -29,8 +29,8 @@ HOST = "https://openapi.rakuten.co.jp"
 ITEM_URL = HOST + "/ichibams/api/IchibaItem/Search/20260401"
 PRODUCT_URL = HOST + "/ichibaproduct/api/Product/Search/20250801"
 SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "https://example.com")
-MAX_PRODUCTS = 40     # カテゴリあたりの製品数（11/15 Taku「品揃えが悪すぎる」で 10→40）
-MAX_TRIES = 60        # カテゴリあたりにショップ検索する製品の上限（1req/秒で全体 約50分以内に収める）
+MAX_PRODUCTS = 80     # 11/17 Taku「商品数が少ない」で 40→80。 カテゴリあたりの製品数（11/15 Taku「品揃えが悪すぎる」で 10→40）
+MAX_TRIES = 120       # カテゴリあたりにショップ検索する製品の上限（1req/秒で全体 約50分以内に収める）
 MAX_OFFERS = 10       # 製品あたりに残すショップ数（安い順）
 INTERVAL = 1.1        # 秒
 _last = {"t": -1e9}
@@ -78,7 +78,7 @@ def _prod(raw):
     return raw.get("Product", raw) if isinstance(raw, dict) else {}
 
 
-PRODUCT_PAGES = 3     # 製品検索のページ数（30件×3＝最大90候補）
+PRODUCT_PAGES = 5     # 11/17 3→5。 製品検索のページ数（30件×3＝最大90候補）
 
 
 def search_products(group):
@@ -249,6 +249,23 @@ def _load_prev(dst):
     return d
 
 
+def mall_counts():
+    """楽天（ペット・ペットグッズ）と Yahoo!ショッピング（ペット用品、生き物）の掲載件数。トップの「約◯万点から検索」に使う（価格ではない）"""
+    out = {}
+    try:
+        out["r"] = int(_call(ITEM_URL, {"genreId": 101213, "hits": 1, "availability": 1}).get("count") or 0)
+    except Exception as e:
+        print(f"  楽天の件数を省略: {str(e)[:80]}")
+    if os.environ.get("YAHOO_APP_ID"):
+        try:
+            out["y"] = int(_get(YAHOO_URL, {"appid": os.environ["YAHOO_APP_ID"], "genre_category_id": 2509, "results": 1,
+                                            "in_stock": "true"}).get("totalResultsAvailable") or 0)
+        except Exception as e:
+            print(f"  Yahoo の件数を省略: {str(e)[:80]}")
+    print("掲載件数", out)
+    return out
+
+
 def main():
     groups = json.load(open(os.path.join(ROOT, "products.json"), encoding="utf-8"))["groups"]
     prod = os.environ.get("PETSITE_PROD") == "1"
@@ -285,7 +302,7 @@ def main():
         print("::error::取得 0 件かつ前回の本番データなし。公開しません", errors[:5], file=sys.stderr)
         return 1
     json.dump({"fetched_at": datetime.now(JST).strftime("%Y-%m-%d %H:%M JST"), "products": products,
-               "errors": errors, "carried": carried},
+               "errors": errors, "carried": carried, "mall_counts": mall_counts()},
               open(dst, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     offers = sum(len(p["offers"]) for p in products)
     ny = sum(1 for p in products if any(o.get("mall") == "yahoo" for o in p["offers"]))

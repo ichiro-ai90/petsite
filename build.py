@@ -911,18 +911,19 @@ def main():
         print("::error::公開できるカテゴリが 0 件。サイトを生成しません", file=sys.stderr)
         return 1
     # トップ: ペットのタブ → ペットごとのカテゴリ一覧
-    tabs, secs, side, circ = [], [], [], []
+    tabs, secs, side, circ, deal_tiles, pet_names, nayami_urls, brand_urls = [], [], [], [], [], [], [], []
     for pid, name, icon, animals in PETS:
         cats = [(g, ps) for g, ps in published if g["animal"] in animals]
         if not cats:
             continue
+        pet_names.append((pid, name))
         tabs.append(f'<li><a href="#{pid}">{globals()["icon"](icon, 20)}{name}</a></li>')
         # 写真：そのペットでいちばんレビューの多い商品の画像（楽天の商品画像をそのまま表示。加工しない）
         rp = max((p for _, ps in cats for p in ps), key=lambda p: p.get("reviewCount", 0))
         rth = img(rp.get("image"), 128)
         n_p = sum(len(ps) for _, ps in cats)
         _pp = f"pets/{pid}.jpg" if os.path.exists(os.path.join(ROOT, "assets", "pets", f"{pid}.jpg")) else rth
-        circ.append(f'<li><a href="#{pid}"><span class="circ-p">' + (f'<img src="{E(_pp)}" alt="{name}" width="100" height="100" loading="lazy">' if _pp else globals()["icon"](icon, 32))
+        circ.append(f'<li><a href="#{pid}" data-tab="{pid}"><span class="circ-p">' + (f'<img src="{E(_pp)}" alt="{name}" width="100" height="100" loading="lazy">' if _pp else globals()["icon"](icon, 32))
                     + f'</span><span class="circ-n">{name}</span><span class="circ-c">{n_p}商品</span></a></li>')
         side.append(f'<li class="side-pet"><a href="#{pid}">{globals()["icon"](icon, 18)}{name}</a><ul>'
                     + "".join(f'<li><a href="{g["slug"]}.html">{E(g["title"])}</a></li>'
@@ -935,7 +936,10 @@ def main():
             pic = f'<img src="{E(th)}" alt="" width="72" height="72" loading="lazy">' if th else '<span class="noimg" aria-hidden="true"></span>'
             cs.append(f'<li data-q="{E(g["title"] + " " + g["keyword"])}"><a class="cat" href="{g["slug"]}.html"><span class="pic">{pic}</span>'
                       f'<span class="info"><span class="nm">{E(g["title"])}</span><span class="meta">{len(ps)}商品を比較</span></span></a></li>')
-        secs.append(f'<section class="pet-sec" id="{pid}"><h2 class="h2">{globals()["icon"](icon, 22)}{name}</h2><ul class="cats">{"".join(cs)}</ul></section>')
+            _md = [x for x in drops([(g, ps)])]
+            if _md:
+                deal_tiles.append((max(round(x["d"] / x["hi"] * 100) for x in _md), g, len(_md), name))
+        secs.append(f'<section class="pet-sec" id="{pid}" data-pet="{pid}"><h2 class="h2">{globals()["icon"](icon, 22)}{name}</h2><ul class="cats">{"".join(cs)}</ul></section>')
     from collections import Counter
     makers = [m for m, n in Counter(r["m"] for r in index_rows if r["m"]).most_common(10) if n >= 2]
     mk = "".join(f'<li><a href="search.html?maker={urllib.parse.quote(m)}">{E(m)}</a></li>' for m in makers)
@@ -962,6 +966,7 @@ def main():
                  f'商品名に「{c["words"][0]}」などの記載がある{c["pet"]}用フード{len(cps)}商品を、ショップごとの価格とポイントで比較（{fdate}取得）。効果を示すものではありません。',
                  sample, ((pet[1], f"index.html#{pet[0]}"), (g0["title"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
         files.append(fn)
+        nayami_urls.append(fn)
         nayami.append(f'<li><a href="{fn}">{E(c["pet"])}｜{E(c["title"])}<small>{len(cps)}</small></a></li>')
     # 海外ブランド：製造国を確認できたブランド（brands.json の show）だけ。すでに載せている国内の正規品から
     kaigai = []
@@ -984,6 +989,7 @@ def main():
                  f'{b["name"]}（{b["country"]}製）のペットフード{len(bps)}商品を、国内のショップの価格とポイントで比較（{fdate}取得）。',
                  sample, (("海外ブランド", None), (b["name"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
         files.append(fn)
+        brand_urls.append(fn)
         kaigai.append(f'<li><a href="{fn}">{E(b["name"])}<small>{E(b["country"])}</small></a></li>')
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド</h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す</h2><ul class="nayami-l">{"".join(nayami)}</ul>'
@@ -991,20 +997,56 @@ def main():
     mc = data.get("mall_counts") or {}
     tot = (mc.get("r") or 0) + (mc.get("y") or 0)
     mall_s = "楽天市場・Yahoo!ショッピング" if HAS_YAHOO else "楽天市場"
-    big = (f'{mall_s}のペット用品 約{tot // 10000:,}万点から検索' if tot >= 10000 else f'{mall_s}を横断して比較')
-    hero = ('<section class="hx"><div class="hx-ph" role="img" aria-label="犬と猫"></div><div class="hx-txt"><p class="hx-k">' + globals()["icon"]("paw", 16) + 'ペット用品専門の価格比較</p>'
-            '<p class="hx-t">うちの子のごはんも砂も、<br><b>最安のお店</b>がすぐ見つかる。</p>'
-            f'<p class="hx-s">{big}・{sum(len(x[1]) for x in published):,}商品は1日2回チェック</p>'
-            '<form class="hx-q" action="search.html" role="search"><label class="sr" for="hq2">商品を探す</label>'
-            '<input type="search" id="hq2" name="q" placeholder="例：猫砂 おから／ドッグフード 小粒" autocomplete="off"><button type="submit">探す</button></form></div></section>')
+    man = f"{tot // 10000:,}万" if tot >= 10000 else ""
+    mnote = "「%」は同じ内容量の他店（3店以上の中央値）との差の最大値。" + (f"「{man}件」は{mall_s}のペット用品ジャンルの出品数（同じ商品の別ショップを含む・取得時点）。" if man else "") + "検索欄からすべて探せます"
+    _ds = drops(published)
+    top = max((round(x["d"] / x["hi"] * 100) for x in _ds), default=0)
+    _dimg = next((img(x["p"].get("image"), 300) for x in _ds if x["p"].get("image")), "")
+    _ny = next((u for u in nayami_urls), "")
+    _br = next((u for u in brand_urls), "")
+    slides = []
+    slides.append('<a class="bn bn-a" href="search.html" data-ga="bn_search"><span class="bn-ph" style="background-image:url(pets/hero.jpg)"></span>'
+                  f'<span class="bn-t"><small>{mall_s}のペット用品</small><b>{man or "全商品"}</b>{"件から" if man else "から"}<br>安いお店を探す</span>'
+                  f'<span class="bn-go">探してみる</span><span class="bn-n">{mall_s}の出品数（同じ商品の別ショップ含む）※</span></a>')
+    if _ds:
+        slides.append(f'<a class="bn bn-b" href="weekly.html" data-ga="bn_deals"><span class="bn-t"><small>同じ内容量の他店と比べて</small>他店より<br><b class="cnt" data-to="{top}">{top}</b><i>%</i>安い</span>'
+                      + (f'<img class="bn-im" src="{E(_dimg)}" alt="" width="150" height="150">' if _dimg else "")
+                      + f'<span class="bn-go">{len(_ds):,}件のお得を見る</span><span class="bn-n">※同じ内容量の他店中央値との差・取得時点・送料別</span></a>')
+    if _ny:
+        slides.append(f'<a class="bn bn-c" href="{_ny}" data-ga="bn_nayami"><span class="bn-ph" style="background-image:url(pets/cat.jpg)"></span>'
+                      '<span class="bn-t"><small>毛玉・下部尿路・シニア・体重</small><b>悩み</b>から<br>フードを探す</span><span class="bn-go">悩みを選ぶ</span></a>')
+    slides.append('<a class="bn bn-d" href="shindan.html" data-ga="bn_shindan"><span class="bn-ph" style="background-image:url(pets/dog.jpg)"></span>'
+                  '<span class="bn-t"><small>いつもの商品を選ぶだけ</small>うちの子の消耗品<br><b>月いくら？</b></span><span class="bn-go">1分診断</span></a>')
+    if _br:
+        slides.append(f'<a class="bn bn-e" href="{_br}" data-ga="bn_brand"><span class="bn-ph" style="background-image:url(pets/hero2.jpg)"></span>'
+                      '<span class="bn-t"><small>製造国を確かめた</small><b>海外ブランド</b><br>を国内ショップで比べる</span><span class="bn-go">ブランドを見る</span></a>')
+    hero = ('<form class="hq" action="search.html" role="search"><label class="sr" for="hq2">ペット用品を探す</label>'
+            f'<input type="search" id="hq2" name="q" placeholder="{man + "件の" if man else ""}ペット用品から探す" autocomplete="off"><button type="submit" aria-label="探す">' + globals()["icon"]("search", 20) + '</button></form>'
+            f'<div class="bns" id="bns">{"".join(slides)}</div><div class="bn-dots" aria-hidden="true">{"".join("<i></i>" for _ in slides)}</div>')
+    quick = ('<ul class="qk">'
+             '<li><a href="weekly.html"><span class="qk-i qk-1">' + globals()["icon"]("star-f", 22) + '</span>お得<br>ランキング</a></li>'
+             + (f'<li><a href="{_ny}"><span class="qk-i qk-2">' + globals()["icon"]("cat", 22) + '</span>悩みから<br>探す</a></li>' if _ny else "")
+             + (f'<li><a href="{_br}"><span class="qk-i qk-3">' + globals()["icon"]("paw", 22) + '</span>海外<br>ブランド</a></li>' if _br else "")
+             + '<li><a href="shindan.html"><span class="qk-i qk-4">' + globals()["icon"]("bag", 22) + '</span>1分<br>診断</a></li>'
+             + '<li><a href="favorites.html"><span class="qk-i qk-5">' + globals()["icon"]("star", 22) + '</span>マイ<br>リスト</a></li></ul>')
+    tiles = sorted(deal_tiles, key=lambda t: -t[0])[:10]
+    tiles_sec = ('<section class="tl-sec"><h2 class="h2">カテゴリ別 お得</h2><p class="h2n">※同じ内容量の他店（3店以上の中央値）との差・取得時点・送料別</p><ul class="tls">'
+                 + "".join(f'<li><a class="tl tl{k % 5}" href="{g["slug"]}.html" data-ga="tile"><span class="tl-c"><em>{E(pn)}</em>{E(g["title"])}</span><span class="tl-v">最大<b>{v}</b>%安い※</span><span class="tl-n">{n}件</span></a></li>'
+                           for k, (v, g, n, pn) in enumerate(tiles)) + '</ul></section>') if tiles else ""
+    deals = "".join(f'<li><a class="dc" href="item-{E(x["p"]["productId"])}.html" data-ga="deal_card"><span class="dc-p">'
+                    + (f'<img src="{E(img(x["p"].get("image"), 200))}" alt="" width="120" height="120" loading="lazy">' if x["p"].get("image") else "")
+                    + f'<span class="dc-b">{round(x["d"] / x["hi"] * 100)}%安い※</span></span><span class="dc-n">{E(show_name(x["p"]["name"]))}</span>'
+                    f'<span class="dc-pr"><b>{x["now"]:,}</b>円</span><span class="dc-o">他店 {x["hi"]:,}円</span></a></li>' for x in _ds[:12])
+    deal_sec = (f'<section class="dc-sec"><h2 class="h2">他店より安い商品<a class="h2a" href="weekly.html">すべて見る</a></h2><p class="h2n">※同じ内容量の他店中央値との差・取得時点・送料別</p><ul class="dcs">{deals}</ul></section>' if deals else "")
+    SEL = ' aria-selected="true"'
+    pt = "".join(f'<li><button type="button" data-tab="{pid}"{SEL if k == 0 else ""}>{n}</button></li>' for k, (pid, n) in enumerate(pet_names))
     idx = ('<div class="home"><aside class="side" aria-label="カテゴリ"><p class="side-h">カテゴリ</p><ul>' + "".join(side) + '</ul>'
            '<p class="side-h">ほかの探し方</p><ul class="side-x"><li><a href="weekly.html">お得ランキング</a></li><li><a href="shindan.html">1分診断</a></li><li><a href="search.html">商品を探す</a></li></ul></aside>'
-           '<div class="home-main">' + hero
-           + f'<ul class="circ">{"".join(circ)}</ul>' + nayami_sec + kaigai_sec
-           + '<a class="sd-cta" href="shindan.html" data-ga="shindan_cta"><span class="sd-cta-t">うちの子の消耗品、月いくら？</span><span class="sd-cta-s">いつもの商品を選ぶだけ・1分でわかる</span><span class="sd-cta-b">診断する</span></a>'
-           + '<div id="welcome"></div>' + today_strip(published, fdate) + spotlight(published, fdate) + drop_section(published, fdate)
+           '<div class="home-main">' + hero + quick + f'<ul class="circ">{"".join(circ)}</ul>'
+           + '<div id="welcome"></div>' + tiles_sec + deal_sec + nayami_sec + kaigai_sec
+           + f'<section class="cat-sec"><h2 class="h2">カテゴリから探す</h2><ul class="ptabs" role="tablist">{pt}</ul>{"".join(secs)}</section>'
            + (f'<section class="mk-sec"><h2 class="h2">メーカーから探す</h2><ul class="chips">{mk}</ul></section>' if mk else "")
-           + f'{"".join(secs)}<div class="note"><p>価格取得日時: {fetched}</p></div></div></div>')
+           + f'<div class="note"><p>価格取得日時: {fetched}</p><p class="ptn">{mnote}</p></div></div></div>')
     _ds = drops(published)
     og_ok = og_card(os.path.join(out, "og-today.png"), f"{fdate[5:].replace('-', '/')} ペット用品のお得（楽天市場）",
                     f"お得 {today_drops(published)}件", (f"他店（中央値）より最大 −{_ds[0]['d']:,}円（取得時点・送料別）" if _ds else "楽天のショップの価格を比較（1日2回更新）")) if fdate[:2] == "20" else False
@@ -1234,6 +1276,16 @@ var MQ="";function msearch(q){var sec=document.getElementById("msec");if(!sec)re
     (x.pt>0?'<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span>':'')+'</span></a></li>'}).join("")})
   .catch(function(){if(q===MQ)c.textContent="今は楽天・Yahoo!の検索ができません。時間をおいてお試しください。"})},700)}
 document.addEventListener("click",function(e){var a=e.target.closest("#mres a[data-m]");if(a)ga("click_mall",{mall:a.dataset.m==="y"?"yahoo":"rakuten",from:"msearch"})});
+(function(){var b=document.getElementById("bns");if(b){var ds=document.querySelectorAll(".bn-dots i"),n=b.children.length,cur=0,t;
+ function on(){var w=b.children[0].offsetWidth+10;cur=Math.round(b.scrollLeft/w);ds.forEach(function(d,k){d.classList.toggle("on",k===cur)})}
+ b.addEventListener("scroll",function(){clearTimeout(b._t);b._t=setTimeout(on,80)});on();
+ function nx(){if(document.hidden)return;var w=b.children[0].offsetWidth+10;var k=(cur+1)%n;b.scrollTo({left:k*w,behavior:"smooth"})}
+ t=setInterval(nx,4000);["touchstart","mouseenter"].forEach(function(e){b.addEventListener(e,function(){clearInterval(t)},{passive:true})})}
+ var cs=document.querySelector(".cat-sec");if(cs){cs.classList.add("js");function tab(id){cs.querySelectorAll(".ptabs button").forEach(function(x){x.setAttribute("aria-selected",x.dataset.tab===id?"true":"false")});
+  cs.querySelectorAll(".pet-sec").forEach(function(x){x.classList.toggle("on",x.dataset.pet===id)})}
+  var f=cs.querySelector(".ptabs button");if(f)tab(f.dataset.tab);
+  cs.addEventListener("click",function(e){var x=e.target.closest(".ptabs button");if(x)tab(x.dataset.tab)});
+  document.querySelectorAll(".circ a[data-tab]").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();tab(a.dataset.tab);cs.scrollIntoView({behavior:"smooth"})})})}})();
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
@@ -1488,6 +1540,40 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .hx-s{margin:0 0 14px;font-size:13px;color:#7c5a3a}
 .hx-q{display:flex;max-width:520px;box-shadow:0 4px 14px rgba(234,88,12,.18);border-radius:999px}.hx-q input{flex:1;min-width:0;height:50px;border:2px solid #fdba74;border-right:0;border-radius:999px 0 0 999px;padding:0 18px;font-size:15px;background:#fff}
 .hx-q button{height:50px;border:0;border-radius:0 999px 999px 0;padding:0 24px;background:#ea580c;color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+.hq{position:sticky;top:0;z-index:20;display:flex;margin:0;padding:8px 12px;background:var(--bg)}
+.hq input{flex:1;min-width:0;height:44px;border:2px solid #ea580c;border-right:0;border-radius:999px 0 0 999px;padding:0 16px;font-size:15px;background:#fff}
+.hq button{width:56px;height:44px;border:0;border-radius:0 999px 999px 0;background:#ea580c;color:#fff;display:grid;place-items:center;cursor:pointer}
+.bns{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 12px 0;scrollbar-width:none}.bns::-webkit-scrollbar{display:none}
+.bn{position:relative;flex:0 0 86%;max-width:520px;height:190px;border-radius:18px;overflow:hidden;scroll-snap-align:center;color:#fff;text-decoration:none;display:block;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.bn-ph{position:absolute;inset:0;background:center/cover no-repeat}.bn-ph::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.08) 70%)}
+.bn-t{position:absolute;left:16px;top:16px;z-index:1;font-size:19px;font-weight:800;line-height:1.3;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+.bn-t small{display:block;font-size:11px;font-weight:700;opacity:.95;margin-bottom:4px}.bn-t b{font-size:38px;color:#ffd84d;letter-spacing:-.5px}.bn-t i{font-style:normal;font-size:24px;color:#ffd84d}
+.bn-go{position:absolute;left:16px;bottom:14px;z-index:1;background:#fff;color:#c2410c;font-weight:800;font-size:13px;border-radius:999px;padding:6px 14px}
+.bn-n{position:absolute;right:10px;bottom:6px;font-size:10px;opacity:.85;z-index:1}
+.bn-b{background:radial-gradient(circle at 80% 30%,#ffd84d 0,#ff7a00 40%,#e11d48 100%)}.bn-b .bn-t{text-shadow:none}.bn-b .bn-t b{font-size:64px;color:#fff}.bn-b .bn-t i{color:#fff;font-size:30px}
+.bn-im{position:absolute;right:12px;top:18px;width:120px;height:120px;object-fit:contain;background:#fff;border-radius:14px;padding:6px;transform:rotate(4deg);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.bn-c .bn-ph::after{background:linear-gradient(90deg,rgba(190,24,93,.85),rgba(190,24,93,.05) 75%)}
+.bn-d .bn-ph::after{background:linear-gradient(90deg,rgba(13,110,100,.88),rgba(13,110,100,.05) 75%)}
+.bn-e .bn-ph::after{background:linear-gradient(90deg,rgba(30,41,99,.88),rgba(30,41,99,.05) 75%)}
+.bn-dots{display:flex;justify-content:center;gap:6px;margin:8px 0 4px}.bn-dots i{width:6px;height:6px;border-radius:3px;background:#d6d3d1;transition:width .2s}.bn-dots i.on{width:18px;background:#ea580c}
+.qk{list-style:none;margin:6px 0 2px;padding:0 12px;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.qk a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;line-height:1.25;text-align:center;color:var(--txt);text-decoration:none}
+.qk-i{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:#fff}.qk-1{background:linear-gradient(135deg,#f59e0b,#ef4444)}.qk-2{background:linear-gradient(135deg,#ec4899,#a855f7)}.qk-3{background:linear-gradient(135deg,#06b6d4,#2563eb)}.qk-4{background:linear-gradient(135deg,#10b981,#0d9488)}.qk-5{background:linear-gradient(135deg,#facc15,#f97316)}
+.tls,.dcs{list-style:none;margin:0;padding:0 12px 6px;display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}.tls::-webkit-scrollbar,.dcs::-webkit-scrollbar{display:none}
+.tl{display:flex;flex-direction:column;width:132px;height:108px;padding:10px 12px;border-radius:14px;color:#3b1d06;text-decoration:none;position:relative;overflow:hidden}
+.tl::after{content:"";position:absolute;left:0;right:0;bottom:22px;border-top:2px dashed rgba(255,255,255,.7)}
+.tl0{background:linear-gradient(135deg,#bbf7d0,#4ade80)}.tl1{background:linear-gradient(135deg,#fed7aa,#fb923c)}.tl2{background:linear-gradient(135deg,#fbcfe8,#f472b6)}.tl3{background:linear-gradient(135deg,#fef08a,#facc15)}.tl4{background:linear-gradient(135deg,#bfdbfe,#60a5fa)}
+.tl-c em{display:block;font-style:normal;font-size:10px;opacity:.8}.tl-c{font-size:11px;font-weight:800;line-height:1.25;max-height:2.5em;overflow:hidden}.tl-v{margin-top:auto;margin-bottom:16px;font-size:12px;font-weight:800}.tl-v b{font-size:30px;letter-spacing:-1px}.tl-n{position:absolute;left:12px;bottom:4px;font-size:10px;font-weight:700}
+.dc{display:flex;flex-direction:column;width:136px;color:var(--txt);text-decoration:none}.dc-p{position:relative;width:136px;height:136px;background:#fff;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center}
+.dc-p img{width:116px;height:116px;object-fit:contain}.dc-b{position:absolute;left:6px;top:6px;background:#e11d48;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px}
+.dc-n{margin-top:6px;font-size:12px;line-height:1.35;max-height:2.7em;overflow:hidden}.dc-pr{font-size:12px}.dc-pr b{font-size:17px;color:#e11d48}.dc-o{font-size:11px;color:var(--sub);text-decoration:line-through}
+.h2n{margin:-6px 12px 8px;font-size:11px;color:var(--sub)}@media (min-width:1024px){.h2n{margin:-6px 0 8px}}
+.h2a{margin-left:auto;font-size:12px;font-weight:700}.h2:has(.h2a){display:flex;align-items:baseline}
+.ptabs{list-style:none;margin:0 0 8px;padding:0 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.ptabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--txt)}
+.ptabs button[aria-selected="true"]{background:#ea580c;border-color:#ea580c;color:#fff}
+.cat-sec.js .pet-sec{display:none}.cat-sec.js .pet-sec.on{display:block}.cat-sec.js .pet-sec>.h2{display:none}
+.cat-sec .cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 12px}
+@media (min-width:1024px){.hq{position:static;padding:12px 0 4px}.bns{padding:4px 0 0}.bn{flex-basis:calc(50% - 5px)}.qk{padding:0;max-width:520px}.tls,.dcs{padding:0 0 6px;flex-wrap:wrap}.cat-sec .cats{grid-template-columns:repeat(3,minmax(0,1fr));padding:0}.ptabs{padding:0}}
 .circ{list-style:none;margin:8px 0 4px;padding:0 16px;display:flex;gap:14px;overflow-x:auto;scrollbar-width:none}.circ::-webkit-scrollbar{display:none}
 .circ a{display:flex;flex-direction:column;align-items:center;width:88px;color:var(--txt);text-decoration:none}
 .circ-p{width:80px;height:80px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;color:var(--brand)}

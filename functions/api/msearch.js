@@ -49,16 +49,21 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const url = new URL(request.url);
   const q = (url.searchParams.get("q") || "").normalize("NFKC").replace(/\s+/g, " ").trim().slice(0, 60);
   if (q.length < 2) return J({ items: [] }, 400);
-  const key = new Request(url.origin + "/api/msearch?q=" + encodeURIComponent(q.toLowerCase()));
+  const rel = url.searchParams.get("o") === "rel";  // rel: 各モールの関連度順を交互に並べる（カテゴリ・悩み・ブランドの「ほかの商品」用）
+  const key = new Request(url.origin + "/api/msearch?q=" + encodeURIComponent(q.toLowerCase()) + (rel ? "&o=rel" : ""));
   const cache = caches.default;
   const hit = await cache.match(key);
   if (hit) return hit;
   const [a, b] = await Promise.allSettled([rakuten(env, q), yahoo(env, q)]);
-  const items = [...(a.status === "fulfilled" ? a.value : []), ...(b.status === "fulfilled" ? b.value : [])].sort((x, y) => x.p - y.p);
+  const ra = a.status === "fulfilled" ? a.value : [], yb = b.status === "fulfilled" ? b.value : [];
+  let items;
+  if (rel) { items = []; for (let i = 0; i < Math.max(ra.length, yb.length); i++) { if (ra[i]) items.push(ra[i]); if (yb[i]) items.push(yb[i]); } }
+  else items = [...ra, ...yb].sort((x, y) => x.p - y.p);
   const ok = a.status === "fulfilled" || b.status === "fulfilled";
   const tot = { r: a.status === "fulfilled" ? a.value.tot || 0 : 0, y: b.status === "fulfilled" ? b.value.tot || 0 : 0 };
   const res = J({ q, at: new Date().toISOString(), items, tot, err: [a, b].filter((x) => x.status === "rejected").map((x) => String(x.reason).slice(0, 60)) },
-    ok ? 200 : 503, ok ? { "cache-control": `public, max-age=${TTL}` } : {});
-  if (ok && items.length) waitUntil(cache.put(key, res.clone()));
+    ok ? 200 : 503, ok && a.status === "fulfilled" && b.status === "fulfilled" ? { "cache-control": `public, max-age=${TTL}` } : { "cache-control": "no-store" });
+  // 片方のモールが失敗した結果はキャッシュしない（楽天は1秒1回の制限。件数が片方だけで6時間残るのを防ぐ）
+  if (ok && items.length && a.status === "fulfilled" && b.status === "fulfilled") waitUntil(cache.put(key, res.clone()));
   return res;
 }

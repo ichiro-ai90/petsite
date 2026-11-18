@@ -1323,11 +1323,11 @@ function mrow(x){return '<li><a class="row" href="'+esc(x.u)+'" target="_blank" 
     '<span class="nm"><span class="mall '+x.m+'">'+(x.m==="y"?"Yahoo!":"楽天")+'</span>'+esc(x.n)+'</span><span class="meta">'+esc(x.s)+'</span>'+
     '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh?" free":" paid")+'">'+(x.sh?"送料無料":"送料別")+'</span></span>'+
     (x.pt>0?'<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span>':'')+'</span></a></li>'}
-var MS={};function ms(q,cb){if(MS[q])return MS[q].then(cb);MS[q]=fetch("/api/msearch?q="+encodeURIComponent(q)).then(function(r){return r.json()});MS[q].then(cb).catch(function(){cb(null)})}
+var MS={};function ms(q,cb){if(MS[q])return MS[q].then(cb);MS[q]=fetch("/api/msearch?o=rel&q="+encodeURIComponent(q)).then(function(r){return r.json()});MS[q].then(cb).catch(function(){cb(null)})}
 function totTxt(t){var a=[];if(t&&t.r)a.push("楽天 "+yen(t.r)+"件");if(t&&t.y)a.push("Yahoo! "+yen(t.y)+"件");return a.join("・")}
 (function(){var io="IntersectionObserver" in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);go(e.target)}})},{rootMargin:"400px"}):null;
  function go(s){var q=s.dataset.q,c=s.querySelector(".lv-c"),l=s.querySelector(".lv-l");ms(q,function(d){if(!d||!d.items){c.textContent="今は楽天・Yahoo!の検索ができません。時間をおいてお試しください。";return}
-  var t=totTxt(d.tot);c.textContent=d.items.length?(t?t+"から ":"")+"安い順に"+Math.min(d.items.length,24)+"件":"楽天・Yahoo!でも見つかりませんでした。";l.innerHTML=d.items.slice(0,24).map(mrow).join("");ga("live_search",{q:q,results:d.items.length})})}
+  var t=totTxt(d.tot);c.textContent=d.items.length?(t?t+"から ":"")+"関連の高い順に"+Math.min(d.items.length,24)+"件":"楽天・Yahoo!でも見つかりませんでした。";l.innerHTML=d.items.slice(0,24).map(mrow).join("");ga("live_search",{q:q,results:d.items.length})})}
  document.querySelectorAll(".lv[data-q]").forEach(function(s){io?io.observe(s):go(s)});
  document.querySelectorAll("[data-cnt-q]").forEach(function(e){ms(e.dataset.cntQ,function(d){var t=d&&d.tot?(d.tot.r||0)+(d.tot.y||0):0;e.textContent=t?yen(t)+"件":(d&&d.items?d.items.length+"件":"—")})});
  var f=document.getElementById("nqf");if(f)f.addEventListener("submit",function(){document.getElementById("nqq").value=document.getElementById("nqp").value+" "+document.getElementById("nqw").value.trim();ga("nayami_free",{})});

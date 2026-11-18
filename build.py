@@ -209,7 +209,7 @@ if os.path.exists(_ICON_FILE):
 
 
 def favicon_svg():
-    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#0f6b62"/>'
+    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#ea580c"/>'
             '<g transform="translate(4 4)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
             + ICON["paw"].replace('"currentColor"', '"#fff"') + '</g></svg>')
 
@@ -512,11 +512,11 @@ def og_card(path, title, big, sub, foot="ペット用品 最安ナビ　楽天�
     F = lambda n: ImageFont.truetype(fp, n)
     im = Image.new("RGB", (1200, 630), "#fffaf6")
     d = ImageDraw.Draw(im)
-    d.rectangle([0, 0, 1200, 14], fill="#0f6b62")
+    d.rectangle([0, 0, 1200, 14], fill="#ea580c")
     d.text((70, 60), title, font=F(46), fill="#1f2328")
     d.text((70, 150), big, font=F(150), fill="#c2255c")
     d.text((70, 370), sub, font=F(36), fill="#1f2328")
-    d.rectangle([0, 540, 1200, 630], fill="#0f6b62")
+    d.rectangle([0, 540, 1200, 630], fill="#ea580c")
     d.text((70, 560), foot, font=F(36), fill="#ffffff")
     im.save(path, optimize=True)
     return True
@@ -687,7 +687,7 @@ def category_body(g, prods, pet, fetched, carried):
             f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
             f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
-            f'{SHIP_RULE}<ul class="list" id="list">{rows}</ul>'
+            f'{SHIP_RULE}<ul class="list gl" id="list">{rows}</ul>'
             f'<div class="note">{("<p>" + carried.replace("<br>", "") + "</p>") if carried else ""}<p>{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
             f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。計算根拠の最終確認：2026-11-08（楽天市場の通常ポイント 税抜100円につき1ポイント）。</p></div>{SORT_JS}')
 
@@ -983,7 +983,7 @@ def main():
         fn = "brand-" + hashlib.md5(b["name"].encode()).hexdigest()[:8] + ".html"
         rows = "".join(product_row(p, g_, f"item-{p['productId']}.html") for p, g_ in sorted(bps, key=lambda x: -x[0].get("reviewCount", 0)))
         body = (f'<h1 class="ttl">{E(b["name"])}<span class="cty">{E(b["country"])}製</span></h1>'
-                f'<p class="fresh1">{len(bps)}商品・国内の正規販売店の価格</p><ul class="list">{rows}</ul>')
+                f'<p class="fresh1">{len(bps)}商品・国内の正規販売店の価格</p><ul class="list gl">{rows}</ul>')
         open(os.path.join(out, fn), "w", encoding="utf-8").write(
             page(f'{b["name"]}（{b["country"]}）の価格比較 {len(bps)}商品｜{SITE}', body,
                  f'{b["name"]}（{b["country"]}製）のペットフード{len(bps)}商品を、国内のショップの価格とポイントで比較（{fdate}取得）。',
@@ -1098,8 +1098,8 @@ def main():
         '<label>メーカー<select name="maker" id="maker"><option value="">すべて</option></select></label>'
         '<label class="free-only"><input type="checkbox" name="free" id="free"> 送料無料のショップだけ</label><label>並べ替え<select name="sort" id="sort"><option value="pop">人気順</option><option value="price">安い順</option>'
         '<option value="eff">ポイント込みで安い順</option><option value="unit">単価が安い順</option></select></label></div></form>'
-        '<p class="count" id="count" aria-live="polite"></p><ul class="list" id="results"></ul>'
-        '<section id="msec" hidden><h2 class="h2">楽天・Yahoo!の全商品から</h2><p class="meta" id="mcount" aria-live="polite" style="padding:0 16px"></p><ul class="list" id="mres"></ul>'
+        '<p class="count" id="count" aria-live="polite"></p><ul class="list gl" id="results"></ul>'
+        '<section id="msec" hidden><h2 class="h2">楽天・Yahoo!の全商品から</h2><p class="meta" id="mcount" aria-live="polite" style="padding:0 16px"></p><ul class="list gl" id="mres"></ul>'
         '<p class="nayami-n">リンク先のモールの商品ページへ移動します。価格は検索した時点のもので、購入時にリンク先に表示されている価格が適用されます。</p></section>'
         f'<div class="note"><p>価格取得日時: {fetched}</p><p>「最安値」は今回取得したショップの中での最安です。ポイントはショップのポイント倍率から計算した目安です。</p></div>',
         "楽天市場のペット用品を、商品名・メーカー・カテゴリで探して価格とポイントを比較", sample, (("商品を探す", None),), noindex=True))
@@ -1370,12 +1370,12 @@ function welcome(){var el=document.getElementById("welcome");if(!el)return;wstat
 function wshareBox(){var el=document.getElementById("wshare");if(!el)return;wstats(function(r){if(r.t>0){el.innerHTML='<button type="button" class="btn-sub" data-wsh="1">この結果をシェア</button>';bindWsh(r)}})}
 function bindWsh(r){document.querySelectorAll("[data-wsh]").forEach(function(b){b.onclick=function(){shareWelcome(r)}})}
 function shareWelcome(r){var c=document.createElement("canvas");c.width=1200;c.height=630;var x=c.getContext("2d");if(!x)return;
- x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#0f6b62";x.fillRect(0,0,1200,14);
+ x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#ea580c";x.fillRect(0,0,1200,14);
  x.fillStyle="#1f2328";x.font="700 44px "+F2;x.fillText("前に見た・お気に入りの商品が他店より",70,110);
  x.fillStyle="#c2255c";x.font="800 150px "+F2;var s=yen(r.t);x.fillText(s,70,300);var w=x.measureText(s).width;x.font="700 64px "+F2;x.fillText("円 安い",90+w,300);
  x.fillStyle="#1f2328";x.font="700 36px "+F2;x.fillText(r.n+"件の商品の合計",70,370);
  x.fillStyle="#6b7280";x.font="400 24px "+F2;x.fillText("同じ内容量の他店（中央値）と最安（税込・送料別）の差の合計",70,440);x.fillText("目安・PR（アフィリエイト）",70,480);
- x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);
+ x.fillStyle="#ea580c";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);
  var txt="見た商品・お気に入りの "+r.n+"件が、他店（中央値）より合計 "+yen(r.t)+"円 安くなっていました（取得時点・目安）",url=location.origin+location.pathname.replace(/[^\/]*$/,"")+"index.html";ga("share",{kind:"welcome",value:r.t});
  c.toBlob(function(b){var f=new File([b],"petsite-welcome.png",{type:"image/png"});
   if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt,url:url}).catch(function(){});
@@ -1392,18 +1392,37 @@ function shindan(){var root=document.getElementById("shindan");if(!root)return;d
  var pets=document.getElementById("sd-pets"),list=document.getElementById("sd-list"),res=document.getElementById("sd-res");
  pets.innerHTML=d.pets.filter(function(p){return d.items.some(function(x){return x.pet.indexOf(p[0])>-1})}).map(function(p){return '<button type="button" data-pet="'+esc(p[0])+'">'+esc(p[1])+'</button>'}).join("");
  pets.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;pet=b.dataset.pet;sel={};draw();ga("shindan_pet",{pet:pet})});
+ var QS=[0.5,1,2,3,4,6],openC="",mk="",kw="";
+ var sheet=document.createElement("div");sheet.className="sd-sh";sheet.hidden=true;sheet.innerHTML='<div class="sd-sh-bg"></div><div class="sd-sh-p" role="dialog" aria-modal="true"><div class="sd-sh-h"><b id="sd-sh-t"></b><button type="button" class="sd-x" aria-label="閉じる">×</button></div><input type="search" id="sd-kw" placeholder="商品名・メーカーで絞り込む" enterkeyhint="search"><div class="sd-mk" id="sd-mk"></div><ul class="sd-cand" id="sd-cand"></ul><button type="button" class="sd-done">決定</button></div>';
+ document.body.appendChild(sheet);var bar=document.createElement("div");bar.className="sd-bar";bar.hidden=true;document.body.appendChild(bar);
+ function grp(){var g={};d.items.forEach(function(x){if(x.pet.indexOf(pet)>-1)(g[x.c]=g[x.c]||{t:x.ct,xs:[]}).xs.push(x)});Object.keys(g).forEach(function(c){g[c].xs.sort(function(a,b){return b.rv-a.rv})});return g}
+ function cut(n,k){return n.length>k?n.slice(0,k-1)+"…":n}
  function draw(){pets.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.pet===pet?"true":"false")});
-  if(!pet){list.innerHTML="";res.hidden=true;return}var g={};
-  d.items.forEach(function(x){if(x.pet.indexOf(pet)>-1)(g[x.c]=g[x.c]||{t:x.ct,xs:[]}).xs.push(x)});
-  list.innerHTML='<p class="sd-step">いつも買っている商品を選んでください（使っていないカテゴリはそのままで大丈夫です）</p>'+Object.keys(g).map(function(c){var G=g[c];G.xs.sort(function(a,b){return b.rv-a.rv});
-   var cur=G.xs.filter(function(x){return sel[x.id]})[0],q=cur?sel[cur.id]:1;
-   return '<div class="sd-cat"><label class="sd-nm">'+esc(G.t)+'<select data-c="'+esc(c)+'"><option value="">使っていない</option>'+G.xs.map(function(x){return '<option value="'+esc(x.id)+'"'+(cur&&cur.id===x.id?" selected":"")+'>'+esc(x.n.length>42?x.n.slice(0,41)+"…":x.n)+'（'+yen(x.p)+'円）</option>'}).join("")+'</select></label>'+
-   '<label class="sd-q">月に<select data-q="'+esc(c)+'">'+[0.5,1,2,3,4,6].map(function(v){return '<option value="'+v+'"'+(v==q?" selected":"")+'>'+v+'</option>'}).join("")+'</select>個</label></div>'}).join("");
+  if(!pet){list.innerHTML="";res.hidden=true;bar.hidden=true;return}var g=grp();
+  list.innerHTML='<p class="sd-step">いつも買っている商品を追加してください（1つのカテゴリに何品でも追加できます）</p>'+Object.keys(g).map(function(c){var G=g[c],ch=G.xs.filter(function(x){return sel[x.id]});
+   return '<div class="sd-cat"><div class="sd-ch"><span class="sd-nm">'+esc(G.t)+(ch.length?'<em>'+ch.length+'品</em>':'')+'</span><button type="button" class="sd-add" data-c="'+esc(c)+'">＋ 追加</button></div>'+
+    ch.map(function(x){return '<div class="sd-it">'+(x.img?'<img src="'+esc(x.img)+'" alt="" loading="lazy">':'<span class="sd-ni"></span>')+'<span class="sd-in"><span class="sd-n">'+esc(cut(x.n,40))+'</span><span class="sd-p">'+yen(x.p)+'円</span></span>'+
+     '<span class="sd-st" data-id="'+esc(x.id)+'"><button type="button" data-d="-1" aria-label="減らす">−</button><b>月'+sel[x.id]+'</b><button type="button" data-d="1" aria-label="増やす">＋</button></span><button type="button" class="sd-rm" data-id="'+esc(x.id)+'" aria-label="外す">×</button></div>'}).join("")+'</div>'}).join("");
   calc(false)}
- function calc(user){sel={};list.querySelectorAll("select[data-c]").forEach(function(s){if(s.value){var q=list.querySelector('select[data-q="'+s.dataset.c+'"]');sel[s.value]=+q.value}});
+ function cand(){var G=grp()[openC];if(!G)return;var ms={};G.xs.forEach(function(x){if(x.m)ms[x.m]=(ms[x.m]||0)+1});
+  var top=Object.keys(ms).sort(function(a,b){return ms[b]-ms[a]}).slice(0,12);
+  document.getElementById("sd-mk").innerHTML=['<button type="button" data-m=""'+(mk?"":' aria-pressed="true"')+'>すべて</button>'].concat(top.map(function(m){return '<button type="button" data-m="'+esc(m)+'"'+(m===mk?' aria-pressed="true"':'')+'>'+esc(cut(m,10))+'<small>'+ms[m]+'</small></button>'})).join("");
+  var k=kw.toLowerCase(),xs=G.xs.filter(function(x){return(!mk||x.m===mk)&&(!k||(x.n+" "+x.m).toLowerCase().indexOf(k)>-1)});
+  document.getElementById("sd-cand").innerHTML=xs.length?xs.slice(0,60).map(function(x){return '<li><button type="button" data-id="'+esc(x.id)+'" aria-pressed="'+(sel[x.id]?"true":"false")+'">'+(x.img?'<img src="'+esc(x.img)+'" alt="" loading="lazy">':'<span class="sd-ni"></span>')+'<span class="sd-in"><span class="sd-n">'+esc(cut(x.n,48))+'</span><span class="sd-p">'+yen(x.p)+'円<small>'+esc(x.m||"")+'</small></span></span><i class="sd-ck"></i></button></li>'}).join(""):'<li class="sd-0">見つかりませんでした</li>'}
+ function openSh(c){openC=c;mk="";kw="";document.getElementById("sd-kw").value="";document.getElementById("sd-sh-t").textContent=grp()[c].t;cand();sheet.hidden=false;document.documentElement.style.overflow="hidden";ga("shindan_open",{c:c})}
+ function closeSh(){sheet.hidden=true;document.documentElement.style.overflow="";draw();calc(true)}
+ sheet.addEventListener("click",function(e){var t=e.target;if(t.classList.contains("sd-sh-bg")||t.closest(".sd-x")||t.closest(".sd-done"))return closeSh();
+  var m=t.closest("[data-m]");if(m){mk=m.dataset.m;cand();return}
+  var b=t.closest("#sd-cand button");if(b){var id=b.dataset.id;if(sel[id])delete sel[id];else sel[id]=1;b.setAttribute("aria-pressed",sel[id]?"true":"false")}});
+ document.getElementById("sd-kw").addEventListener("input",function(e){kw=e.target.value.trim();cand()});
+ list.addEventListener("click",function(e){var t=e.target,a=t.closest(".sd-add");if(a)return openSh(a.dataset.c);
+  var r=t.closest(".sd-rm");if(r){delete sel[r.dataset.id];draw();calc(true);return}
+  var st=t.closest(".sd-st button");if(st){var id=st.parentNode.dataset.id,i=QS.indexOf(sel[id]);if(i<0)i=1;i=Math.max(0,Math.min(QS.length-1,i+(+st.dataset.d)));sel[id]=QS[i];draw();calc(true)}});
+ bar.addEventListener("click",function(){res.scrollIntoView({behavior:"smooth"})});
+ function calc(user){
   var ids=Object.keys(sel),p=new URLSearchParams();if(pet)p.set("pet",pet);if(ids.length)p.set("i",ids.map(function(id){return id+":"+sel[id]}).join(","));
   history.replaceState(null,"",location.pathname+(p.toString()?"?"+p:""));
-  if(!ids.length){res.hidden=true;return}
+  if(!ids.length){res.hidden=true;bar.hidden=true;return}
   var m=0,sv=0,pt=0;ids.forEach(function(id){var x=by[id],q=sel[id];m+=x.p*q;pt+=x.pt*q;if(x.md>x.p)sv+=(x.md-x.p)*q});
   m=Math.round(m);sv=Math.round(sv);pt=Math.round(pt);var R={m:m,y:m*12,sv:sv*12,pt:pt*12,n:ids.length,pet:PETN[pet]||""};
   res.hidden=false;res.innerHTML='<p class="sd-k">うちの'+esc(R.pet)+'の消耗品（'+R.n+'品目）</p><p class="sd-m">月 <b class="cnt" data-to="'+R.m+'">0</b>円</p><p class="sd-y">年間 約'+yen(R.y)+'円</p>'+
@@ -1411,7 +1430,7 @@ function shindan(){var root=document.getElementById("shindan");if(!root)return;d
    '<p class="sd-pt">ポイント（目安）は年 約'+yen(R.pt)+'ポイント</p><canvas id="sd-card" width="1200" height="630" hidden></canvas>'+
    '<div class="sd-share"><button type="button" class="btn-main" id="sd-sh">結果を画像でシェア</button><a class="btn-sub" id="sd-x" target="_blank" rel="noopener">X にポスト</a><a class="btn-sub" id="sd-line" target="_blank" rel="noopener">LINE で送る</a><a class="btn-sub" id="sd-dl" download="petsite-shindan.png">画像を保存</a></div>'+
    '<p class="ptn">価格は '+esc(d.fetched_at)+' 時点の楽天市場の取得結果です。送料は含みません</p>';
-  countUp(res);card(R);
+  countUp(res);card(R);bar.hidden=false;bar.innerHTML='<span>'+R.n+'品 月<b>'+yen(R.m)+'</b>円'+(R.sv>0?'<em>年'+yen(R.sv)+'円の差</em>':'')+'</span><span class="sd-bar-go">結果を見る</span>';
   var url=location.href,txt="うちの"+R.pet+"の消耗品、月"+yen(R.m)+"円だった"+(R.sv>0?"（ショップ選びで年"+yen(R.sv)+"円の差）":"")+"｜あなたの子はいくら？";
   document.getElementById("sd-x").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(txt)+"&url="+encodeURIComponent(url);
   document.getElementById("sd-line").href="https://line.me/R/msg/text/?"+encodeURIComponent(txt+" "+url);
@@ -1421,30 +1440,29 @@ function shindan(){var root=document.getElementById("shindan");if(!root)return;d
     if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt,url:url}).catch(function(){});
     else{var a=document.getElementById("sd-dl");a.click();toast("画像を保存しました。X や LINE に貼ってシェアできます")}})};
   if(user)ga("shindan_result",{pet:pet,items:R.n,monthly:R.m,yearly_diff:R.sv})}
- list.addEventListener("change",function(){calc(true)});
  if(pet)draw()})}
 function countUp(el){el.querySelectorAll(".cnt").forEach(function(c){var to=+c.dataset.to,t0=null,dur=700;
  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches){c.textContent=yen(to);return}
  function step(t){if(!t0)t0=t;var k=Math.min((t-t0)/dur,1);c.textContent=yen(Math.round(to*(1-Math.pow(1-k,3))));if(k<1)requestAnimationFrame(step)}requestAnimationFrame(step)})}
 function card(R){var c=document.getElementById("sd-card");if(!c||!c.getContext)return;var x=c.getContext("2d"),F='"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif';
- x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#0f6b62";x.fillRect(0,0,1200,14);
+ x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#ea580c";x.fillRect(0,0,1200,14);
  x.fillStyle="#1f2328";x.font="700 44px "+F;x.fillText("うちの"+R.pet+"の消耗品、月いくら？",70,110);
  x.fillStyle="#6b7280";x.font="400 30px "+F;x.fillText(R.n+"品目・楽天市場の最安価格で計算",70,160);
  x.fillStyle="#1f2328";x.font="700 64px "+F;x.fillText("月",70,300);x.font="800 150px "+F;var s=yen(R.m);x.fillText(s,150,310);var w=x.measureText(s).width;x.font="700 64px "+F;x.fillText("円",160+w,300);
  if(R.sv>0){x.fillStyle="#c2255c";x.font="800 54px "+F;x.fillText("ショップ選びで 年"+yen(R.sv)+"円 の差",70,410)}
  x.fillStyle="#6b7280";x.font="400 26px "+F;x.fillText("取得したショップの中央値と比べた目安（送料別・"+String(DATA.fetched_at).slice(0,10)+"時点）",70,465);
- x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F;x.fillText("ペット用品 最安ナビ　あなたの子はいくら？ 1分診断",70,598);
+ x.fillStyle="#ea580c";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F;x.fillText("ペット用品 最安ナビ　あなたの子はいくら？ 1分診断",70,598);
  try{document.getElementById("sd-dl").href=c.toDataURL("image/png")}catch(e){}}
 var F2='"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif';
 function wrap(x,t,w,maxL){var out=[],l="";for(var i=0;i<t.length;i++){var c=l+t[i];if(x.measureText(c).width>w){out.push(l);l=t[i];if(out.length===maxL-1){var r=t.slice(i);while(x.measureText(r+"…").width>w&&r.length)r=r.slice(0,-1);out.push(r+(r.length<t.length-i?"…":""));return out}}else l=c}if(l)out.push(l);return out}
 function itemCard(b){var c=document.createElement("canvas");c.width=1200;c.height=630;if(!c.getContext)return null;var x=c.getContext("2d"),d=b.dataset;
- x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#0f6b62";x.fillRect(0,0,1200,14);
+ x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#ea580c";x.fillRect(0,0,1200,14);
  x.fillStyle="#1f2328";x.font="700 44px "+F2;wrap(x,d.cn,1060,2).forEach(function(l,i){x.fillText(l,70,100+i*60)});
  x.fillStyle="#6b7280";x.font="400 30px "+F2;x.fillText(d.ck,70,260);
  if(d.cv){x.fillStyle="#c2255c";x.font="800 110px "+F2;x.fillText(d.cv,70,380)}
  x.fillStyle="#1f2328";x.font="700 40px "+F2;x.fillText("取得した最安 "+yen(+d.cp)+"円（送料別の場合あり）",70,d.cv?460:380);
  x.fillStyle="#6b7280";x.font="400 24px "+F2;x.fillText(d.cd+" 取得時点の目安・PR（アフィリエイト）",70,505);
- x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);return c}
+ x.fillStyle="#ea580c";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);return c}
 function saved(){var bm=bload(),tot=0,n=0;Object.keys(bm).forEach(function(id){hist(bm[id]).forEach(function(r){if(r[2]>0){tot+=r[2];n++}})});return{t:tot,n:n}}
 var MS=[1000,3000,5000,10000,30000];
 function renderSavings(){var el=document.getElementById("savings");if(!el)return;var S=saved();if(!S.n){el.innerHTML="";return}
@@ -1457,11 +1475,11 @@ function renderSavings(){var el=document.getElementById("savings");if(!el)return
  countUp(el);document.getElementById("sv-sh").onclick=function(){shareSaved(S)};
  var lm=+(localStorage.getItem("petsite_ms_v1")||0),top=got.length?got[got.length-1]:0;if(top>lm){try{localStorage.setItem("petsite_ms_v1",top)}catch(e){}ga("savings_milestone",{value:top});toast("節約額が "+yen(top)+"円 を超えました")}}
 function shareSaved(S){var c=document.createElement("canvas");c.width=1200;c.height=630;var x=c.getContext("2d");
- x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#0f6b62";x.fillRect(0,0,1200,14);
+ x.fillStyle="#fffaf6";x.fillRect(0,0,1200,630);x.fillStyle="#ea580c";x.fillRect(0,0,1200,14);
  x.fillStyle="#1f2328";x.font="700 44px "+F2;x.fillText("ペット用品、ショップ選びで",70,110);
  x.fillStyle="#c2255c";x.font="800 150px "+F2;var s=yen(S.t);x.fillText(s,70,300);var w=x.measureText(s).width;x.font="700 64px "+F2;x.fillText("円 節約",90+w,300);
  x.fillStyle="#6b7280";x.font="400 28px "+F2;x.fillText(S.n+"回の購入記録・取得したショップの中央値との差の合計（目安）",70,380);
- x.fillStyle="#0f6b62";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);
+ x.fillStyle="#ea580c";x.fillRect(0,540,1200,90);x.fillStyle="#fff";x.font="700 36px "+F2;x.fillText("ペット用品 最安ナビ　楽天のショップを比較",70,598);
  var txt="ペット用品のショップ選びで、これまでに "+yen(S.t)+"円 節約できました（取得価格の中央値との差・目安）",url=location.origin+location.pathname.replace(/[^\/]*$/,"")+"index.html";ga("share",{kind:"savings",value:S.t});
  c.toBlob(function(b){var f=new File([b],"petsite-savings.png",{type:"image/png"});
   if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],text:txt,url:url}).catch(function(){});
@@ -1489,7 +1507,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 """
 
 
-CSS = """:root{--txt:#1f2328;--sub:#6b7280;--line:#e6e8eb;--bg:#f6f7f5;--price:#b4530a;--brand:#0f6b62;--brand-d:#0b5048;--brand-bg:#e9f3f0;--warn-bg:#fff7e6;--win:#c2255c;--win-bg:#fff0f5;--warn:#8a5a00;--link:#0b5db3;--r:8px}
+CSS = """:root{--txt:#1f2328;--sub:#6b7280;--line:#e6e8eb;--bg:#f6f7f5;--price:#e11d48;--brand:#ea580c;--brand-d:#c2410c;--brand-bg:#fff1e6;--warn-bg:#fff7e6;--win:#e11d48;--win-bg:#fff1f2;--warn:#8a5a00;--link:#0b5db3;--r:8px}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;color:var(--txt);background:var(--bg);line-height:1.6;font-size:15px;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -1502,18 +1520,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 .hd{background:#fff;border-bottom:1px solid var(--line)}
 .hd-in{max-width:960px;margin:0 auto;padding:12px 16px 8px;display:flex;align-items:center;gap:12px}
 .logo{font-weight:700;font-size:18px;letter-spacing:.01em;display:flex;align-items:center;gap:8px;color:var(--txt)}
-.mk{width:32px;height:32px;border-radius:10px;background:var(--brand);color:#fff;display:inline-grid;place-items:center}
+.mk{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;display:inline-grid;place-items:center}
 .hd-note{font-size:11px;color:var(--sub);line-height:1.4;margin-left:auto;text-align:right}
 .hd-fav{font-size:13px;color:var(--txt);white-space:nowrap;display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:var(--r);padding:0 10px;height:36px;background:#fff}
 .hd-search{max-width:960px;margin:0 auto;padding:0 16px 12px;display:flex}
-.hd-search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:0 14px;height:44px;border:1px solid #cfd4d9;border-right:0;border-radius:var(--r) 0 0 var(--r);background:#fff}
-.hd-search button{font:inherit;font-size:14px;font-weight:700;background:var(--brand);color:#fff;border:0;border-radius:0 var(--r) var(--r) 0;padding:0 16px;height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.hd-search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:0 16px;height:44px;border:2px solid var(--brand);border-right:0;border-radius:999px 0 0 999px;background:#fff}
+.hd-search button{font:inherit;font-size:14px;font-weight:700;background:var(--brand);color:#fff;border:0;border-radius:0 999px 999px 0;padding:0 18px;height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .hd-search button:hover{background:var(--brand-d)}
 main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .bc{font-size:12px;color:var(--sub);padding:10px 16px 0}.bc a{color:var(--link)}
 .lead{font-size:13px;color:var(--sub);margin:12px 16px;line-height:1.7}
-.ttl{font-size:20px;line-height:1.4;margin:8px 16px 0;font-weight:700}
-.h2{font-size:15px;font-weight:700;margin:0;padding:14px 16px 8px;display:flex;align-items:center;gap:8px;color:var(--txt)}.h2 .ic{color:var(--brand)}
+.ttl{font-size:21px;line-height:1.4;margin:8px 16px 0;font-weight:800;padding-left:12px;border-left:5px solid var(--brand)}
+.h2{font-size:16px;font-weight:800;margin:0;padding:14px 16px 8px;display:flex;align-items:center;gap:8px;color:var(--txt)}.h2 .ic{color:var(--brand)}
 /* トップ */
 .tabs{list-style:none;margin:0;padding:4px 16px 12px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
 .tabs a{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 14px 0 10px;height:40px;font-size:14px;font-weight:700;color:var(--txt)}.tabs a .ic{color:var(--brand)}
@@ -1540,7 +1558,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .pr.big{margin:4px 0 0}.pr.big b{font-size:30px}
 .scope{flex-basis:100%;font-size:11px;color:var(--sub);font-weight:400;line-height:1.3}
 .ship{display:inline-flex;align-items:center;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-weight:400;line-height:1.4;background:#fff}
-.ship.free{color:var(--brand);border-color:#9fc9c0;background:var(--brand-bg)}.ship.paid{color:var(--warn);border-color:#ecd7a8;background:var(--warn-bg)}
+.ship.free{color:var(--brand-d);border-color:#fdba74;background:var(--brand-bg)}.ship.paid{color:var(--warn);border-color:#ecd7a8;background:var(--warn-bg)}
 .ship-rule{margin:0;padding:6px 16px;font-size:12px;color:var(--sub);line-height:1.5}.ship-rule b{color:var(--txt);font-weight:600}
 .hi-pt{display:inline-block;align-self:flex-start;margin:4px 0 0;font-size:11px;font-weight:600;color:#fff;background:var(--brand);border-radius:4px;padding:1px 6px;line-height:1.5}
 .drop-sec{margin:16px 0;padding:0 16px}.h2s{font-size:12px;font-weight:400;color:var(--sub);margin-left:8px}
@@ -1559,16 +1577,37 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .sd-pets button{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:15px;color:var(--txt)}
 .sd-pets button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
 .sd-step{font-size:13px;color:var(--sub);margin:4px 0 8px}
-.sd-cat{display:flex;gap:8px;align-items:flex-end;padding:10px 0;border-top:1px solid var(--line)}
-.sd-nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700}
-.sd-cat select{min-height:44px;border:1px solid var(--line);border-radius:var(--r);background:#fff;font-size:14px;padding:0 8px;max-width:100%}
-.sd-q{flex:0 0 auto;font-size:13px;display:flex;align-items:center;gap:4px}
-.sd-res{margin:16px 0;padding:20px 16px;border-radius:12px;background:#fff;border:2px solid var(--win);text-align:center}
+.sd-cat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 8px}
+.sd-ch{display:flex;align-items:center;gap:8px}.sd-nm{flex:1;min-width:0;font-size:14px;font-weight:800}.sd-nm em{font-style:normal;margin-left:6px;background:var(--brand);color:#fff;font-size:11px;border-radius:999px;padding:1px 8px}
+.sd-add{flex:none;height:36px;padding:0 14px;border:0;border-radius:999px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-weight:800;font-size:13px;cursor:pointer}
+.sd-it{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.sd-it img,.sd-ni,.sd-cand img{width:48px;height:48px;object-fit:contain;flex:none;border-radius:8px;background:#fff}.sd-ni{background:#f0f1f2}
+.sd-in{flex:1;min-width:0;display:flex;flex-direction:column}.sd-n{font-size:12px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sd-p{font-size:13px;font-weight:800;color:var(--price)}.sd-p small{margin-left:6px;font-weight:400;color:var(--sub);font-size:11px}
+.sd-st{flex:none;display:flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}.sd-st button{width:32px;height:32px;border:0;background:#fff;font-size:16px;cursor:pointer}.sd-st b{font-size:12px;min-width:40px;text-align:center}
+.sd-rm{flex:none;width:28px;height:28px;border:0;background:none;color:var(--sub);font-size:18px;cursor:pointer}
+.sd-sh{position:fixed;inset:0;z-index:50}.sd-sh[hidden]{display:none}.sd-sh-bg{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.sd-sh-p{position:absolute;left:0;right:0;bottom:0;max-height:88vh;display:flex;flex-direction:column;background:var(--bg);border-radius:18px 18px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
+@media (min-width:700px){.sd-sh-p{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:640px;border-radius:18px;max-height:84vh}}
+.sd-sh-h{display:flex;align-items:center;margin-bottom:8px}.sd-sh-h b{flex:1;font-size:16px}.sd-x{width:36px;height:36px;border:0;background:#fff;border-radius:50%;font-size:20px;cursor:pointer}
+#sd-kw{height:44px;border:2px solid var(--brand);border-radius:999px;padding:0 16px;font-size:16px;background:#fff}
+.sd-mk{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none;flex:none}.sd-mk::-webkit-scrollbar{display:none}
+.sd-mk button{flex:none;height:32px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}.sd-mk small{margin-left:4px;color:var(--sub);font-weight:400}
+.sd-mk button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}.sd-mk button[aria-pressed="true"] small{color:#ffe4cc}
+.sd-cand{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;display:grid;gap:6px;align-content:start}
+.sd-cand button{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:#fff;border:2px solid transparent;border-radius:12px;padding:6px 10px;cursor:pointer;font:inherit;color:var(--txt)}
+.sd-cand button[aria-pressed="true"]{border-color:var(--brand);background:#fff7ed}.sd-ck{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--line)}
+.sd-cand button[aria-pressed="true"] .sd-ck{background:var(--brand);border-color:var(--brand);box-shadow:inset 0 0 0 4px #fff}.sd-0{padding:20px;text-align:center;color:var(--sub)}
+.sd-done{flex:none;margin-top:8px;height:48px;border:0;border-radius:999px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-size:16px;font-weight:800;cursor:pointer}
+.sd-bar{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:40;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:linear-gradient(90deg,#7c3aed,#db2777);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer;max-width:560px;margin:0 auto}
+.sd-bar[hidden]{display:none}.sd-bar>span:first-child{flex:1;font-size:13px}.sd-bar b{font-size:18px;margin:0 2px}.sd-bar em{font-style:normal;margin-left:8px;color:#fde047;font-weight:800}.sd-bar-go{background:#fde047;color:#3b0764;font-weight:900;font-size:13px;border-radius:999px;padding:6px 12px}
+#shindan{padding-bottom:72px}
+.sd-res{margin:16px 0;padding:20px 16px;border-radius:18px;background:linear-gradient(135deg,#fff7ed,#fff1f2);border:2px solid #fb923c;text-align:center;box-shadow:0 4px 14px rgba(234,88,12,.12)}
 .sd-k{margin:0;font-size:14px;color:var(--sub)}.sd-m{margin:4px 0 0;font-size:20px;font-weight:700}.sd-m b{font-size:44px;color:var(--txt);font-variant-numeric:tabular-nums}
 .sd-y{margin:0;font-size:14px;color:var(--sub)}.sd-sv{margin:12px 0 0;font-size:14px;color:var(--win);font-weight:700;line-height:1.5}.sd-sv b{font-size:30px;font-variant-numeric:tabular-nums}
 .sd-sv0{margin:12px 0 0;font-size:13px;color:var(--sub)}.sd-pt{margin:8px 0 0;font-size:13px;color:var(--brand)}
 .sd-share{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 8px}
-.btn-main{min-height:48px;padding:0 20px;border:0;border-radius:999px;background:var(--win);color:#fff;font-size:15px;font-weight:700}
+.btn-main{min-height:48px;padding:0 20px;border:0;border-radius:999px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-size:15px;font-weight:700}
 .btn-sub{min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--txt);font-size:14px;text-decoration:none}
 .tb.new{background:var(--win-bg);color:var(--win);border:1px solid #f3b6c9;font-weight:700}
 .more-link{display:block;margin:8px 16px 0;padding:12px;text-align:center;border-radius:var(--r);border:1px solid #f3b6c9;color:var(--win);font-weight:700;text-decoration:none;background:#fff}
@@ -1708,11 +1747,22 @@ details.about{margin:24px 0 0;font-size:12px;color:var(--sub)}details.about summ
 .fav[aria-pressed="true"]{color:#b8860b;border-color:#e3c35a;background:#fffaf0}
 .fav.mini{position:absolute;right:8px;top:8px;width:40px;height:40px;padding:0;justify-content:center;color:#b8860b;z-index:1}
 .list .row{padding-right:56px}
+.list.gl{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 8px 8px}
+.list.gl .row{flex-direction:column;gap:6px;padding:8px 10px 10px;height:100%}
+.list.gl .pic{display:block;width:100%;aspect-ratio:1;background:#fff;border-radius:10px;display:grid;place-items:center;overflow:hidden}
+.list.gl .pic img,.list.gl .noimg{width:100%;height:100%;max-width:none;object-fit:contain}
+.list.gl .info{width:100%;gap:1px}.list.gl .nm{font-size:12.5px;line-height:1.4;min-height:2.8em}
+.list.gl .pr{margin:2px 0 0}.list.gl .pr b{font-size:20px}.list.gl .scope{font-size:10px}
+.list.gl .pt,.list.gl .meta{font-size:11px}.list.gl .rv{font-size:11px;flex-wrap:wrap;white-space:normal;gap:2px 4px}.list.gl .rvn{font-size:10px}
+.list.gl .save-s{position:absolute;left:14px;top:14px;margin:0;background:var(--win);color:#fff;font-weight:800;font-size:11px;border-radius:6px;padding:2px 6px;z-index:2}
+.list.gl .fav.mini{top:12px;right:12px;width:34px;height:34px;background:rgba(255,255,255,.92)}
+@media (min-width:700px){.list.gl{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0 16px 8px}}
+@media (min-width:960px){.list.gl{grid-template-columns:repeat(4,minmax(0,1fr))}}
 /* 並べ替え・絞り込み */
 .sort{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;padding:10px 16px;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;color:var(--sub);position:sticky;top:0;z-index:5;overflow-x:auto;scrollbar-width:none}.sort::-webkit-scrollbar{display:none}
 .sort>span{white-space:nowrap}
 .sort button{font:inherit;font-size:13px;white-space:nowrap;background:#fff;border:1px solid #cfd4d9;border-radius:999px;height:36px;padding:0 14px;color:var(--txt);cursor:pointer}
-.sort button[aria-pressed="true"]{background:var(--txt);color:#fff;border-color:var(--txt)}
+.sort button[aria-pressed="true"]{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:700}
 .free-only{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13px;color:var(--txt);border:1px solid #cfd4d9;border-radius:999px;padding:0 12px;height:36px;background:#fff}.free-only input{margin:0;accent-color:var(--brand)}
 .free-note{margin:0;padding:6px 16px;font-size:12px;color:var(--warn);background:var(--warn-bg)}
 .alt-p{font-size:11px;color:var(--sub);margin-left:4px}

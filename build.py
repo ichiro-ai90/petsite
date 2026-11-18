@@ -653,7 +653,7 @@ def product_row(p, g, fn):
     same = same_size(p["offers"], g["unit"])
     gap = max(x["price"] for x in same) - o["price"]
     _d = deal(p, g["unit"])
-    gapt = (f'<span class="save-s">他店より {_d["d"]:,}円安い</span>' if _d and not OUTLET.search(o["name"]) else "")
+    gapt = (f'<span class="save-s">他店より {_d["d"]:,}円安い※</span>' if _d and not OUTLET.search(o["name"]) else "")
     fb = free_best(p["offers"])
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
@@ -702,7 +702,7 @@ def category_body(g, prods, pet, fetched, carried):
             f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
             f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
-            f'{SHIP_RULE}<ul class="list gl" id="list">{rows}</ul>{live_sec(g["keyword"])}'
+            f'{SHIP_RULE}<p class="h2n">※「他店より◯円安い」＝同じ内容量の他店（3店以上）の価格の中央値との差・取得時点・送料別</p><ul class="list gl" id="list">{rows}</ul>{live_sec(g["keyword"])}'
             f'<div class="note">{("<p>" + carried.replace("<br>", "") + "</p>") if carried else ""}<p>{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
             f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。計算根拠の最終確認：2026-11-08（楽天市場の通常ポイント 税抜100円につき1ポイント）。</p></div>{SORT_JS}')
 

@@ -18,12 +18,14 @@ async function rakuten(env, q) {
   const r = await fetch(R_URL + "?" + p, { headers: { Origin: env.RAKUTEN_ORIGIN || "https://petnavi.niconote.jp" } });
   if (!r.ok) throw new Error("rakuten " + r.status);
   const d = await r.json();
-  return (d.Items || []).map((it) => {
+  const out = (d.Items || []).map((it) => {
     const price = +it.itemPrice || 0, rate = +it.pointRate || 1, img = (it.mediumImageUrls || [""])[0];
     return { m: "r", n: it.itemName || "", s: it.shopName || "", p: price, pt: Math.floor(Math.floor(price * 10 / 11) * rate / 100), r: rate,
       sh: it.postageFlag === 0 ? 1 : 0, u: it.affiliateUrl || it.itemUrl || "", img: typeof img === "string" ? img : (img && img.imageUrl) || "",
       rv: +it.reviewCount || 0, ra: +it.reviewAverage || 0 };
   }).filter((x) => x.p > 0 && x.u);
+  out.tot = +d.count || 0;
+  return out;
 }
 
 async function yahoo(env, q) {
@@ -33,12 +35,14 @@ async function yahoo(env, q) {
   const r = await fetch(Y_URL + "?" + p);
   if (!r.ok) throw new Error("yahoo " + r.status);
   const d = await r.json();
-  return (d.hits || []).map((h) => {
+  const out = (d.hits || []).map((h) => {
     const code = (h.shipping || {}).code;
     return { m: "y", n: h.name || "", s: (h.seller || {}).name || "", p: +h.price || 0, pt: +((h.point || {}).amount) || 0, r: +((h.point || {}).times) || 1,
       sh: code === 2 ? 1 : 0, u: h.url || "", img: (h.image || {}).medium || "", rv: +((h.review || {}).count) || 0, ra: +((h.review || {}).rate) || 0,
       jan: h.janCode || "" };
   }).filter((x) => x.p > 0 && x.u && x.s);
+  out.tot = +d.totalResultsAvailable || 0;
+  return out;
 }
 
 export async function onRequestGet({ request, env, waitUntil }) {
@@ -52,7 +56,8 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const [a, b] = await Promise.allSettled([rakuten(env, q), yahoo(env, q)]);
   const items = [...(a.status === "fulfilled" ? a.value : []), ...(b.status === "fulfilled" ? b.value : [])].sort((x, y) => x.p - y.p);
   const ok = a.status === "fulfilled" || b.status === "fulfilled";
-  const res = J({ q, at: new Date().toISOString(), items, err: [a, b].filter((x) => x.status === "rejected").map((x) => String(x.reason).slice(0, 60)) },
+  const tot = { r: a.status === "fulfilled" ? a.value.tot || 0 : 0, y: b.status === "fulfilled" ? b.value.tot || 0 : 0 };
+  const res = J({ q, at: new Date().toISOString(), items, tot, err: [a, b].filter((x) => x.status === "rejected").map((x) => String(x.reason).slice(0, 60)) },
     ok ? 200 : 503, ok ? { "cache-control": `public, max-age=${TTL}` } : {});
   if (ok && items.length) waitUntil(cache.put(key, res.clone()));
   return res;

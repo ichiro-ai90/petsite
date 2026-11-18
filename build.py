@@ -653,7 +653,7 @@ def product_row(p, g, fn):
     same = same_size(p["offers"], g["unit"])
     gap = max(x["price"] for x in same) - o["price"]
     _d = deal(p, g["unit"])
-    gapt = (f'<span class="save-s">他店より {_d["d"]:,}円安い</span>' if _d and not OUTLET.search(o["name"]) else "")
+    gapt = (f'<span class="save-s">他店より {_d["d"]:,}円安い※</span>' if _d and not OUTLET.search(o["name"]) else "")
     fb = free_best(p["offers"])
     fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
@@ -674,6 +674,21 @@ SORT_JS = ('<script>(function(){var b=document.querySelectorAll(".sort button"),
            'a.forEach(function(e){l.appendChild(e)});b.forEach(function(y){y.setAttribute("aria-pressed",y===x)})})})})();</script>')
 
 
+LV_NOTE = "リンク先のモールの商品ページへ移動します。価格は検索した時点のもので、購入時にリンク先に表示されている価格が適用されます。"
+
+
+def mlab():
+    return "楽天・Yahoo!" if HAS_YAHOO else "楽天"
+
+
+def live_sec(q, title=""):
+    """楽天・Yahoo をその場で検索した結果（/api/msearch）。価格は保存しない（エッジで最大6時間だけ）"""
+    title = title or f"{mlab()}のほかの商品"
+    return (f'<section class="lv" data-q="{E(q)}"><h2 class="h2">{E(title)}</h2><p class="meta lv-c">{mlab()}を検索しています…</p>'
+            f'<ul class="list gl lv-l"></ul><a class="lv-more" href="search.html?q={urllib.parse.quote(q)}">「{E(q)}」でもっと探す</a>'
+            f'<p class="nayami-n">{LV_NOTE}</p></section>')
+
+
 def category_body(g, prods, pet, fetched, carried):
     prods = sorted(prods, key=lambda p: -p.get("reviewCount", 0))
     rows = "".join(product_row(p, g, f"item-{p['productId']}.html") for p in prods)
@@ -687,7 +702,7 @@ def category_body(g, prods, pet, fetched, carried):
             f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button>'
             f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div>'
             f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
-            f'{SHIP_RULE}<ul class="list gl" id="list">{rows}</ul>'
+            f'{SHIP_RULE}<p class="h2n">※「他店より◯円安い」＝同じ内容量の他店（3店以上）の価格の中央値との差・取得時点・送料別</p><ul class="list gl" id="list">{rows}</ul>{live_sec(g["keyword"])}'
             f'<div class="note">{("<p>" + carried.replace("<br>", "") + "</p>") if carried else ""}<p>{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
             f'ポイントはショップの倍率から計算した目安（税抜価格の1%×倍率、1円未満切り捨て）。「ポイント込み」＝税込価格−この目安。送料はどちらにも含みません。計算根拠の最終確認：2026-11-08（楽天市場の通常ポイント 税抜100円につき1ポイント）。</p></div>{SORT_JS}')
 
@@ -944,7 +959,7 @@ def main():
     makers = [m for m, n in Counter(r["m"] for r in index_rows if r["m"]).most_common(10) if n >= 2]
     mk = "".join(f'<li><a href="search.html?maker={urllib.parse.quote(m)}">{E(m)}</a></li>' for m in makers)
     # 悩みから探す：すでに載せている商品のうち、商品名に語がある商品だけ（追加の取得なし・効果はうたわない）
-    nayami = []
+    nayami, nayami_cards = [], []
     try:
         concerns = json.load(open(os.path.join(ROOT, "concerns.json"), encoding="utf-8"))["concerns"]
     except (OSError, ValueError):
@@ -953,23 +968,25 @@ def main():
         src = [s_ for s_ in c["from"] if s_ in by_group]
         cps = [p for s_ in src for p in by_group[s_]
                if any(w in p["name"] or w in best_offer(p)["name"] for w in c["words"])]
-        if len(cps) < MIN_PRODUCTS:
-            print(f"  不公開 {c['slug']}: 商品{len(cps)}件 < {MIN_PRODUCTS}件")
+        if not src:
             continue
-        g0 = dict(gmap[src[0]], slug=c["slug"], title=f'{c["title"]}（{c["pet"]}のフード）')
+        lq = f'{c["pet"]} {c["words"][0]} フード'
+        g0 = dict(gmap[src[0]], slug=c["slug"], title=f'{c["title"]}（{c["pet"]}のフード）', keyword=lq)
         pet = next((pt for pt in PETS if c["pet"] in pt[3]), PETS[0])
         fn = c["slug"] + ".html"
-        body = category_body(g0, cps, pet, fetched, "").replace(
-            "</h1>", f'</h1><p class="nayami-n">商品名に「{E(c["words"][0])}」などの記載がある商品です。効果を示すものではありません。気になる症状は動物病院へ</p>', 1)
+        _nn = f'<p class="nayami-n">商品名に「{E(c["words"][0])}」などの記載がある商品です。効果を示すものではありません。気になる症状は動物病院へ</p>'
+        body = (category_body(g0, cps, pet, fetched, "").replace("</h1>", "</h1>" + _nn, 1) if cps
+                else f'<h1 class="ttl">{E(g0["title"])}</h1>{_nn}{live_sec(lq, f"{mlab()}の商品")}')
         open(os.path.join(out, fn), "w", encoding="utf-8").write(
             page(f'{c["pet"]}の{c["title"]}｜商品名に記載のあるフード{len(cps)}商品の価格比較｜{SITE}', body,
                  f'商品名に「{c["words"][0]}」などの記載がある{c["pet"]}用フード{len(cps)}商品を、ショップごとの価格とポイントで比較（{fdate}取得）。効果を示すものではありません。',
                  sample, ((pet[1], f"index.html#{pet[0]}"), (g0["title"], None)), canonical=(f"{origin}/{fn}" if origin else "")))
         files.append(fn)
         nayami_urls.append(fn)
-        nayami.append(f'<li><a href="{fn}">{E(c["pet"])}｜{E(c["title"])}<small>{len(cps)}</small></a></li>')
+        nayami.append(f'<li><a href="{fn}">{E(c["pet"])}｜{E(c["title"])}</a></li>')
+        nayami_cards.append((c, fn, lq, len(cps)))
     # 海外ブランド：製造国を確認できたブランド（brands.json の show）だけ。すでに載せている国内の正規品から
-    kaigai = []
+    kaigai, brand_cards = [], []
     try:
         brands = [b for b in json.load(open(os.path.join(ROOT, "brands.json"), encoding="utf-8"))["brands"] if b.get("show") and b.get("country")]
     except (OSError, ValueError):
@@ -977,13 +994,11 @@ def main():
     allp = {p["productId"]: (p, gmap[p["group"]]) for ps_ in by_group.values() for p in ps_}
     for b in brands:
         bps = [(p, g_) for p, g_ in allp.values() if any(w.lower() in (p["name"] + " " + (p.get("maker") or "")).lower() for w in b["words"])]
-        if len(bps) < MIN_PRODUCTS:
-            print(f"  不公開 brand {b['name']}: 商品{len(bps)}件 < {MIN_PRODUCTS}件")
-            continue
         fn = "brand-" + hashlib.md5(b["name"].encode()).hexdigest()[:8] + ".html"
         rows = "".join(product_row(p, g_, f"item-{p['productId']}.html") for p, g_ in sorted(bps, key=lambda x: -x[0].get("reviewCount", 0)))
         body = (f'<h1 class="ttl">{E(b["name"])}<span class="cty">{E(b["country"])}製</span></h1>'
-                f'<p class="fresh1">{len(bps)}商品・国内の正規販売店の価格</p><ul class="list gl">{rows}</ul>')
+                + (f'<p class="fresh1">くわしい比較 {len(bps)}商品・国内の正規販売店の価格</p><ul class="list gl">{rows}</ul>' if bps else "")
+                + live_sec(b["name"], f'{mlab()}の{b["name"]}'))
         open(os.path.join(out, fn), "w", encoding="utf-8").write(
             page(f'{b["name"]}（{b["country"]}）の価格比較 {len(bps)}商品｜{SITE}', body,
                  f'{b["name"]}（{b["country"]}製）のペットフード{len(bps)}商品を、国内のショップの価格とポイントで比較（{fdate}取得）。',
@@ -991,8 +1006,36 @@ def main():
         files.append(fn)
         brand_urls.append(fn)
         kaigai.append(f'<li><a href="{fn}">{E(b["name"])}<small>{E(b["country"])}</small></a></li>')
-    kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド</h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
-    nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す</h2><ul class="nayami-l">{"".join(nayami)}</ul>'
+        brand_cards.append((b, fn, len(bps)))
+    if nayami_cards:
+        _pets = []
+        for c, fn, lq, n in nayami_cards:
+            if c["pet"] not in _pets:
+                _pets.append(c["pet"])
+        hub = (f'<h1 class="ttl">悩みから探す</h1><p class="lead">うちの子の困りごとを選ぶと、{mlab()}で商品名にその言葉がある商品を安い順に出します。効果を示すものではありません。気になる症状は動物病院へ。</p>'
+               '<form class="nq" id="nqf" action="search.html" role="search"><input type="hidden" name="q" id="nqq"><select id="nqp" aria-label="ペット">' + "".join(f'<option>{E(x)}</option>' for x in _pets) + '</select>'
+               '<input type="search" id="nqw" placeholder="悩みを入力（例：食いつき、口臭）" required><button type="submit">探す</button></form>'
+               + "".join(f'<section class="nh"><h2 class="h2">{E(pn)}の悩み</h2><ul class="hub">'
+                         + "".join(f'<li><a href="{fn}"><b>{E(c["title"])}</b><span class="hub-c" data-cnt-q="{E(lq)}">…</span><small>{mlab()}の件数</small></a></li>'
+                                   for c, fn, lq, n in nayami_cards if c["pet"] == pn) + '</ul></section>' for pn in _pets))
+        open(os.path.join(out, "nayami.html"), "w", encoding="utf-8").write(page(f"悩みから探す｜{SITE}", hub,
+             "涙やけ・毛玉・下部尿路・シニア・体重管理など、うちの子の悩みからペットフードを探して、楽天・Yahoo!の価格を比較。", sample,
+             (("悩みから探す", None),), canonical=(f"{origin}/nayami.html" if origin else "")))
+        files.append("nayami.html")
+        nayami_urls.insert(0, "nayami.html")
+    if brand_cards:
+        hub = (f'<h1 class="ttl">海外ブランド</h1><p class="lead">製造国を販売元・公式の表示で確かめたブランドだけを載せています。国内のショップ（{mlab()}）の価格で比べられます。</p>'
+               '<form class="nq" action="search.html" role="search"><input type="search" name="q" id="bq" placeholder="ブランド名で探す（例：ジウィピーク）" autocomplete="off"><button type="submit">探す</button></form>'
+               '<ul class="hub hub-b" id="bhub">' + "".join(
+                   f'<li data-n="{E(b["name"] + " " + " ".join(b["words"]))}"><a href="{fn}"><b>{E(b["name"])}</b><em>{E(b["country"])}製</em>'
+                   f'<span class="hub-c" data-cnt-q="{E(b["name"])}">…</span><small>{mlab()}の件数</small></a></li>' for b, fn, n in brand_cards) + '</ul>')
+        open(os.path.join(out, "brands.html"), "w", encoding="utf-8").write(page(f"海外ブランドのペットフード｜{SITE}", hub,
+             "ジウィピーク・モグワン・アカナ・ニュートロなど海外ブランドのペットフードを、国内ショップ（楽天・Yahoo!）の価格で比較。", sample,
+             (("海外ブランド", None),), canonical=(f"{origin}/brands.html" if origin else "")))
+        files.append("brands.html")
+        brand_urls.insert(0, "brands.html")
+    kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド<a class="h2a" href="brands.html">すべて見る</a></h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
+    nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す<a class="h2a" href="nayami.html">すべて見る</a></h2><ul class="nayami-l">{"".join(nayami)}</ul>'
                   '<p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p></section>' if nayami else "")
     mc = data.get("mall_counts") or {}
     tot = (mc.get("r") or 0) + (mc.get("y") or 0)
@@ -1276,17 +1319,27 @@ function search(){var f=document.getElementById("sf");if(!f)return;var u=new URL
    history.replaceState(null,"",location.pathname+(p.toString()?"?"+p:""));paint();msearch(document.getElementById("q").value.trim());
    clearTimeout(run._t);run._t=setTimeout(function(){ga("search",{search_term:q,pet:pet,category:cat,maker:m,sort:s,results:r.length})},1500)}
   f.free.addEventListener("change",function(){ga("free_only",{on:f.free.checked})});f.addEventListener("input",run);f.addEventListener("change",run);f.addEventListener("submit",function(e){e.preventDefault();run()});run()})}
+function mrow(x){return '<li><a class="row" href="'+esc(x.u)+'" target="_blank" rel="sponsored nofollow noopener" data-m="'+x.m+'"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
+    '<span class="nm"><span class="mall '+x.m+'">'+(x.m==="y"?"Yahoo!":"楽天")+'</span>'+esc(x.n)+'</span><span class="meta">'+esc(x.s)+'</span>'+
+    '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh?" free":" paid")+'">'+(x.sh?"送料無料":"送料別")+'</span></span>'+
+    (x.pt>0?'<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span>':'')+'</span></a></li>'}
+var MS={};function ms(q,cb){if(MS[q])return MS[q].then(cb);MS[q]=fetch("/api/msearch?q="+encodeURIComponent(q)).then(function(r){return r.json()});MS[q].then(cb).catch(function(){cb(null)})}
+function totTxt(t){var a=[];if(t&&t.r)a.push("楽天 "+yen(t.r)+"件");if(t&&t.y)a.push("Yahoo! "+yen(t.y)+"件");return a.join("・")}
+(function(){var io="IntersectionObserver" in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);go(e.target)}})},{rootMargin:"400px"}):null;
+ function go(s){var q=s.dataset.q,c=s.querySelector(".lv-c"),l=s.querySelector(".lv-l");ms(q,function(d){if(!d||!d.items){c.textContent="今は楽天・Yahoo!の検索ができません。時間をおいてお試しください。";return}
+  var t=totTxt(d.tot);c.textContent=d.items.length?(t?t+"から ":"")+"安い順に"+Math.min(d.items.length,24)+"件":"楽天・Yahoo!でも見つかりませんでした。";l.innerHTML=d.items.slice(0,24).map(mrow).join("");ga("live_search",{q:q,results:d.items.length})})}
+ document.querySelectorAll(".lv[data-q]").forEach(function(s){io?io.observe(s):go(s)});
+ document.querySelectorAll("[data-cnt-q]").forEach(function(e){ms(e.dataset.cntQ,function(d){var t=d&&d.tot?(d.tot.r||0)+(d.tot.y||0):0;e.textContent=t?yen(t)+"件":(d&&d.items?d.items.length+"件":"—")})});
+ var f=document.getElementById("nqf");if(f)f.addEventListener("submit",function(){document.getElementById("nqq").value=document.getElementById("nqp").value+" "+document.getElementById("nqw").value.trim();ga("nayami_free",{})});
+ var bq=document.getElementById("bq"),bh=document.getElementById("bhub");if(bq&&bh)bq.addEventListener("input",function(){var k=bq.value.trim().toLowerCase();bh.querySelectorAll("li").forEach(function(li){li.hidden=k&&li.dataset.n.toLowerCase().indexOf(k)<0})});})();
 var MQ="";function msearch(q){var sec=document.getElementById("msec");if(!sec)return;clearTimeout(msearch._t);
  if(q.length<2){sec.hidden=true;MQ="";return}if(q===MQ)return;
  msearch._t=setTimeout(function(){MQ=q;var c=document.getElementById("mcount"),l=document.getElementById("mres");sec.hidden=false;c.textContent="楽天市場・Yahoo!ショッピングを検索しています…";l.innerHTML="";
   fetch("/api/msearch?q="+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(d){if(q!==MQ)return;var it=d.items||[];
    c.textContent=it.length?"楽天・Yahoo!のペット用品 "+it.length+"件（安い順）":"楽天・Yahoo!でも見つかりませんでした。";ga("msearch",{search_term:q,results:it.length});
-   l.innerHTML=it.slice(0,40).map(function(x){return '<li><a class="row" href="'+esc(x.u)+'" target="_blank" rel="sponsored nofollow noopener" data-m="'+x.m+'"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
-    '<span class="nm"><span class="mall '+x.m+'">'+(x.m==="y"?"Yahoo!":"楽天")+'</span>'+esc(x.n)+'</span><span class="meta">'+esc(x.s)+'</span>'+
-    '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh?" free":" paid")+'">'+(x.sh?"送料無料":"送料別")+'</span></span>'+
-    (x.pt>0?'<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span>':'')+'</span></a></li>'}).join("")})
+   l.innerHTML=it.slice(0,40).map(mrow).join("")})
   .catch(function(){if(q===MQ)c.textContent="今は楽天・Yahoo!の検索ができません。時間をおいてお試しください。"})},700)}
-document.addEventListener("click",function(e){var a=e.target.closest("#mres a[data-m]");if(a)ga("click_mall",{mall:a.dataset.m==="y"?"yahoo":"rakuten",from:"msearch"})});
+document.addEventListener("click",function(e){var a=e.target.closest("#mres a[data-m],.lv-l a[data-m]");if(a)ga("click_mall",{mall:a.dataset.m==="y"?"yahoo":"rakuten",from:"msearch"})});
 (function(){var b=document.getElementById("bns");if(b){var ds=document.querySelectorAll(".bn-dots i"),n=b.children.length,cur=0,t;
  function on(){var w=b.children[0].offsetWidth+10;cur=Math.round(b.scrollLeft/w);ds.forEach(function(d,k){d.classList.toggle("on",k===cur)})}
  b.addEventListener("scroll",function(){clearTimeout(b._t);b._t=setTimeout(on,80)});on();
@@ -1614,6 +1667,14 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .wk-share{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .cty{margin-left:8px;font-size:12px;font-weight:700;color:var(--sub);border:1px solid var(--line,#e5e7eb);border-radius:4px;padding:1px 6px;vertical-align:middle}
 .card-pt{margin:2px 0;font-size:13px}.td-f{display:block;font-size:11px;color:var(--sub);font-weight:400}.card-ln{margin-left:8px;font-size:12px}.card-pt b{color:#bf0000}
+.lv{margin:16px 0 0}.lv-c{padding:0 16px;margin:0 0 6px}.lv-more{display:block;margin:4px 16px 6px;text-align:center;height:44px;line-height:44px;border-radius:999px;background:#fff;border:2px solid var(--brand);color:var(--brand-d);font-weight:800}
+.nq{display:flex;gap:6px;margin:8px 16px 12px}.nq select{height:44px;border:2px solid var(--brand);border-radius:999px;padding:0 10px;background:#fff;font-size:15px}.nq input{flex:1;min-width:0;height:44px;border:2px solid var(--brand);border-radius:999px;padding:0 14px;font-size:16px;background:#fff}
+.nq button{height:44px;border:0;border-radius:999px;padding:0 18px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-weight:800;font-size:15px}
+.hub{list-style:none;margin:0;padding:0 16px 8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media (min-width:700px){.hub{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.hub a{display:flex;flex-direction:column;gap:2px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#fff7ed,#ffe4e6);border:1px solid #fed7aa;color:var(--txt);min-height:96px}
+.hub-b a{background:linear-gradient(135deg,#eef2ff,#e0f2fe);border-color:#c7d2fe}.hub b{font-size:16px;font-weight:900}.hub em{font-style:normal;font-size:11px;color:var(--sub)}
+.hub-c{margin-top:auto;font-size:20px;font-weight:900;color:var(--win)}.hub small{font-size:10px;color:var(--sub)}.hub li[hidden]{display:none}
+.nayami-h{display:flex;align-items:baseline}
 .nayami-n{margin:2px 16px 8px;font-size:11px;color:var(--sub)}
 .nayami{margin:12px 0 4px}.nayami-h{margin:0 16px 6px;font-size:16px;font-weight:800}
 .nayami-l{display:flex;gap:8px;overflow-x:auto;list-style:none;margin:0;padding:0 16px 4px;scrollbar-width:none}

@@ -133,7 +133,7 @@ class T(unittest.TestCase):
         h = open(os.path.join(d, "site", "nayami-dog-tear.html"), encoding="utf-8").read()
         self.assertEqual(len(re.findall(r'href="item-t\d\.html"', h)), 3)
         self.assertIn("効果を示すものではありません", h)
-        self.assertFalse(os.path.exists(os.path.join(d, "site", "nayami-dog-joint.html")))  # 2商品 → 不公開
+        self.assertIn('class="lv" data-q=', open(os.path.join(d, "site", "nayami-dog-joint.html"), encoding="utf-8").read())  # 少なくても楽天・Yahoo のその場検索で品数を出す
         idx = open(os.path.join(d, "site", "index.html"), encoding="utf-8").read()
         self.assertIn('href="nayami-dog-tear.html"', idx)
         self.assertLess(idx.index("悩みから探す"), idx.index("cat-sec"))  # カテゴリ一覧より上に出す

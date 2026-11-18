@@ -18,17 +18,13 @@ jobs:
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p:
               b = p.chromium.launch()
-              for w, h, n in ((1440, 900, "pc"), (390, 900, "sp")):
-                  pg = b.new_page(viewport={"width": w, "height": h})
-                  for path, k in (("shindan.html?pet=dog", "sd"), ("nayami.html", "ny"), ("brands.html", "br"), ("dog-food-large.html", "cat")):
-                      pg.goto("https://petnavi.niconote.jp/" + path + ("&" if "?" in path else "?") + "v=1119a"); pg.wait_for_timeout(4000)
-                      if k == "sd":
-                          pg.click(".sd-add"); pg.wait_for_timeout(500)
-                      if k == "cat":
-                          pg.evaluate("document.querySelector('.lv') && document.querySelector('.lv').scrollIntoView()"); pg.wait_for_timeout(4000)
-                      pg.screenshot(path=f"{k}_{n}.png")
-                      print(n, k, "sw", pg.evaluate("document.documentElement.scrollWidth"), "cnt", pg.evaluate("[...document.querySelectorAll('[data-cnt-q]')].map(e=>e.textContent).slice(0,4).join('/')"), "lv", pg.evaluate("document.querySelectorAll('.lv-l li').length"), "c", pg.evaluate("(document.querySelector('.lv-c')||{}).textContent"))
+              pg = b.new_page()
+              for q in ("ドッグフード ドライ 大袋", "モグワン", "犬 涙やけ フード"):
+                  import urllib.parse
+                  pg.goto("https://petnavi.niconote.jp/api/msearch?v=1119b&q=" + urllib.parse.quote(q))
+                  import json; d = json.loads(pg.inner_text("body"))
+                  print(q, "tot", d.get("tot"), "n", len(d.get("items", [])), "y", sum(1 for x in d.get("items", []) if x["m"] == "y"), "err", d.get("err"))
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com
-          git checkout -b tmp && mkdir -p shots && mv *.png shots/ && git add shots && git commit -qm "shots [skip ci]" && git push -q origin HEAD:dev/probe-shots --force
+          git checkout -b tmp && mkdir -p shots && (mv *.png shots/ || true) && git add shots && git commit -qm "shots [skip ci]" && git push -q origin HEAD:dev/probe-shots --force

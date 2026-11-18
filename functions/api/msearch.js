@@ -62,7 +62,8 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const ok = a.status === "fulfilled" || b.status === "fulfilled";
   const tot = { r: a.status === "fulfilled" ? a.value.tot || 0 : 0, y: b.status === "fulfilled" ? b.value.tot || 0 : 0 };
   const res = J({ q, at: new Date().toISOString(), items, tot, err: [a, b].filter((x) => x.status === "rejected").map((x) => String(x.reason).slice(0, 60)) },
-    ok ? 200 : 503, ok ? { "cache-control": `public, max-age=${TTL}` } : {});
-  if (ok && items.length) waitUntil(cache.put(key, res.clone()));
+    ok ? 200 : 503, ok && a.status === "fulfilled" && b.status === "fulfilled" ? { "cache-control": `public, max-age=${TTL}` } : { "cache-control": "no-store" });
+  // 片方のモールが失敗した結果はキャッシュしない（楽天は1秒1回の制限。件数が片方だけで6時間残るのを防ぐ）
+  if (ok && items.length && a.status === "fulfilled" && b.status === "fulfilled") waitUntil(cache.put(key, res.clone()));
   return res;
 }

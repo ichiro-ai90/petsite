@@ -18,12 +18,12 @@ jobs:
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p:
               b = p.chromium.launch()
-              pg = b.new_page()
-              for q in ("ドッグフード ドライ 大袋", "モグワン", "犬 涙やけ フード"):
-                  import urllib.parse
-                  pg.goto("https://petnavi.niconote.jp/api/msearch?v=1119b&q=" + urllib.parse.quote(q))
-                  import json; d = json.loads(pg.inner_text("body"))
-                  print(q, "tot", d.get("tot"), "n", len(d.get("items", [])), "y", sum(1 for x in d.get("items", []) if x["m"] == "y"), "err", d.get("err"))
+              pg = b.new_page(viewport={"width": 390, "height": 900})
+              pg.goto("https://petnavi.niconote.jp/?v=1120a"); pg.wait_for_timeout(4000)
+              print("BNB", pg.evaluate("(document.querySelector('.bn-b .bn-t')||{}).textContent"), pg.evaluate("(document.querySelector('.bn-b .bn-im')||{}).src"))
+              print("TL", pg.evaluate("[...document.querySelectorAll('.tl')].slice(0,3).map(e=>e.innerText.replace(/\\n/g,' ')).join(' | ')"))
+              pg.evaluate("document.getElementById('bns').scrollTo({left:document.querySelector('.bn').offsetWidth+10})"); pg.wait_for_timeout(800)
+              pg.locator(".bn-b").screenshot(path="bnb.png"); pg.locator(".tls").screenshot(path="tls.png")
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

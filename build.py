@@ -1044,7 +1044,11 @@ def main():
     mnote = "「%」は同じ内容量の他店（3店以上の中央値）との差の最大値。" + (f"「{man}件」は{mall_s}のペット用品ジャンルの出品数（同じ商品の別ショップを含む・取得時点）。" if man else "") + f"検索欄からは{mall_s}をその場で検索します（くわしい比較ページは{len(index_rows):,}商品）"
     _ds = drops(published)
     top = max((round(x["d"] / x["hi"] * 100) for x in _ds), default=0)
-    _dimg = next((img(x["p"].get("image"), 300) for x in _ds if x["p"].get("image")), "")
+    # バナーは「みんなが買っている定番」で見せる（レビュー件数×お得率）。数字はその商品自身の%（別商品の%と写真を混ぜない）
+    _pop = [x for x in _ds if x["p"].get("image") and x["p"].get("reviewCount", 0) >= 100] or [x for x in _ds if x["p"].get("image")]
+    _bx = max(_pop, key=lambda x: (x["d"] / x["hi"]) * math.log10(x["p"].get("reviewCount", 0) + 10)) if _pop else None
+    _dimg = img(_bx["p"].get("image"), 300) if _bx else ""
+    _bpct = round(_bx["d"] / _bx["hi"] * 100) if _bx else top
     _ny = next((u for u in nayami_urls), "")
     _br = next((u for u in brand_urls), "")
     slides = []
@@ -1052,7 +1056,7 @@ def main():
                   f'<span class="bn-t"><small>{mall_s}のペット用品</small><b>{man or "全商品"}</b>{"件から" if man else "から"}<br>安いお店を探す</span>'
                   f'<span class="bn-go">探してみる</span><span class="bn-n">件数は出品数（同じ商品の別ショップ含む）※</span></a>')
     if _ds:
-        slides.append(f'<a class="bn bn-b" href="weekly.html" data-ga="bn_deals"><span class="bn-t"><small>同じ内容量の他店と比べて</small>他店より<br><b class="cnt" data-to="{top}">{top}</b><i>%</i>安い</span>'
+        slides.append(f'<a class="bn bn-b" href="weekly.html" data-ga="bn_deals"><span class="bn-t"><small>{("レビュー" + format(_bx["p"].get("reviewCount", 0), ",") + "件の定番が") if _bx else "同じ内容量の他店と比べて"}</small>他店より<br><b class="cnt" data-to="{_bpct}">{_bpct}</b><i>%</i>安い</span>'
                       + (f'<img class="bn-im" src="{E(_dimg)}" alt="" width="150" height="150">' if _dimg else "")
                       + f'<span class="bn-go">{len(_ds):,}件のお得を見る</span><span class="bn-n">※同じ内容量の他店中央値との差・取得時点・送料別</span></a>')
     if _ny:
@@ -1074,7 +1078,7 @@ def main():
              + '<li><a href="favorites.html"><span class="qk-i qk-5">' + globals()["icon"]("star", 22) + '</span>マイ<br>リスト</a></li></ul>')
     tiles = sorted(deal_tiles, key=lambda t: -t[0])[:10]
     tiles_sec = ('<section class="tl-sec"><h2 class="h2">カテゴリ別 お得</h2><p class="h2n">※同じ内容量の他店（3店以上の中央値）との差・取得時点・送料別</p><ul class="tls">'
-                 + "".join(f'<li><a class="tl tl{k % 5}" href="{g["slug"]}.html" data-ga="tile"><span class="tl-c"><em>{E(pn)}</em>{E(g["title"])}</span><span class="tl-v">最大<b>{v}</b>%安い※</span><span class="tl-n">{n}件</span></a></li>'
+                 + "".join(f'<li><a class="tl tl{k % 5}" href="{g["slug"]}.html" data-ga="tile"><span class="tl-p">{E(pn)}</span><span class="tl-c">{E(g["title"])}</span><span class="tl-v"><small>他店より最大</small><b>{v}</b>%安い商品あり※</span><span class="tl-n">お得な商品 {n}件 ›</span></a></li>'
                            for k, (v, g, n, pn) in enumerate(tiles)) + '</ul></section>') if tiles else ""
     deals = "".join(f'<li><a class="dc" href="item-{E(x["p"]["productId"])}.html" data-ga="deal_card"><span class="dc-p">'
                     + (f'<img src="{E(img(x["p"].get("image"), 200))}" alt="" width="120" height="120" loading="lazy">' if x["p"].get("image") else "")
@@ -1738,10 +1742,13 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .qk a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;line-height:1.25;text-align:center;color:var(--txt);text-decoration:none}
 .qk-i{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:#fff}.qk-1{background:linear-gradient(135deg,#f59e0b,#ef4444)}.qk-2{background:linear-gradient(135deg,#ec4899,#a855f7)}.qk-3{background:linear-gradient(135deg,#06b6d4,#2563eb)}.qk-4{background:linear-gradient(135deg,#10b981,#0d9488)}.qk-5{background:linear-gradient(135deg,#facc15,#f97316)}
 .tls,.dcs{list-style:none;margin:0;padding:0 12px 6px;display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}.tls::-webkit-scrollbar,.dcs::-webkit-scrollbar{display:none}
-.tl{display:flex;flex-direction:column;width:132px;height:108px;padding:10px 12px;border-radius:14px;color:#3b1d06;text-decoration:none;position:relative;overflow:hidden}
-.tl::after{content:"";position:absolute;left:0;right:0;bottom:22px;border-top:2px dashed rgba(255,255,255,.7)}
+.tl{display:flex;flex-direction:column;width:150px;min-height:150px;padding:10px 12px 8px;border-radius:14px;color:#3b1d06;text-decoration:none;position:relative;overflow:hidden}
+.tl::after{content:"";position:absolute;left:0;right:0;bottom:30px;border-top:2px dashed rgba(255,255,255,.75)}
 .tl0{background:linear-gradient(135deg,#bbf7d0,#4ade80)}.tl1{background:linear-gradient(135deg,#fed7aa,#fb923c)}.tl2{background:linear-gradient(135deg,#fbcfe8,#f472b6)}.tl3{background:linear-gradient(135deg,#fef08a,#facc15)}.tl4{background:linear-gradient(135deg,#bfdbfe,#60a5fa)}
-.tl-c em{display:block;font-style:normal;font-size:10px;opacity:.8}.tl-c{font-size:11px;font-weight:800;line-height:1.25;max-height:2.5em;overflow:hidden}.tl-v{margin-top:auto;margin-bottom:16px;font-size:12px;font-weight:800}.tl-v b{font-size:30px;letter-spacing:-1px}.tl-n{position:absolute;left:12px;bottom:4px;font-size:10px;font-weight:700}
+.tl-p{flex:none;align-self:flex-start;background:rgba(255,255,255,.75);border-radius:999px;font-size:10px;font-weight:800;padding:0 8px}
+.tl-c{flex:none;margin-top:4px;font-size:13px;font-weight:900;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tl-v{flex:none;margin-top:auto;margin-bottom:34px;font-size:11px;font-weight:800;line-height:1.1}.tl-v small{display:block;font-size:10px}.tl-v b{font-size:28px;letter-spacing:-1px}
+.tl-n{position:absolute;left:12px;bottom:7px;font-size:11px;font-weight:800}
 .dc{display:flex;flex-direction:column;width:136px;color:var(--txt);text-decoration:none}.dc-p{position:relative;width:136px;height:136px;background:#fff;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center}
 .dc-p img{width:116px;height:116px;object-fit:contain}.dc-b{position:absolute;left:6px;top:6px;background:#e11d48;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px}
 .dc-n{margin-top:6px;font-size:12px;line-height:1.35;max-height:2.7em;overflow:hidden}.dc-pr{font-size:12px}.dc-pr b{font-size:17px;color:#e11d48}.dc-o{font-size:11px;color:var(--sub);text-decoration:line-through}

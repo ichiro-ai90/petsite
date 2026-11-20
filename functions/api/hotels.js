@@ -17,7 +17,8 @@ function J(o, status = 200, extra = {}) {
 async function call(env, path, params) {
   const p = new URLSearchParams({ applicationId: env.RAKUTEN_APP_ID, format: "json", formatVersion: "2", ...params });
   if (env.RAKUTEN_ACCESS_KEY) p.set("accessKey", env.RAKUTEN_ACCESS_KEY);
-  const r = await fetch(BASE + path + "?" + p, { headers: { Origin: env.RAKUTEN_ORIGIN || "https://petnavi.niconote.jp" } });
+  const o = env.RAKUTEN_ORIGIN || "https://petnavi.niconote.jp";
+  const r = await fetch(BASE + path + "?" + p, { headers: { Origin: o, Referer: o + "/travel.html", accessKey: env.RAKUTEN_ACCESS_KEY || "" } });
   if (r.ok) return r.json();
   const t = (await r.text()).slice(0, 200);
   if (r.status === 404 && t.includes("not_found")) return { hotels: [], pagingInfo: { recordCount: 0 } };

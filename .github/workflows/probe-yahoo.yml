@@ -20,18 +20,18 @@ jobs:
               b = p.chromium.launch()
               import urllib.parse, json
               pg = b.new_page()
-              pg.goto("https://petnavi.niconote.jp/api/msearch?v=1121d&q=" + urllib.parse.quote("ちゅーる"))
+              pg.goto("https://petnavi.niconote.jp/api/msearch?v=1121e&q=" + urllib.parse.quote("ちゅーる"))
               d = json.loads(pg.inner_text("body")); ys = [x["u"] for x in d.get("items", []) if x["m"] == "y"]
               print("YURL", len(ys), "vc" if any("valuecommerce" in u and "892753714" in u for u in ys) else "no-vc", (ys[0][:110] if ys else ""))
               for q in ("", "ドッグラン"):
-                  pg.goto("https://petnavi.niconote.jp/api/hotels?v=1121d&area=" + urllib.parse.quote("長野県") + "&q=" + urllib.parse.quote(q))
+                  pg.goto("https://petnavi.niconote.jp/api/hotels?v=1121e&area=" + urllib.parse.quote("長野県") + "&q=" + urllib.parse.quote(q))
                   t = pg.inner_text("body"); 
                   try:
-                      d = json.loads(t); print("HOT", q, "tot", d.get("tot"), "n", len(d.get("hotels", [])), "err", d.get("err"), "u", (d.get("hotels") or [{}])[0].get("u", "")[:90])
+                      d = json.loads(t); print("HOT", q, "tot", d.get("tot"), "n", len(d.get("hotels", [])), "err", repr(d.get("err")), "u", (d.get("hotels") or [{}])[0].get("u", "")[:90])
                   except Exception as e:
                       print("HOT", q, "raw", t[:300])
               pg2 = b.new_page(viewport={"width": 390, "height": 900})
-              pg2.goto("https://petnavi.niconote.jp/travel.html?v=1121d"); pg2.wait_for_timeout(3000)
+              pg2.goto("https://petnavi.niconote.jp/travel.html?v=1121e"); pg2.wait_for_timeout(3000)
               pg2.select_option("#tva", "長野県"); pg2.wait_for_timeout(5000)
               pg2.screenshot(path="travel.png", full_page=True)
               print("TVC", pg2.evaluate("document.getElementById('tvc').textContent"))
@@ -43,7 +43,7 @@ jobs:
                   pg2.locator("#tvru").screenshot(path="roulette.png")
               except Exception as e: print("RUERR", str(e)[:200])
               pg3 = b.new_page(viewport={"width": 1440, "height": 900})
-              pg3.goto("https://petnavi.niconote.jp/travel.html?v=1121d"); pg3.wait_for_timeout(3000)
+              pg3.goto("https://petnavi.niconote.jp/travel.html?v=1121e"); pg3.wait_for_timeout(3000)
               pg3.screenshot(path="travel1440.png")
               b.close()
           PY

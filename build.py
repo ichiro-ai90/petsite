@@ -1049,6 +1049,8 @@ def main():
     _themes = [("beach", "海辺で夕日を見る", "海"), ("mountain", "高原を一緒に歩く", "高原"), ("lake", "湖でのんびり", "湖"),
                ("bed", "同じ部屋でくつろぐ", "同室"), ("beach2", "ドッグランで走りまわる", "ドッグラン"), ("car", "車でふらっと", "")]
     _popular = [("長野県", "軽井沢・白馬"), ("栃木県", "那須"), ("静岡県", "伊豆"), ("神奈川県", "箱根"), ("山梨県", "富士五湖"), ("千葉県", "房総")]
+    _regions = [('北海道・東北', '北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県'), ('関東', '茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県'), ('甲信越・北陸', '新潟県 富山県 石川県 福井県 山梨県 長野県'), ('東海', '岐阜県 静岡県 愛知県 三重県'), ('近畿', '滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県'), ('中国・四国', '鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県'), ('九州・沖縄', '福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県')]
+    _budgets = [("", "予算こだわらない"), ("0-10000", "〜1万円"), ("10000-20000", "1〜2万円"), ("20000-30000", "2〜3万円"), ("30000-50000", "3〜5万円"), ("50000-", "5万円〜")]
     _goods = [("キャリーバッグ", "ペット キャリー"), ("ドライブボックス", "犬 ドライブボックス"), ("折りたたみボウル", "ペット 折りたたみ ボウル"),
               ("マナーパンツ", "マナーパンツ 犬"), ("携帯シーツ", "トイレシーツ 携帯"), ("ライフジャケット", "犬 ライフジャケット")]
     tv = ('<div class="tv-hero"><span class="tv-ph" style="background-image:url(travel/car.jpg)"></span><div class="tv-t"><small>ペットと泊まれる宿</small>'
@@ -1056,6 +1058,12 @@ def main():
           '<form class="tv-f" id="tvf"><label class="sr" for="tva">行き先</label><select id="tva"><option value="">どこへ行く？（都道府県）</option>'
           + "".join(f'<option>{E(p)}</option>' for p in _prefs) + '</select><button type="submit">宿を探す</button></form></div>'
           '<div class="tv-pop"><span>人気の行き先</span>' + "".join(f'<button type="button" data-a="{E(p)}">{E(n)}</button>' for p, n in _popular) + '</div>'
+          '<section class="tv-ar"><h2 class="h2">エリアから選ぶ</h2><div class="tv-rg" id="tvrg" role="tablist">'
+          + "".join(f'<button type="button" role="tab" data-r="{k}" aria-selected="{"true" if k == 2 else "false"}">{E(n)}</button>' for k, (n, _p) in enumerate(_regions)) + '</div>'
+          + "".join(f'<div class="tv-pf" data-r="{k}"{"" if k == 2 else " hidden"}>' + "".join(f'<button type="button" data-a="{E(p)}">{E(p)}</button>' for p in ps.split()) + '</div>'
+                    for k, (_n, ps) in enumerate(_regions))
+          + '<h2 class="h2">予算（1室1泊・目安）</h2><div class="tv-bd" id="tvbd">'
+          + "".join(f'<button type="button" data-b="{v}" aria-pressed="{"true" if not v else "false"}">{E(n)}</button>' for v, n in _budgets) + '</div></section>'
           '<h2 class="h2">どんな旅にする？</h2><ul class="tv-th">'
           + "".join(f'<li><button type="button" data-q="{E(q)}" style="background-image:url(travel/{k}.jpg)"><span>{E(t)}</span></button></li>' for k, t, q in _themes) + '</ul>'
           '<a class="tv-rr" style="background-image:linear-gradient(90deg,rgba(30,58,138,.92),rgba(30,58,138,.35)),url(travel/beach.jpg)" href="https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3788390&amp;pid=892753722&amp;vc_url=https%3A%2F%2Fwww.rurubu.travel%2Ftheme%2Fpet%2F%3Futm_source%3Dvaluecommerce%26utm_medium%3Daffiliate" '
@@ -1063,7 +1071,12 @@ def main():
           '<span class="tv-rr-t"><small>るるぶトラベル（JTB）の特集</small><b>ペットと泊まれる宿</b><span>ドッグラン・愛犬用風呂・大型犬OKなどで選べる</span></span><span class="tv-rr-go">特集を見る ›</span></a>'
           '<h2 class="h2" id="tvh">楽天トラベルの宿</h2>'
           '<div class="tv-tags" id="tvt">' + "".join(f'<button type="button" data-q="{E(t)}" aria-pressed="false">{E(t)}</button>' for t in _tags) + '</div>'
-          '<p class="meta tv-c" id="tvc">行き先を選ぶと、ペットと泊まれる宿が出ます</p><ul class="tv-l" id="tvl"></ul>'
+          '<p class="meta tv-c" id="tvc">行き先を選ぶと、ペットと泊まれる宿が出ます</p>'
+          '<section class="tv-ru" id="tvru" hidden><div class="tv-ru-h"><b>宿ルーレット</b><span id="tvrn"></span></div>'
+          '<div class="tv-wh"><div class="tv-wp" aria-hidden="true"></div><div class="tv-wl" id="tvwl"></div></div>'
+          '<button type="button" class="tv-sp" id="tvsp" data-ga="roulette_spin">ルーレットを回す</button><ol class="tv-lg" id="tvlg"></ol>'
+          '<div class="tv-win" id="tvwin" hidden></div><p class="h2n">エリア・予算・テーマに合う宿から、最大8件をランダムに選んで回します</p></section>'
+          '<ul class="tv-l" id="tvl"></ul>'
           '<h2 class="h2">旅の持ち物も、最安で</h2><ul class="tv-gd">'
           + "".join(f'<li><a href="search.html?q={urllib.parse.quote(q)}" data-ga="travel_goods">{E(n)}</a></li>' for n, q in _goods) + '</ul>'
           '<p class="nayami-n">宿の名前やプランに「ペット」とある宿を出しています。泊まれるペットの種類・大きさ・頭数・料金は宿ごとに違うので、予約の前にリンク先の「ペット宿泊情報」で必ず確かめてください。'
@@ -1451,24 +1464,47 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
    if(r>=2){for(var k=0;k<(r==3?28:14);k++){var f=document.createElement("i");f.className="gc-fx";f.style.background=["#facc15","#f472b6","#a78bfa","#34d399"][k%4];
     f.style.setProperty("--x",(Math.random()*240-120)+"px");f.style.setProperty("--y",(Math.random()*-160-20)+"px");box.appendChild(f);setTimeout(function(x){x.remove()}.bind(null,f),1100)}}
    btn.textContent="もう1回引く";busy=0;if(window.pnXP)pnXP();if(window.gtag)gtag("event","gacha_result",{rarity:r})},1100)});})();
-(function(){var f=document.getElementById("tvf");if(!f)return;var a=document.getElementById("tva"),t=document.getElementById("tvt"),c=document.getElementById("tvc"),l=document.getElementById("tvl"),tag="";
- try{var s=localStorage.getItem("pn_tva");if(s)a.value=s}catch(e){}
- function go(){if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
-  c.textContent=a.value+"で探しています…";l.innerHTML="";
-  fetch("/api/hotels?area="+encodeURIComponent(a.value)+"&q="+encodeURIComponent(tag)).then(function(r){return r.json()}).then(function(d){
-   if(d.err&&!d.hotels.length){c.textContent="今は楽天トラベルの検索ができません。時間をおいてお試しください。";return}
-   c.textContent=d.hotels.length?a.value+(tag?"・"+tag:"")+"：楽天トラベル "+yen(d.tot)+"件から "+d.hotels.length+"件":"見つかりませんでした。条件を変えてお試しください。";
-   l.innerHTML=d.hotels.map(function(h){return '<li><a href="'+esc(h.u)+'" target="_blank" rel="sponsored nofollow noopener" data-ga="hotel"><span class="tv-im" style="background-image:url(&quot;'+esc(h.img)+'&quot;)"></span><span class="tv-b"><span class="tv-n">'+esc(h.n)+'</span>'+
-    (h.ra?'<span class="tv-s">★'+h.ra.toFixed(2)+'（'+yen(h.rc)+'件）</span>':'')+'<span class="tv-s">'+esc(h.st?h.st+"駅周辺":h.ad)+'</span>'+(h.min?'<span class="tv-p">1泊 <b>'+yen(h.min)+'</b>円〜<small>（1室・目安）</small></span>':'')+'<span class="tv-go">楽天トラベルで見る</span></span></a></li>'}).join("");ga("hotel_search",{area:a.value,q:tag,results:d.hotels.length})}).catch(function(){c.textContent="今は楽天トラベルの検索ができません。"})}
- f.addEventListener("submit",function(e){e.preventDefault();go()});a.addEventListener("change",go);
+(function(){var f=document.getElementById("tvf");if(!f)return;var a=document.getElementById("tva"),t=document.getElementById("tvt"),c=document.getElementById("tvc"),l=document.getElementById("tvl"),
+ tag="",bud="",H=[],T=0,seq=0,ru=document.getElementById("tvru"),wl=document.getElementById("tvwl"),lg=document.getElementById("tvlg"),sp=document.getElementById("tvsp"),win=document.getElementById("tvwin"),rot=0,pick=[];
+ try{var s0=localStorage.getItem("pn_tva");if(s0)a.value=s0}catch(e){}
+ function card(h){return '<a href="'+esc(h.u)+'" target="_blank" rel="sponsored nofollow noopener" data-ga="hotel"><span class="tv-im" style="background-image:url(&quot;'+esc(h.img)+'&quot;)"></span><span class="tv-b"><span class="tv-n">'+esc(h.n)+'</span>'+
+  (h.ra?'<span class="tv-s">★'+h.ra.toFixed(2)+'（'+yen(h.rc)+'件）</span>':'')+'<span class="tv-s">'+esc(h.st?h.st+"駅周辺":h.ad)+'</span>'+(h.min?'<span class="tv-p">1泊 <b>'+yen(h.min)+'</b>円〜<small>（1室・目安）</small></span>':'')+'<span class="tv-go">楽天トラベルで見る</span></span></a>'}
+ function inb(h){if(!bud)return true;var r=bud.split("-"),lo=+r[0]||0,hi=r[1]?+r[1]:1e9;return h.min>0&&h.min>=lo&&h.min<hi}
+ function draw(tot){if(tot)T=tot;var xs=H.filter(inb);
+  c.textContent=H.length?a.value+(tag?"・"+tag:"")+(bud?"・予算で絞り込み":"")+"："+xs.length+"件（楽天トラベル "+yen(T||H.length)+"件中）":"見つかりませんでした。条件を変えてお試しください。";
+  l.innerHTML=xs.map(function(h){return "<li>"+card(h)+"</li>"}).join("");setup(xs)}
+ function setup(xs){if(xs.length<2){ru.hidden=true;return}ru.hidden=false;win.hidden=true;
+  pick=xs.slice().sort(function(){return Math.random()-.5}).slice(0,8);var n=pick.length,cols=["#ef4444","#f59e0b","#10b981","#3b82f6","#8b5cf6","#ec4899","#14b8a6","#f97316"];
+  wl.style.transition="none";rot=0;wl.style.transform="rotate(0deg)";void wl.offsetWidth;wl.style.transition="";
+  wl.style.background="conic-gradient("+pick.map(function(_,k){return cols[k%8]+" "+(k*360/n)+"deg "+((k+1)*360/n)+"deg"}).join(",")+")";
+  wl.innerHTML=pick.map(function(_,k){return '<i style="transform:rotate('+((k+.5)*360/n-90)+'deg)">'+(k+1)+'</i>'}).join("");
+  lg.innerHTML=pick.map(function(h,k){return "<li>"+(k+1)+". "+esc(h.n)+"</li>"}).join("");document.getElementById("tvrn").textContent="候補 "+n+"件";sp.textContent="ルーレットを回す"}
+ sp.addEventListener("click",function(){if(!pick.length)return;sp.disabled=true;win.hidden=true;lg.querySelectorAll("li").forEach(function(x){x.className=""});
+  var n=pick.length,k=Math.floor(Math.random()*n),seg=360/n,tgt=360-((k+.5)*seg)+(Math.random()-.5)*seg*.6;rot=rot-(rot%360)+360*6+tgt;wl.style.transform="rotate("+rot+"deg)";ga("roulette_spin",{n:n});
+  setTimeout(function(){sp.disabled=false;sp.textContent="もう一回まわす";lg.children[k].className="on";win.innerHTML='<p style="margin:0 0 6px;font-weight:900;font-size:15px">今回の旅はここに決まり！</p>'+card(pick[k]);win.hidden=false;
+   for(var j=0;j<24;j++){var fx=document.createElement("i");fx.className="gc-fx";fx.style.background=["#fde047","#f472b6","#a78bfa","#34d399"][j%4];fx.style.setProperty("--x",(Math.random()*260-130)+"px");fx.style.setProperty("--y",(Math.random()*-180-20)+"px");ru.appendChild(fx);setTimeout(function(x){x.remove()}.bind(null,fx),1100)}
+   ga("roulette_result",{})},4100)});
+ function get(p){return fetch("/api/hotels?area="+encodeURIComponent(a.value)+"&q="+encodeURIComponent(tag)+"&page="+p).then(function(r){return r.json()})}
+ function go(){if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";ru.hidden=true;return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
+  document.querySelectorAll(".tv-pf button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.a===a.value?"true":"false")});
+  var my=++seq;c.textContent=a.value+"で探しています…";l.innerHTML="";ru.hidden=true;H=[];
+  get(1).then(function(d){if(my!==seq)return;if(d.err&&!d.hotels.length){c.textContent="今は楽天トラベルの検索ができません。時間をおいてお試しください。";return}
+   H=d.hotels;draw(d.tot);ga("hotel_search",{area:a.value,q:tag,results:H.length});
+   if(d.pages>1)setTimeout(function(){if(my!==seq)return;get(2).then(function(e){if(my!==seq||!e.hotels)return;var seen={};H.forEach(function(h){seen[h.u]=1});e.hotels.forEach(function(h){if(!seen[h.u])H.push(h)});draw(d.tot)}).catch(function(){})},1200)
+  }).catch(function(){c.textContent="今は楽天トラベルの検索ができません。"})}
+ f.addEventListener("submit",function(e){e.preventDefault();go();setTimeout(seen,50)});a.addEventListener("change",go);
  t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});go()});
- document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a");if(x)ga("hotel_click",{area:a.value})});
- var th=document.querySelector(".tv-th"),pp=document.querySelector(".tv-pop"),hh=document.getElementById("tvh");
+ document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a,.tv-win a");if(x)ga("hotel_click",{area:a.value,from:x.closest(".tv-win")?"roulette":"list"})});
+ var th=document.querySelector(".tv-th"),pp=document.querySelector(".tv-pop"),hh=document.getElementById("tvh"),rg=document.getElementById("tvrg"),bd=document.getElementById("tvbd");
  function seen(){if(hh)hh.scrollIntoView({behavior:"smooth",block:"start"})}
+ if(rg)rg.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;rg.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-selected",x===b?"true":"false")});
+  document.querySelectorAll(".tv-pf").forEach(function(x){x.hidden=x.dataset.r!==b.dataset.r})});
+ document.addEventListener("click",function(e){var b=e.target.closest(".tv-pf button");if(!b)return;a.value=b.dataset.a;ga("travel_pref",{a:b.dataset.a});go();seen()});
+ if(bd)bd.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;bud=b.dataset.b;bd.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});ga("travel_budget",{b:bud});if(H.length)draw()});
  if(th)th.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=b.dataset.q;th.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
-  t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});ga("travel_theme",{q:tag});if(!a.value){c.textContent="行き先（都道府県）を選んでください";a.focus();window.scrollTo({top:0,behavior:"smooth"});return}go();seen()});
+  t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});ga("travel_theme",{q:tag});if(!a.value){c.textContent="行き先（エリア）を選んでください";document.querySelector(".tv-ar").scrollIntoView({behavior:"smooth"});return}go();seen()});
  if(pp)pp.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;a.value=b.dataset.a;ga("travel_popular",{a:b.dataset.a});go();seen()});
- f.addEventListener("submit",function(){setTimeout(seen,50)});if(a.value)go()})();
+ if(a.value)go()})();
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
@@ -1803,6 +1839,21 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tv-rr{display:flex;align-items:center;gap:10px;margin:14px 16px 6px;padding:18px 16px;border-radius:18px;background-size:cover;background-position:center;color:#fff;box-shadow:0 6px 18px rgba(30,58,138,.3)}
 .tv-rr-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.tv-rr-t small{font-size:11px;opacity:.95}.tv-rr-t b{font-size:21px;font-weight:900}.tv-rr-t span{font-size:11px;opacity:.95}
 .tv-rr-go{flex:none;background:#fde047;color:#1e3a8a;font-weight:900;font-size:13px;border-radius:999px;padding:9px 13px}
+.tv-ar{margin:6px 0 0}.tv-rg,.tv-bd{display:flex;gap:6px;overflow-x:auto;padding:0 16px 6px;scrollbar-width:none}.tv-rg::-webkit-scrollbar,.tv-bd::-webkit-scrollbar{display:none}
+.tv-rg button{flex:none;height:38px;padding:0 14px;border:0;border-radius:999px;background:#e0f2fe;color:#075985;font-weight:800;font-size:13px;cursor:pointer}.tv-rg button[aria-selected="true"]{background:#0369a1;color:#fff}
+.tv-pf{display:flex;flex-wrap:wrap;gap:6px;padding:4px 16px 8px}.tv-pf[hidden]{display:none}.tv-pf button{height:36px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-weight:700;font-size:13px;cursor:pointer}
+.tv-pf button[aria-pressed="true"]{background:#f59e0b;border-color:#f59e0b;color:#fff}
+.tv-bd button{flex:none;height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;font-size:13px;cursor:pointer}.tv-bd button[aria-pressed="true"]{background:#16a34a;border-color:#16a34a;color:#fff}
+.tv-ru{margin:10px 16px 12px;padding:14px;border-radius:20px;background:url(gacha/confetti.webp) center/cover,linear-gradient(140deg,#0c4a6e,#0369a1 55%,#f59e0b);color:#fff;text-align:center}.tv-ru[hidden]{display:none}
+.tv-ru-h{display:flex;align-items:baseline;justify-content:center;gap:8px}.tv-ru-h b{font-size:24px;font-weight:900;text-shadow:0 2px 0 #7c2d12}.tv-ru-h span{font-size:12px}
+.tv-wh{position:relative;width:240px;height:240px;margin:10px auto 4px}.tv-wp{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid #fde047;z-index:2;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.tv-wl{position:absolute;inset:0;border-radius:50%;border:6px solid #fff;box-shadow:0 8px 24px rgba(0,0,0,.35);transition:transform 4s cubic-bezier(.12,.75,.12,1)}
+.tv-wl i{position:absolute;left:50%;top:50%;width:50%;height:24px;margin-top:-12px;transform-origin:0 50%;font-style:normal;font-weight:900;font-size:16px;color:#fff;text-align:right;padding-right:16px;box-sizing:border-box;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.tv-sp{display:block;width:100%;max-width:360px;margin:8px auto 0;height:52px;border:0;border-radius:999px;background:linear-gradient(#fde047,#f59e0b);color:#7c2d12;font-size:18px;font-weight:900;box-shadow:0 5px 0 #b45309;cursor:pointer}
+.tv-sp:disabled{opacity:.6}.tv-lg{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;text-align:left}
+.tv-lg li{font-size:11px;background:rgba(0,0,0,.25);border-radius:8px;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tv-lg li.on{background:#fde047;color:#7c2d12;font-weight:900}
+.tv-win{margin-top:12px;text-align:left}.tv-win[hidden]{display:none}.tv-win a{display:flex;gap:10px;background:#fff;color:var(--txt);border-radius:16px;overflow:hidden;box-shadow:0 0 0 4px #fde047,0 0 30px #fde047;animation:gin .45s cubic-bezier(.2,1.6,.4,1)}
+.tv-win .tv-im{flex:none;width:120px;min-height:120px}.tv-win .tv-b{padding:10px}
 .tv-gd{list-style:none;margin:0;padding:0 16px 8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .tv-gd a{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:800;font-size:13px;text-align:center}
 .tv-tags{display:flex;gap:6px;overflow-x:auto;padding:0 16px 6px;scrollbar-width:none}.tv-tags button{flex:none;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;font-size:13px;cursor:pointer}

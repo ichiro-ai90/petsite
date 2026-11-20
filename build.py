@@ -200,6 +200,7 @@ ICON = {
     "search": '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.3-4.3"/>',
     "share": '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.6M8.2 13.2l7.6 4.6"/>',
     "bag": '<path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+    "bed": '<path d="M3 18V7"/><path d="M3 14h18v4"/><path d="M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.6"/>',
 }
 
 
@@ -1035,6 +1036,21 @@ def main():
              (("海外ブランド", None),), canonical=(f"{origin}/brands.html" if origin else "")))
         files.append("brands.html")
         brand_urls.insert(0, "brands.html")
+    # ペットと泊まれる宿（楽天トラベル・その場検索。11/21 Taku「旅行系のアフィリエイトもとりたい」）
+    _prefs = "北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県".split()
+    _tags = ["ドッグラン", "温泉", "大型犬", "猫", "貸切", "部屋食"]
+    tv = ('<div class="tv-hero"><span class="tv-ph" style="background-image:url(pets/dog.jpg)"></span><div class="tv-t"><small>楽天トラベルの宿から</small>'
+          '<h1>ペットと泊まれる宿</h1><p>行き先を選ぶと、ペットと泊まれるプランがある宿を探します</p></div></div>'
+          '<form class="tv-f" id="tvf"><label class="sr" for="tva">行き先</label><select id="tva"><option value="">行き先（都道府県）</option>'
+          + "".join(f'<option>{E(p)}</option>' for p in _prefs) + '</select><button type="submit">探す</button></form>'
+          '<div class="tv-tags" id="tvt">' + "".join(f'<button type="button" data-q="{E(t)}" aria-pressed="false">{E(t)}</button>' for t in _tags) + '</div>'
+          '<p class="meta tv-c" id="tvc">行き先を選んでください</p><ul class="tv-l" id="tvl"></ul>'
+          '<p class="nayami-n">宿の名前やプランに「ペット」とある宿を出しています。泊まれるペットの種類・大きさ・頭数・料金は宿ごとに違うので、予約の前にリンク先の「ペット宿泊情報」で必ず確かめてください。'
+          '料金は1室1泊の最安の目安（検索した時点）で、予約時はリンク先の料金が適用されます。リンク先は楽天トラベルです。</p>')
+    open(os.path.join(out, "travel.html"), "w", encoding="utf-8").write(page(f"ペットと泊まれる宿を探す｜{SITE}", tv,
+         "犬・猫と泊まれる宿を都道府県から探して、楽天トラベルで予約。ドッグラン・温泉・大型犬OKなどで絞り込めます。", sample,
+         (("ペットと泊まれる宿", None),), canonical=(f"{origin}/travel.html" if origin else "")))
+    files.append("travel.html")
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド<a class="h2a" href="brands.html">すべて見る</a></h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す<a class="h2a" href="nayami.html">すべて見る</a></h2><ul class="nayami-l">{"".join(nayami)}</ul>'
                   '<p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p></section>' if nayami else "")
@@ -1077,6 +1093,8 @@ def main():
     if _br:
         slides.append(f'<a class="bn bn-e" href="{_br}" data-ga="bn_brand"><span class="bn-ph" style="background-image:url(pets/hero2.jpg)"></span>'
                       '<span class="bn-t"><small>製造国を確かめた</small><b>海外ブランド</b><br>を国内ショップで比べる</span><span class="bn-go">ブランドを見る</span></a>')
+    slides.append('<a class="bn bn-f" href="travel.html" data-ga="bn_travel"><span class="bn-ph" style="background-image:url(pets/dog.jpg)"></span>'
+                  '<span class="bn-t"><small>楽天トラベルの宿から</small>うちの子と<br><b>泊まれる宿</b></span><span class="bn-go">宿を探す</span></a>')
     hero = ('<form class="hq" action="search.html" role="search"><label class="sr" for="hq2">ペット用品を探す</label>'
             f'<input type="search" id="hq2" name="q" placeholder="{man + "件の" if man else ""}ペット用品から探す" autocomplete="off"><button type="submit" aria-label="探す">' + globals()["icon"]("search", 20) + '</button></form>'
             f'<div class="bns" id="bns">{"".join(slides)}</div><div class="bn-dots" aria-hidden="true">{"".join("<i></i>" for _ in slides)}</div>')
@@ -1085,7 +1103,7 @@ def main():
              + (f'<li><a href="{_ny}"><span class="qk-i qk-2">' + globals()["icon"]("cat", 22) + '</span>悩みから<br>探す</a></li>' if _ny else "")
              + (f'<li><a href="{_br}"><span class="qk-i qk-3">' + globals()["icon"]("paw", 22) + '</span>海外<br>ブランド</a></li>' if _br else "")
              + '<li><a href="shindan.html"><span class="qk-i qk-4">' + globals()["icon"]("bag", 22) + '</span>1分<br>診断</a></li>'
-             + '<li><a href="favorites.html"><span class="qk-i qk-5">' + globals()["icon"]("star", 22) + '</span>マイ<br>リスト</a></li></ul>')
+             + '<li><a href="travel.html"><span class="qk-i qk-5">' + globals()["icon"]("bed", 22) + '</span>泊まれる<br>宿</a></li></ul>')
     tiles = sorted(deal_tiles, key=lambda t: -t[0])[:10]
     tiles_sec = ('<section class="tl-sec"><h2 class="h2">カテゴリ別 お得</h2><p class="h2n">※同じ内容量の他店（3店以上の中央値）との差・取得時点・送料別</p><ul class="tls">'
                  + "".join(f'<li><a class="tl tl{k % 5}" href="{g["slug"]}.html" data-ga="tile"><span class="tl-p">{E(pn)}</span><span class="tl-c">{E(g["title"])}</span><span class="tl-v"><small>他店より最大</small><b>{v}</b>%安い商品あり※</span><span class="tl-n">お得な商品 {n}件 ›</span></a></li>'
@@ -1409,6 +1427,18 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
    if(r>=2){for(var k=0;k<(r==3?28:14);k++){var f=document.createElement("i");f.className="gc-fx";f.style.background=["#facc15","#f472b6","#a78bfa","#34d399"][k%4];
     f.style.setProperty("--x",(Math.random()*240-120)+"px");f.style.setProperty("--y",(Math.random()*-160-20)+"px");box.appendChild(f);setTimeout(function(x){x.remove()}.bind(null,f),1100)}}
    btn.textContent="もう1回引く";busy=0;if(window.pnXP)pnXP();if(window.gtag)gtag("event","gacha_result",{rarity:r})},1100)});})();
+(function(){var f=document.getElementById("tvf");if(!f)return;var a=document.getElementById("tva"),t=document.getElementById("tvt"),c=document.getElementById("tvc"),l=document.getElementById("tvl"),tag="";
+ try{var s=localStorage.getItem("pn_tva");if(s)a.value=s}catch(e){}
+ function go(){if(!a.value){c.textContent="行き先を選んでください";l.innerHTML="";return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
+  c.textContent=a.value+"で探しています…";l.innerHTML="";
+  fetch("/api/hotels?area="+encodeURIComponent(a.value)+"&q="+encodeURIComponent(tag)).then(function(r){return r.json()}).then(function(d){
+   if(d.err&&!d.hotels.length){c.textContent="今は楽天トラベルの検索ができません。時間をおいてお試しください。";return}
+   c.textContent=d.hotels.length?a.value+(tag?"・"+tag:"")+"：楽天トラベル "+yen(d.tot)+"件から "+d.hotels.length+"件":"見つかりませんでした。条件を変えてお試しください。";
+   l.innerHTML=d.hotels.map(function(h){return '<li><a href="'+esc(h.u)+'" target="_blank" rel="sponsored nofollow noopener" data-ga="hotel"><span class="tv-im" style="background-image:url(&quot;'+esc(h.img)+'&quot;)"></span><span class="tv-b"><span class="tv-n">'+esc(h.n)+'</span>'+
+    (h.ra?'<span class="tv-s">★'+h.ra.toFixed(2)+'（'+yen(h.rc)+'件）</span>':'')+'<span class="tv-s">'+esc(h.st?h.st+"駅周辺":h.ad)+'</span>'+(h.min?'<span class="tv-p">1泊 <b>'+yen(h.min)+'</b>円〜<small>（1室・目安）</small></span>':'')+'<span class="tv-go">楽天トラベルで見る</span></span></a></li>'}).join("");ga("hotel_search",{area:a.value,q:tag,results:d.hotels.length})}).catch(function(){c.textContent="今は楽天トラベルの検索ができません。"})}
+ f.addEventListener("submit",function(e){e.preventDefault();go()});a.addEventListener("change",go);
+ t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});go()});
+ document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a");if(x)ga("hotel_click",{area:a.value})});if(a.value)go()})();
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
@@ -1725,6 +1755,19 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .bn-c .bn-ph::after{background:linear-gradient(90deg,rgba(190,24,93,.85),rgba(190,24,93,.05) 75%)}
 .bn-d .bn-ph::after{background:linear-gradient(90deg,rgba(13,110,100,.88),rgba(13,110,100,.05) 75%)}
 .bn-e .bn-ph::after{background:linear-gradient(90deg,rgba(30,41,99,.88),rgba(30,41,99,.05) 75%)}
+.bn-f .bn-ph::after{background:linear-gradient(90deg,rgba(3,105,161,.88),rgba(3,105,161,.05) 75%)}
+.tv-hero{position:relative;height:180px;margin:8px 16px 0;border-radius:18px;overflow:hidden;color:#fff}.tv-ph{position:absolute;inset:0;background:center/cover no-repeat}
+.tv-ph::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,105,161,.9),rgba(3,105,161,.1) 80%)}
+.tv-t{position:absolute;left:16px;top:18px;right:16px}.tv-t small{font-size:12px;font-weight:700}.tv-t h1{margin:4px 0;font-size:26px;font-weight:900}.tv-t p{margin:0;font-size:12px;max-width:260px}
+.tv-f{display:flex;gap:6px;margin:12px 16px 8px}.tv-f select{flex:1;min-width:0;height:46px;border:2px solid var(--brand);border-radius:999px;padding:0 14px;font-size:16px;background:#fff}
+.tv-f button{height:46px;border:0;border-radius:999px;padding:0 22px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-weight:800;font-size:15px}
+.tv-tags{display:flex;gap:6px;overflow-x:auto;padding:0 16px 6px;scrollbar-width:none}.tv-tags button{flex:none;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;font-size:13px;cursor:pointer}
+.tv-tags button[aria-pressed="true"]{background:#0369a1;border-color:#0369a1;color:#fff}.tv-c{padding:0 16px}
+.tv-l{list-style:none;margin:0;padding:0 16px 8px;display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:10px}@media (min-width:700px){.tv-l{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tv-l a{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;color:var(--txt)}
+.tv-im{aspect-ratio:16/9;background:#e5e7eb center/cover no-repeat}@media (max-width:699px){.tv-l a{flex-direction:row}.tv-im{flex:none;width:120px;aspect-ratio:auto;min-height:130px}}.tv-b{padding:10px 12px 12px;display:flex;flex-direction:column;gap:3px}
+.tv-n{font-size:15px;font-weight:900;line-height:1.35}.tv-s{font-size:12px;color:var(--sub)}.tv-p{font-size:13px}.tv-p b{font-size:20px;color:var(--win)}
+.tv-go{margin-top:4px;align-self:flex-start;background:#0369a1;color:#fff;font-weight:800;font-size:12px;border-radius:999px;padding:6px 12px}
 .bn-dots{display:flex;justify-content:center;gap:6px;margin:8px 0 4px}.bn-dots i{width:6px;height:6px;border-radius:3px;background:#d6d3d1;transition:width .2s}.bn-dots i.on{width:18px;background:#ea580c}
 .card-c{font-size:11px;color:var(--sub);margin-left:4px}
 .gc{margin:12px 12px 4px;padding:12px;border-radius:20px;background:url(gacha/confetti.webp) center/cover,linear-gradient(140deg,#3b0764,#7c3aed 55%,#db2777);color:#fff;position:relative;overflow:hidden}

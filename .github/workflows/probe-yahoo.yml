@@ -18,14 +18,23 @@ jobs:
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p:
               b = p.chromium.launch()
-              pg = b.new_page(viewport={"width": 390, "height": 900})
-              pg.goto("https://petnavi.niconote.jp/?v=1121b"); pg.wait_for_timeout(4000)
-              print("BNB", pg.evaluate("(document.querySelector('.bn-b .bn-t')||{}).textContent"), pg.evaluate("(document.querySelector('.bn-b .bn-im')||{}).src"), pg.evaluate("(document.querySelector('.bn-b .bn-im')||{}).alt"))
-              print("GA", pg.evaluate("!!document.getElementById('gmc') && document.getElementById('gmc').naturalWidth"))
-              pg.evaluate("document.getElementById('bns').scrollTo({left:document.querySelector('.bn').offsetWidth+10})"); pg.wait_for_timeout(800)
-              pg.locator(".bn-b").screenshot(path="bnb.png")
-              g = pg.locator("#gacha"); g.scroll_into_view_if_needed(); g.screenshot(path="g0.png")
-              pg.click("#gbtn"); pg.wait_for_timeout(2200); g.screenshot(path="g1.png")
+              import urllib.parse, json
+              pg = b.new_page()
+              pg.goto("https://petnavi.niconote.jp/api/msearch?v=1121c&q=" + urllib.parse.quote("ちゅーる"))
+              d = json.loads(pg.inner_text("body")); ys = [x["u"] for x in d.get("items", []) if x["m"] == "y"]
+              print("YURL", len(ys), "vc" if any("valuecommerce" in u and "892753714" in u for u in ys) else "no-vc", (ys[0][:110] if ys else ""))
+              for q in ("", "ドッグラン"):
+                  pg.goto("https://petnavi.niconote.jp/api/hotels?v=1121c&area=" + urllib.parse.quote("長野県") + "&q=" + urllib.parse.quote(q))
+                  t = pg.inner_text("body"); 
+                  try:
+                      d = json.loads(t); print("HOT", q, "tot", d.get("tot"), "n", len(d.get("hotels", [])), "err", d.get("err"), "u", (d.get("hotels") or [{}])[0].get("u", "")[:90])
+                  except Exception as e:
+                      print("HOT", q, "raw", t[:300])
+              pg2 = b.new_page(viewport={"width": 390, "height": 900})
+              pg2.goto("https://petnavi.niconote.jp/travel.html?v=1121c"); pg2.wait_for_timeout(3000)
+              pg2.select_option("#tva", "長野県"); pg2.wait_for_timeout(5000)
+              pg2.screenshot(path="travel.png", full_page=True)
+              print("TVC", pg2.evaluate("document.getElementById('tvc').textContent"))
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

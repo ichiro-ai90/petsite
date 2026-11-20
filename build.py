@@ -1046,8 +1046,17 @@ def main():
     _ds = drops(published)
     top = max((round(x["d"] / x["hi"] * 100) for x in _ds), default=0)
     # バナーは「みんなが買っている定番」で見せる（レビュー件数×お得率）。数字はその商品自身の%（別商品の%と写真を混ぜない）
-    _pop = [x for x in _ds if x["p"].get("image") and x["p"].get("reviewCount", 0) >= 100] or [x for x in _ds if x["p"].get("image")]
-    _bx = max(_pop, key=lambda x: (x["d"] / x["hi"]) * math.log10(x["p"].get("reviewCount", 0) + 10)) if _pop else None
+    # 「これ欲しい」と思われやすい物を優先: フード・おやつ・おもちゃ・ベッド等。砂・シーツ・ティッシュ等の衛生用品は外す
+    _plain = re.compile(r"砂|シーツ|ティッシュ|消臭|除菌|トイレ|おむつ|マナー|ペレット|ゴミ袋|うんち")
+    _want = re.compile(r"フード|おやつ|ちゅ|ジャーキー|ガム|おもちゃ|ベッド|ハウス|タワー|キャリー|カート|首輪|ハーネス|服")
+    def _bscore(x):
+        t = x["g"].get("title", "") + " " + x["p"].get("name", "")
+        w = 2.0 if _want.search(t) else 1.0
+        return w * (x["d"] / x["hi"]) * math.log10(x["p"].get("reviewCount", 0) + 10) * max(x["p"].get("reviewAverage", 0), 3.5)
+    _ok = [x for x in _ds if x["p"].get("image") and not _plain.search(x["g"].get("title", "") + " " + x["p"].get("name", ""))]
+    _pop = ([x for x in _ok if x["p"].get("reviewCount", 0) >= 100 and x["p"].get("reviewAverage", 0) >= 4.2] or _ok
+            or [x for x in _ds if x["p"].get("image")])
+    _bx = max(_pop, key=_bscore) if _pop else None
     _dimg = img(_bx["p"].get("image"), 300) if _bx else ""
     _bpct = round(_bx["d"] / _bx["hi"] * 100) if _bx else top
     _ny = next((u for u in nayami_urls), "")

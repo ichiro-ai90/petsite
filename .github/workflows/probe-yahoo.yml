@@ -11,6 +11,33 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - name: 楽天API切り分け
+        env:
+          AID: ${{ secrets.RAKUTEN_APP_ID }}
+          AK: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+        run: |
+          python - <<'PY'
+          import os, re, time, urllib.request, urllib.parse
+          A, K = os.environ["AID"], os.environ["AK"]
+          def m(t): return re.sub(r"pk_[A-Za-z0-9_-]+|[0-9a-f]{8}-[0-9a-f-]{27}", "*", t.replace(A, "*").replace(K, "*"))[:300]
+          O = "https://petnavi.niconote.jp"
+          base = {"applicationId": A, "accessKey": K, "format": "json", "formatVersion": "2"}
+          tests = [
+            ("ichiba", "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401", {"keyword": "ちゅーる", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
+            ("travel_kw", "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20260731", {"keyword": "ペット", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
+            ("travel_kw_noref", "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20260731", {"keyword": "ペット", "hits": "1"}, {}),
+            ("travel_kw_old", "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20170426", {"keyword": "ペット", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
+            ("travel_area", "https://openapi.rakuten.co.jp/engine/api/Travel/GetAreaClass/20140210", {}, {"Origin": O, "Referer": O + "/"}),
+            ("travel_simple", "https://openapi.rakuten.co.jp/engine/api/Travel/SimpleHotelSearch/20170426", {"largeClassCode": "japan", "middleClassCode": "nagano", "smallClassCode": "karuizawa", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
+          ]
+          for name, u, q, h in tests:
+              time.sleep(1.5)
+              req = urllib.request.Request(u + "?" + urllib.parse.urlencode({**base, **q}), headers={"User-Agent": "petnavi-probe", **h})
+              try:
+                  r = urllib.request.urlopen(req, timeout=20); print("API", name, r.status, m(r.read().decode()[:200]))
+              except urllib.error.HTTPError as e:
+                  print("API", name, e.code, m(e.read().decode()))
+          PY
       - name: 画面
         run: |
           pip -q install playwright && python -m playwright install --with-deps chromium >/dev/null 2>&1

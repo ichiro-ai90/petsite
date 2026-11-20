@@ -644,6 +644,13 @@ PT_NOTE = '<a class="kome" href="about.html#notes" aria-label="注記を見る">
 YPT_NOTE = PT_NOTE  # Yahoo!ショッピングのポイントは API の付与予定（注記はフッターに併記）
 
 
+def ptxt(x, unit="pt"):
+    """ポイント表示。楽天は「◯pt（◯倍）」、Yahoo!は倍率の考え方が違うので PayPay ポイントの数だけ（0 ならリンク先で確認）"""
+    if is_y(x):
+        return f'PayPayポイント {x["points"]:,}{unit}' if x.get("points", 0) > 0 else "ポイントはリンク先で確認"
+    return f'{x["points"]:,}{unit}（{x["pointRate"]}倍）'
+
+
 def product_row(p, g, fn):
     o = best_offer(p)
     oe = best_offer(p, "effective")
@@ -666,7 +673,7 @@ def product_row(p, g, fn):
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
             f'<span class="nm">{E(show_name(p["name"]))}</span>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'<span class="pr"><small class="scope">{len(p["offers"])}店中の最安</small><b class="pv">{o["price"]:,}</b>円 <span class="shipv">{ship(o["shipping"])}</span>{tbadge}</span>'
-            f'<span class="pt"><span class="ptv">{o["points"]:,}pt（{o["pointRate"]}倍）</span></span>{hit}'
+            f'<span class="pt"><span class="ptv">{ptxt(o)}</span></span>{hit}'
             f'<span class="meta">{buy.lstrip("・")}{"・" + upt if upt else ""}</span>{gapt}</span></a></li>')
 
 
@@ -787,7 +794,7 @@ def item_body(p, g, fetched):
         f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop">{mall_tag(x, offers)}<span class="sn">{E(x["shop"])}</span>{hi_tag(x["pointRate"])}'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{x["points"]:,}pt（{x["pointRate"]}倍）{YPT_NOTE if is_y(x) else PT_NOTE}</span></div>'
+        f'<span class="pt">{ptxt(x)}{YPT_NOTE if is_y(x) else PT_NOTE}</span></div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -836,7 +843,7 @@ def item_body(p, g, fetched):
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
-            f'<p class="pt">{o["points"]:,}ポイント（{o["pointRate"]}倍）{PT_NOTE}</p>'
+            f'<p class="pt">{ptxt(o, "ポイント")}{PT_NOTE}</p>'
             + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら 最大 <b>+約{card_pt(o["price"]):,}pt</b><span class="card-c">（会員条件・企画で変動）</span><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
                          + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")
                          + '</p>')
@@ -1375,7 +1382,7 @@ function search(){var f=document.getElementById("sf");if(!f)return;var u=new URL
 function mrow(x){return '<li><a class="row" href="'+esc(x.u)+'" target="_blank" rel="sponsored nofollow noopener" data-m="'+x.m+'"><span class="pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" width="96" height="96" loading="lazy">':'<span class="noimg"></span>')+'</span><span class="info">'+
     '<span class="nm"><span class="mall '+x.m+'">'+(x.m==="y"?"Yahoo!":"楽天")+'</span>'+esc(x.n)+'</span><span class="meta">'+esc(x.s)+'</span>'+
     '<span class="pr"><b>'+yen(x.p)+'</b>円 <span class="ship'+(x.sh?" free":" paid")+'">'+(x.sh?"送料無料":"送料別")+'</span></span>'+
-    (x.pt>0?'<span class="pt">'+yen(x.pt)+'pt（'+x.r+'倍）<span class="kome">※</span></span>':'')+'</span></a></li>'}
+    (x.pt>0?'<span class="pt">'+(x.m==="y"?'PayPayポイント '+yen(x.pt)+'pt':yen(x.pt)+'pt（'+x.r+'倍）')+'<span class="kome">※</span></span>':'')+'</span></a></li>'}
 var MS={},MQ2=Promise.resolve();function ms(q,cb){if(MS[q])return MS[q].then(cb,function(){cb(null)});
  MS[q]=MQ2=MQ2.then(function(){return new Promise(function(ok){setTimeout(ok,1100)})}).then(function(){return fetch("/api/msearch?o=rel&q="+encodeURIComponent(q)).then(function(r){return r.json()})});MQ2=MQ2.catch(function(){});MS[q].then(cb,function(){cb(null)})}
 function totTxt(t){var a=[];if(t&&t.r)a.push("楽天 "+yen(t.r)+"件");if(t&&t.y)a.push("Yahoo! "+yen(t.y)+"件");return a.join("・")}

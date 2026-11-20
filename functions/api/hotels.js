@@ -44,11 +44,12 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const url = new URL(request.url);
   const area = (url.searchParams.get("area") || "").trim().slice(0, 10);
   const q = (url.searchParams.get("q") || "").trim().slice(0, 30);
-  const key = new Request(url.origin + "/api/hotels?area=" + encodeURIComponent(area) + "&q=" + encodeURIComponent(q));
+  const page = String(Math.min(3, Math.max(1, parseInt(url.searchParams.get("page") || "1", 10) || 1)));
+  const key = new Request(url.origin + "/api/hotels?area=" + encodeURIComponent(area) + "&q=" + encodeURIComponent(q) + "&page=" + page);
   const cache = caches.default, hit = await cache.match(key);
   if (hit) return hit;
   try {
-    const params = { keyword: ("ペット " + q).trim(), hits: "30", responseType: "middle", hotelThumbnailSize: "3" };
+    const params = { keyword: ("ペット " + q).trim(), hits: "30", page, responseType: "middle", hotelThumbnailSize: "3" };
     if (env.RAKUTEN_AFFILIATE_ID) params.affiliateId = env.RAKUTEN_AFFILIATE_ID;
     if (area) {
       const m = await areas(env, waitUntil);
@@ -64,7 +65,7 @@ export async function onRequestGet({ request, env, waitUntil }) {
         min: +b.hotelMinCharge || 0, ra: +b.reviewAverage || 0, rc: +b.reviewCount || 0,
         ad: ((b.address1 || "") + (b.address2 || "")).slice(0, 40), st: b.nearestStation || "", sp: (b.hotelSpecial || "").slice(0, 80) };
     }).filter((x) => x.n && x.u);
-    const res = J({ area, q, at: new Date().toISOString(), tot: +(d.pagingInfo || {}).recordCount || hotels.length, hotels }, 200,
+    const res = J({ area, q, page: +page, pages: +(d.pagingInfo || {}).pageCount || 1, at: new Date().toISOString(), tot: +(d.pagingInfo || {}).recordCount || hotels.length, hotels }, 200,
       { "cache-control": `public, max-age=${TTL}` });
     if (hotels.length) waitUntil(cache.put(key, res.clone()));
     return res;

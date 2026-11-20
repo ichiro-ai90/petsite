@@ -17,12 +17,14 @@ function J(o, status = 200, extra = {}) {
 async function call(env, path, params) {
   const p = new URLSearchParams({ applicationId: env.RAKUTEN_APP_ID, format: "json", formatVersion: "2", ...params });
   if (env.RAKUTEN_ACCESS_KEY) p.set("accessKey", env.RAKUTEN_ACCESS_KEY);
-  const r = await fetch(BASE + path + "?" + p, { headers: { Origin: env.RAKUTEN_ORIGIN || "https://petnavi.niconote.jp" } });
+  const o = env.RAKUTEN_ORIGIN || "https://petnavi.niconote.jp";
+  const r = await fetch(BASE + path + "?" + p, { headers: { Origin: o, Referer: o + "/travel.html", accessKey: env.RAKUTEN_ACCESS_KEY || "" } });
   if (r.ok) return r.json();
   const t = (await r.text()).slice(0, 200);
   if (r.status === 404 && t.includes("not_found")) return { hotels: [], pagingInfo: { recordCount: 0 } };
-  const m = t.match(/"error"\s*:\s*"([a-z_]+)"/);
-  throw new Error(r.status + " " + (m ? m[1] : ""));
+  // 原因切り分け用に楽天の応答本文の先頭だけ返す（キー類は伏せる）
+  const safe = t.replace(/[A-Za-z0-9_-]{24,}/g, "*").replace(/\s+/g, " ").slice(0, 120);
+  throw new Error(r.status + " " + safe);
 }
 
 export async function onRequestGet({ request, env, waitUntil }) {
@@ -55,6 +57,6 @@ export async function onRequestGet({ request, env, waitUntil }) {
     if (hotels.length) waitUntil(cache.put(key, res.clone()));
     return res;
   } catch (e) {
-    return J({ area, q, err: String(e.message || e).slice(0, 80), hotels: [] }, 200, { "cache-control": "no-store" });
+    return J({ area, q, err: String(e.message || e).slice(0, 140), hotels: [] }, 200, { "cache-control": "no-store" });
   }
 }

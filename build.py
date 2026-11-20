@@ -1099,7 +1099,7 @@ def main():
         slides.append(f'<a class="bn bn-e" href="{_br}" data-ga="bn_brand"><span class="bn-ph" style="background-image:url(pets/hero2.jpg)"></span>'
                       '<span class="bn-t"><small>製造国を確かめた</small><b>海外ブランド</b><br>を国内ショップで比べる</span><span class="bn-go">ブランドを見る</span></a>')
     slides.append('<a class="bn bn-f" href="travel.html" data-ga="bn_travel"><span class="bn-ph" style="background-image:url(pets/dog.jpg)"></span>'
-                  '<span class="bn-t"><small>楽天トラベルの宿から</small>うちの子と<br><b>泊まれる宿</b></span><span class="bn-go">宿を探す</span></a>')
+                  '<span class="bn-t"><small>るるぶ・楽天トラベルから</small>うちの子と<br><b>泊まれる宿</b></span><span class="bn-go">宿を探す</span></a>')
     hero = ('<form class="hq" action="search.html" role="search"><label class="sr" for="hq2">ペット用品を探す</label>'
             f'<input type="search" id="hq2" name="q" placeholder="{man + "件の" if man else ""}ペット用品から探す" autocomplete="off"><button type="submit" aria-label="探す">' + globals()["icon"]("search", 20) + '</button></form>'
             f'<div class="bns" id="bns">{"".join(slides)}</div><div class="bn-dots" aria-hidden="true">{"".join("<i></i>" for _ in slides)}</div>')

@@ -1039,14 +1039,19 @@ def main():
     # ペットと泊まれる宿（楽天トラベル・その場検索。11/21 Taku「旅行系のアフィリエイトもとりたい」）
     _prefs = "北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県".split()
     _tags = ["ドッグラン", "温泉", "大型犬", "猫", "貸切", "部屋食"]
-    tv = ('<div class="tv-hero"><span class="tv-ph" style="background-image:url(pets/dog.jpg)"></span><div class="tv-t"><small>楽天トラベルの宿から</small>'
-          '<h1>ペットと泊まれる宿</h1><p>行き先を選ぶと、ペットと泊まれるプランがある宿を探します</p></div></div>'
+    tv = ('<div class="tv-hero"><span class="tv-ph" style="background-image:url(pets/dog.jpg)"></span><div class="tv-t"><small>うちの子と旅行</small>'
+          '<h1>ペットと泊まれる宿</h1><p>るるぶトラベルの特集と、楽天トラベルの宿から探せます</p></div></div>'
+          # るるぶトラベル（バリューコマース・宿泊2.09%）のペット特集。宿ごとのデータは取れないので特集ページへの入口だけ（11/21 Taku 作成の MyLink）
+          '<a class="tv-rr" href="https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3788390&amp;pid=892753722&amp;vc_url=https%3A%2F%2Fwww.rurubu.travel%2Ftheme%2Fpet%2F%3Futm_source%3Dvaluecommerce%26utm_medium%3Daffiliate" '
+          'target="_blank" rel="sponsored nofollow noopener" data-ga="rurubu_pet"><img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3788390&amp;pid=892753722" height="1" width="0" alt="" style="border:0">'
+          '<span class="tv-rr-t"><small>るるぶトラベル（JTB）の特集</small><b>ペットと泊まれる宿</b><span>ドッグラン・愛犬用風呂・大型犬OKなどで選べる</span></span><span class="tv-rr-go">特集を見る ›</span></a>'
+          '<h2 class="h2">楽天トラベルで都道府県から探す</h2>'
           '<form class="tv-f" id="tvf"><label class="sr" for="tva">行き先</label><select id="tva"><option value="">行き先（都道府県）</option>'
           + "".join(f'<option>{E(p)}</option>' for p in _prefs) + '</select><button type="submit">探す</button></form>'
           '<div class="tv-tags" id="tvt">' + "".join(f'<button type="button" data-q="{E(t)}" aria-pressed="false">{E(t)}</button>' for t in _tags) + '</div>'
           '<p class="meta tv-c" id="tvc">行き先を選んでください</p><ul class="tv-l" id="tvl"></ul>'
           '<p class="nayami-n">宿の名前やプランに「ペット」とある宿を出しています。泊まれるペットの種類・大きさ・頭数・料金は宿ごとに違うので、予約の前にリンク先の「ペット宿泊情報」で必ず確かめてください。'
-          '料金は1室1泊の最安の目安（検索した時点）で、予約時はリンク先の料金が適用されます。リンク先は楽天トラベルです。</p>')
+          '料金は1室1泊の最安の目安（検索した時点）で、予約時はリンク先の料金が適用されます。リンク先は楽天トラベル・るるぶトラベルです。</p>')
     open(os.path.join(out, "travel.html"), "w", encoding="utf-8").write(page(f"ペットと泊まれる宿を探す｜{SITE}", tv,
          "犬・猫と泊まれる宿を都道府県から探して、楽天トラベルで予約。ドッグラン・温泉・大型犬OKなどで絞り込めます。", sample,
          (("ペットと泊まれる宿", None),), canonical=(f"{origin}/travel.html" if origin else "")))
@@ -1759,6 +1764,9 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tv-hero{position:relative;height:180px;margin:8px 16px 0;border-radius:18px;overflow:hidden;color:#fff}.tv-ph{position:absolute;inset:0;background:center/cover no-repeat}
 .tv-ph::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,105,161,.9),rgba(3,105,161,.1) 80%)}
 .tv-t{position:absolute;left:16px;top:18px;right:16px}.tv-t small{font-size:12px;font-weight:700}.tv-t h1{margin:4px 0;font-size:26px;font-weight:900}.tv-t p{margin:0;font-size:12px;max-width:260px}
+.tv-rr{display:flex;align-items:center;gap:10px;margin:12px 16px 4px;padding:14px 16px;border-radius:16px;background:linear-gradient(120deg,#1e3a8a,#2563eb);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.25)}
+.tv-rr-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.tv-rr-t small{font-size:11px;opacity:.9}.tv-rr-t b{font-size:19px;font-weight:900}.tv-rr-t span{font-size:11px;opacity:.9}
+.tv-rr-go{flex:none;background:#fde047;color:#1e3a8a;font-weight:900;font-size:13px;border-radius:999px;padding:8px 12px}
 .tv-f{display:flex;gap:6px;margin:12px 16px 8px}.tv-f select{flex:1;min-width:0;height:46px;border:2px solid var(--brand);border-radius:999px;padding:0 14px;font-size:16px;background:#fff}
 .tv-f button{height:46px;border:0;border-radius:999px;padding:0 22px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-weight:800;font-size:15px}
 .tv-tags{display:flex;gap:6px;overflow-x:auto;padding:0 16px 6px;scrollbar-width:none}.tv-tags button{flex:none;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;font-size:13px;cursor:pointer}

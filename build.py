@@ -1481,7 +1481,7 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
   lg.innerHTML=pick.map(function(h,k){return "<li>"+(k+1)+". "+esc(h.n)+"</li>"}).join("");document.getElementById("tvrn").textContent="候補 "+n+"件";sp.textContent="ルーレットを回す"}
  sp.addEventListener("click",function(){if(!pick.length)return;sp.disabled=true;win.hidden=true;lg.querySelectorAll("li").forEach(function(x){x.className=""});
   var n=pick.length,k=Math.floor(Math.random()*n),seg=360/n,tgt=360-((k+.5)*seg)+(Math.random()-.5)*seg*.6;rot=rot-(rot%360)+360*6+tgt;wl.style.transform="rotate("+rot+"deg)";ga("roulette_spin",{n:n});
-  setTimeout(function(){sp.disabled=false;sp.textContent="もう一回まわす";lg.children[k].className="on";win.innerHTML='<p style="margin:0 0 6px;font-weight:900;font-size:15px">今回の旅はここに決まり！</p>'+card(pick[k]);win.hidden=false;
+  setTimeout(function(){sp.disabled=false;sp.textContent="もう一回まわす";lg.children[k].className="on";win.innerHTML='<p style="margin:0 0 6px;font-weight:900;font-size:15px">今回の旅の候補はここ！</p><p style="margin:0 0 6px;font-size:11px">空室・料金・ペットの条件はリンク先で確認してください</p>'+card(pick[k]);win.hidden=false;
    for(var j=0;j<24;j++){var fx=document.createElement("i");fx.className="gc-fx";fx.style.background=["#fde047","#f472b6","#a78bfa","#34d399"][j%4];fx.style.setProperty("--x",(Math.random()*260-130)+"px");fx.style.setProperty("--y",(Math.random()*-180-20)+"px");ru.appendChild(fx);setTimeout(function(x){x.remove()}.bind(null,fx),1100)}
    ga("roulette_result",{})},4100)});
  function get(p){return fetch("/api/hotels?area="+encodeURIComponent(a.value)+"&q="+encodeURIComponent(tag)+"&page="+p).then(function(r){return r.json()})}

@@ -18,12 +18,14 @@ jobs:
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p:
               b = p.chromium.launch()
-              pg = b.new_page()
-              import urllib.parse, json
-              pg.goto("https://petnavi.niconote.jp/api/msearch?v=1121a&q=" + urllib.parse.quote("ちゅーる"))
-              d = json.loads(pg.inner_text("body"))
-              ys = [x["u"] for x in d.get("items", []) if x["m"] == "y"]
-              print("YURL", len(ys), [u.split("?")[0][:60] for u in ys[:2]], "vc" if any("valuecommerce" in u for u in ys) else "no-vc")
+              pg = b.new_page(viewport={"width": 390, "height": 900})
+              pg.goto("https://petnavi.niconote.jp/?v=1121b"); pg.wait_for_timeout(4000)
+              print("BNB", pg.evaluate("(document.querySelector('.bn-b .bn-t')||{}).textContent"), pg.evaluate("(document.querySelector('.bn-b .bn-im')||{}).src"), pg.evaluate("(document.querySelector('.bn-b .bn-im')||{}).alt"))
+              print("GA", pg.evaluate("!!document.getElementById('gmc') && document.getElementById('gmc').naturalWidth"))
+              pg.evaluate("document.getElementById('bns').scrollTo({left:document.querySelector('.bn').offsetWidth+10})"); pg.wait_for_timeout(800)
+              pg.locator(".bn-b").screenshot(path="bnb.png")
+              g = pg.locator("#gacha"); g.scroll_into_view_if_needed(); g.screenshot(path="g0.png")
+              pg.click("#gbtn"); pg.wait_for_timeout(2200); g.screenshot(path="g1.png")
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

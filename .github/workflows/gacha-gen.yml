@@ -1,0 +1,34 @@
+name: gacha-gen
+# お得ガチャの素材を画像生成で作る（費用が出るので dev/gacha-art に依頼ファイルを push したときだけ）
+on:
+  push:
+    branches: ["dev/gacha-art"]
+    paths: ["design/gacha_request.md"]
+permissions:
+  contents: write
+concurrency:
+  group: gacha-gen
+  cancel-in-progress: false
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q pillow
+      - name: generate
+        run: |
+          set -a; grep -E '^GACHA_ONLY=' design/gacha_request.md > /tmp/req.env || true; . /tmp/req.env; set +a
+          python design/generate_gacha.py
+      - name: commit
+        run: |
+          git config user.name "ichiro-ai90"
+          git config user.email "ichiro-ai90@users.noreply.github.com"
+          git add design/gacha
+          git diff --cached --quiet && exit 0
+          git commit -m "design: お得ガチャの素材（画像生成）"
+          git push

@@ -15,6 +15,7 @@ jobs:
         env:
           AID: ${{ secrets.RAKUTEN_APP_ID }}
           AK: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          SO: ${{ vars.SITE_ORIGIN }}
         run: |
           python - <<'PY'
           import os, re, time, urllib.request, urllib.parse
@@ -22,14 +23,13 @@ jobs:
           def m(t): return re.sub(r"pk_[A-Za-z0-9_-]+|[0-9a-f]{8}-[0-9a-f-]{27}", "*", " ".join(t.split()).replace(A, "*").replace(K, "*"))[:300]
           O = "https://petnavi.niconote.jp"
           base = {"applicationId": A, "accessKey": K, "format": "json", "formatVersion": "2"}
-          tests = [
-            ("ichiba", "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401", {"keyword": "ちゅーる", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
-            ("travel_kw", "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20260731", {"keyword": "ペット", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
-            ("travel_kw_noref", "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20260731", {"keyword": "ペット", "hits": "1"}, {}),
-            ("travel_kw_old", "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20170426", {"keyword": "ペット", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
-            ("travel_area", "https://openapi.rakuten.co.jp/engine/api/Travel/GetAreaClass/20140210", {}, {"Origin": O, "Referer": O + "/"}),
-            ("travel_simple", "https://openapi.rakuten.co.jp/engine/api/Travel/SimpleHotelSearch/20170426", {"largeClassCode": "japan", "middleClassCode": "nagano", "smallClassCode": "karuizawa", "hits": "1"}, {"Origin": O, "Referer": O + "/"}),
-          ]
+          SO = os.environ.get("SO", "")
+          print("API SITE_ORIGIN", SO)
+          IU = "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401"; IQ = {"keyword": "ちゅーる", "hits": "1"}
+          TU = "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20260731"; TQ = {"keyword": "ペット", "hits": "1"}
+          tests = []
+          for tag, h in [("origin_SO", {"Origin": SO}), ("referer_SO", {"Referer": SO + "/"}), ("origin_petnavi", {"Origin": O}), ("referer_pages", {"Referer": "https://petsite-ichiro.pages.dev/"}), ("both_SO", {"Origin": SO, "Referer": SO + "/"})]:
+              tests += [("ichiba_" + tag, IU, IQ, h), ("travel_" + tag, TU, TQ, h)]
           for name, u, q, h in tests:
               time.sleep(1.5)
               req = urllib.request.Request(u + "?" + urllib.parse.urlencode({**base, **q}), headers={"User-Agent": "petnavi-probe", **h})

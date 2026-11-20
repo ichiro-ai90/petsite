@@ -1,0 +1,20 @@
+name: travel-photos
+# 旅行ページの写真を Pexels から取る（dev/travel-photos に push したときだけ・無料）
+on:
+  push:
+    branches: ["dev/travel-photos"]
+    paths: ["design/fetch_travel_photos.py"]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q pillow && python design/fetch_travel_photos.py
+      - run: |
+          git config user.name "ichiro-ai90"; git config user.email "ichiro-ai90@users.noreply.github.com"
+          git add assets/travel; git diff --cached --quiet && exit 0
+          git commit -m "assets: 旅行ページの写真（Pexels）"; git push

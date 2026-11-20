@@ -1068,7 +1068,7 @@ def main():
     if _ds:
         slides.append(f'<a class="bn bn-b" href="weekly.html" data-ga="bn_deals"><span class="bn-t"><small>{("レビュー" + format(_bx["p"].get("reviewCount", 0), ",") + "件の定番が") if _bx else "同じ内容量の他店と比べて"}</small>他店より<br><b class="cnt" data-to="{_bpct}">{_bpct}</b><i>%</i>安い</span>'
                       + (f'<img class="bn-im" src="{E(_dimg)}" alt="" width="150" height="150">' if _dimg else "")
-                      + f'<span class="bn-go">{len(_ds):,}件のお得を見る</span><span class="bn-n">※同じ内容量の他店中央値との差・取得時点・送料別</span></a>')
+                      + f'<span class="bn-go">ほかのお得も見る</span><span class="bn-n">※同じ内容量の他店中央値との差・取得時点・送料別</span></a>')
     if _ny:
         slides.append(f'<a class="bn bn-c" href="{_ny}" data-ga="bn_nayami"><span class="bn-ph" style="background-image:url(pets/cat.jpg)"></span>'
                       '<span class="bn-t"><small>毛玉・下部尿路・シニア・体重</small><b>悩み</b>から<br>フードを探す</span><span class="bn-go">悩みを選ぶ</span></a>')

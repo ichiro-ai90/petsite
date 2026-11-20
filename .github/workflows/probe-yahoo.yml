@@ -19,7 +19,7 @@ jobs:
           python - <<'PY'
           import os, re, time, urllib.request, urllib.parse
           A, K = os.environ["AID"], os.environ["AK"]
-          def m(t): return re.sub(r"pk_[A-Za-z0-9_-]+|[0-9a-f]{8}-[0-9a-f-]{27}", "*", t.replace(A, "*").replace(K, "*"))[:300]
+          def m(t): return re.sub(r"pk_[A-Za-z0-9_-]+|[0-9a-f]{8}-[0-9a-f-]{27}", "*", " ".join(t.split()).replace(A, "*").replace(K, "*"))[:300]
           O = "https://petnavi.niconote.jp"
           base = {"applicationId": A, "accessKey": K, "format": "json", "formatVersion": "2"}
           tests = [

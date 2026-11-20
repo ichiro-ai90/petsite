@@ -1039,17 +1039,26 @@ def main():
     # ペットと泊まれる宿（楽天トラベル・その場検索。11/21 Taku「旅行系のアフィリエイトもとりたい」）
     _prefs = "北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県".split()
     _tags = ["ドッグラン", "温泉", "大型犬", "猫", "貸切", "部屋食"]
-    tv = ('<div class="tv-hero"><span class="tv-ph" style="background-image:url(pets/dog.jpg)"></span><div class="tv-t"><small>うちの子と旅行</small>'
-          '<h1>ペットと泊まれる宿</h1><p>るるぶトラベルの特集と、楽天トラベルの宿から探せます</p></div></div>'
-          # るるぶトラベル（バリューコマース・宿泊2.09%）のペット特集。宿ごとのデータは取れないので特集ページへの入口だけ（11/21 Taku 作成の MyLink）
-          '<a class="tv-rr" href="https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3788390&amp;pid=892753722&amp;vc_url=https%3A%2F%2Fwww.rurubu.travel%2Ftheme%2Fpet%2F%3Futm_source%3Dvaluecommerce%26utm_medium%3Daffiliate" '
+    _themes = [("beach", "海辺で夕日を見る", "海"), ("mountain", "高原を一緒に歩く", "高原"), ("lake", "湖でのんびり", "湖"),
+               ("bed", "同じ部屋でくつろぐ", "同室"), ("beach2", "ドッグランで走りまわる", "ドッグラン"), ("car", "車でふらっと", "")]
+    _popular = [("長野県", "軽井沢・白馬"), ("栃木県", "那須"), ("静岡県", "伊豆"), ("神奈川県", "箱根"), ("山梨県", "富士五湖"), ("千葉県", "房総")]
+    _goods = [("キャリーバッグ", "ペット キャリー"), ("ドライブボックス", "犬 ドライブボックス"), ("折りたたみボウル", "ペット 折りたたみ ボウル"),
+              ("マナーパンツ", "マナーパンツ 犬"), ("携帯シーツ", "トイレシーツ 携帯"), ("ライフジャケット", "犬 ライフジャケット")]
+    tv = ('<div class="tv-hero"><span class="tv-ph" style="background-image:url(travel/car.jpg)"></span><div class="tv-t"><small>ペットと泊まれる宿</small>'
+          '<h1>うちの子と、<br>旅に出よう。</h1></div>'
+          '<form class="tv-f" id="tvf"><label class="sr" for="tva">行き先</label><select id="tva"><option value="">どこへ行く？（都道府県）</option>'
+          + "".join(f'<option>{E(p)}</option>' for p in _prefs) + '</select><button type="submit">宿を探す</button></form></div>'
+          '<div class="tv-pop"><span>人気の行き先</span>' + "".join(f'<button type="button" data-a="{E(p)}">{E(n)}</button>' for p, n in _popular) + '</div>'
+          '<h2 class="h2">どんな旅にする？</h2><ul class="tv-th">'
+          + "".join(f'<li><button type="button" data-q="{E(q)}" style="background-image:url(travel/{k}.jpg)"><span>{E(t)}</span></button></li>' for k, t, q in _themes) + '</ul>'
+          '<a class="tv-rr" style="background-image:linear-gradient(90deg,rgba(30,58,138,.92),rgba(30,58,138,.35)),url(travel/beach.jpg)" href="https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3788390&amp;pid=892753722&amp;vc_url=https%3A%2F%2Fwww.rurubu.travel%2Ftheme%2Fpet%2F%3Futm_source%3Dvaluecommerce%26utm_medium%3Daffiliate" '
           'target="_blank" rel="sponsored nofollow noopener" data-ga="rurubu_pet"><img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3788390&amp;pid=892753722" height="1" width="0" alt="" style="border:0">'
           '<span class="tv-rr-t"><small>るるぶトラベル（JTB）の特集</small><b>ペットと泊まれる宿</b><span>ドッグラン・愛犬用風呂・大型犬OKなどで選べる</span></span><span class="tv-rr-go">特集を見る ›</span></a>'
-          '<h2 class="h2">楽天トラベルで都道府県から探す</h2>'
-          '<form class="tv-f" id="tvf"><label class="sr" for="tva">行き先</label><select id="tva"><option value="">行き先（都道府県）</option>'
-          + "".join(f'<option>{E(p)}</option>' for p in _prefs) + '</select><button type="submit">探す</button></form>'
+          '<h2 class="h2" id="tvh">楽天トラベルの宿</h2>'
           '<div class="tv-tags" id="tvt">' + "".join(f'<button type="button" data-q="{E(t)}" aria-pressed="false">{E(t)}</button>' for t in _tags) + '</div>'
-          '<p class="meta tv-c" id="tvc">行き先を選んでください</p><ul class="tv-l" id="tvl"></ul>'
+          '<p class="meta tv-c" id="tvc">行き先を選ぶと、ペットと泊まれる宿が出ます</p><ul class="tv-l" id="tvl"></ul>'
+          '<h2 class="h2">旅の持ち物も、最安で</h2><ul class="tv-gd">'
+          + "".join(f'<li><a href="search.html?q={urllib.parse.quote(q)}" data-ga="travel_goods">{E(n)}</a></li>' for n, q in _goods) + '</ul>'
           '<p class="nayami-n">宿の名前やプランに「ペット」とある宿を出しています。泊まれるペットの種類・大きさ・頭数・料金は宿ごとに違うので、予約の前にリンク先の「ペット宿泊情報」で必ず確かめてください。'
           '料金は1室1泊の最安の目安（検索した時点）で、予約時はリンク先の料金が適用されます。リンク先は楽天トラベル・るるぶトラベルです。</p>')
     open(os.path.join(out, "travel.html"), "w", encoding="utf-8").write(page(f"ペットと泊まれる宿を探す｜{SITE}", tv,
@@ -1098,7 +1107,7 @@ def main():
     if _br:
         slides.append(f'<a class="bn bn-e" href="{_br}" data-ga="bn_brand"><span class="bn-ph" style="background-image:url(pets/hero2.jpg)"></span>'
                       '<span class="bn-t"><small>製造国を確かめた</small><b>海外ブランド</b><br>を国内ショップで比べる</span><span class="bn-go">ブランドを見る</span></a>')
-    slides.append('<a class="bn bn-f" href="travel.html" data-ga="bn_travel"><span class="bn-ph" style="background-image:url(pets/dog.jpg)"></span>'
+    slides.append('<a class="bn bn-f" href="travel.html" data-ga="bn_travel"><span class="bn-ph" style="background-image:url(travel/car.jpg)"></span>'
                   '<span class="bn-t"><small>るるぶ・楽天トラベルから</small>うちの子と<br><b>泊まれる宿</b></span><span class="bn-go">宿を探す</span></a>')
     hero = ('<form class="hq" action="search.html" role="search"><label class="sr" for="hq2">ペット用品を探す</label>'
             f'<input type="search" id="hq2" name="q" placeholder="{man + "件の" if man else ""}ペット用品から探す" autocomplete="off"><button type="submit" aria-label="探す">' + globals()["icon"]("search", 20) + '</button></form>'
@@ -1165,6 +1174,9 @@ def main():
     pdir = os.path.join(ROOT, "assets", "pets")
     if os.path.isdir(pdir):  # 動物の写真（Pexels・商用可。出典は assets/pets/CREDITS.md）
         shutil.copytree(pdir, os.path.join(out, "pets"), dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.md"))
+    tdir = os.path.join(ROOT, "assets", "travel")
+    if os.path.isdir(tdir):  # 旅行ページの写真（Pexels・商用可。出典は assets/travel/CREDITS.md）
+        shutil.copytree(tdir, os.path.join(out, "travel"), dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.md"))
     gdir = os.path.join(ROOT, "assets", "gacha")
     if os.path.isdir(gdir):  # お得ガチャの素材（ChatGPT 画像生成・2026-11-20 Taku承認）
         shutil.copytree(gdir, os.path.join(out, "gacha"), dirs_exist_ok=True)
@@ -1434,7 +1446,7 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
    btn.textContent="もう1回引く";busy=0;if(window.pnXP)pnXP();if(window.gtag)gtag("event","gacha_result",{rarity:r})},1100)});})();
 (function(){var f=document.getElementById("tvf");if(!f)return;var a=document.getElementById("tva"),t=document.getElementById("tvt"),c=document.getElementById("tvc"),l=document.getElementById("tvl"),tag="";
  try{var s=localStorage.getItem("pn_tva");if(s)a.value=s}catch(e){}
- function go(){if(!a.value){c.textContent="行き先を選んでください";l.innerHTML="";return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
+ function go(){if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
   c.textContent=a.value+"で探しています…";l.innerHTML="";
   fetch("/api/hotels?area="+encodeURIComponent(a.value)+"&q="+encodeURIComponent(tag)).then(function(r){return r.json()}).then(function(d){
    if(d.err&&!d.hotels.length){c.textContent="今は楽天トラベルの検索ができません。時間をおいてお試しください。";return}
@@ -1443,7 +1455,13 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
     (h.ra?'<span class="tv-s">★'+h.ra.toFixed(2)+'（'+yen(h.rc)+'件）</span>':'')+'<span class="tv-s">'+esc(h.st?h.st+"駅周辺":h.ad)+'</span>'+(h.min?'<span class="tv-p">1泊 <b>'+yen(h.min)+'</b>円〜<small>（1室・目安）</small></span>':'')+'<span class="tv-go">楽天トラベルで見る</span></span></a></li>'}).join("");ga("hotel_search",{area:a.value,q:tag,results:d.hotels.length})}).catch(function(){c.textContent="今は楽天トラベルの検索ができません。"})}
  f.addEventListener("submit",function(e){e.preventDefault();go()});a.addEventListener("change",go);
  t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});go()});
- document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a");if(x)ga("hotel_click",{area:a.value})});if(a.value)go()})();
+ document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a");if(x)ga("hotel_click",{area:a.value})});
+ var th=document.querySelector(".tv-th"),pp=document.querySelector(".tv-pop"),hh=document.getElementById("tvh");
+ function seen(){if(hh)hh.scrollIntoView({behavior:"smooth",block:"start"})}
+ if(th)th.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=b.dataset.q;th.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
+  t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});ga("travel_theme",{q:tag});if(!a.value){c.textContent="行き先（都道府県）を選んでください";a.focus();window.scrollTo({top:0,behavior:"smooth"});return}go();seen()});
+ if(pp)pp.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;a.value=b.dataset.a;ga("travel_popular",{a:b.dataset.a});go();seen()});
+ f.addEventListener("submit",function(){setTimeout(seen,50)});if(a.value)go()})();
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
  l.innerHTML=ids.map(function(id){var x=by[id];if(!x)return '<li class="gone"><span>この商品は今回の取得で見つかりませんでした。</span><button type="button" class="fav" data-fav="'+esc(id)+'">外す</button></li>';
@@ -1761,14 +1779,25 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .bn-d .bn-ph::after{background:linear-gradient(90deg,rgba(13,110,100,.88),rgba(13,110,100,.05) 75%)}
 .bn-e .bn-ph::after{background:linear-gradient(90deg,rgba(30,41,99,.88),rgba(30,41,99,.05) 75%)}
 .bn-f .bn-ph::after{background:linear-gradient(90deg,rgba(3,105,161,.88),rgba(3,105,161,.05) 75%)}
-.tv-hero{position:relative;height:180px;margin:8px 16px 0;border-radius:18px;overflow:hidden;color:#fff}.tv-ph{position:absolute;inset:0;background:center/cover no-repeat}
-.tv-ph::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,105,161,.9),rgba(3,105,161,.1) 80%)}
-.tv-t{position:absolute;left:16px;top:18px;right:16px}.tv-t small{font-size:12px;font-weight:700}.tv-t h1{margin:4px 0;font-size:26px;font-weight:900}.tv-t p{margin:0;font-size:12px;max-width:260px}
-.tv-rr{display:flex;align-items:center;gap:10px;margin:12px 16px 4px;padding:14px 16px;border-radius:16px;background:linear-gradient(120deg,#1e3a8a,#2563eb);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.25)}
-.tv-rr-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.tv-rr-t small{font-size:11px;opacity:.9}.tv-rr-t b{font-size:19px;font-weight:900}.tv-rr-t span{font-size:11px;opacity:.9}
-.tv-rr-go{flex:none;background:#fde047;color:#1e3a8a;font-weight:900;font-size:13px;border-radius:999px;padding:8px 12px}
-.tv-f{display:flex;gap:6px;margin:12px 16px 8px}.tv-f select{flex:1;min-width:0;height:46px;border:2px solid var(--brand);border-radius:999px;padding:0 14px;font-size:16px;background:#fff}
-.tv-f button{height:46px;border:0;border-radius:999px;padding:0 22px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-weight:800;font-size:15px}
+.tv-hero{position:relative;height:380px;margin:0 0 4px;overflow:hidden;color:#fff}.tv-ph{position:absolute;inset:0;background:center 35%/cover no-repeat}
+.tv-ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(0,0,0,.6))}
+.tv-t{position:absolute;left:20px;right:20px;bottom:84px}.tv-t small{display:inline-block;font-size:12px;font-weight:800;background:rgba(255,255,255,.22);border-radius:999px;padding:3px 10px;backdrop-filter:blur(4px)}
+.tv-t h1{margin:8px 0 0;font-size:34px;line-height:1.25;font-weight:900;text-shadow:0 3px 12px rgba(0,0,0,.45)}
+.tv-f{position:absolute;left:16px;right:16px;bottom:18px;display:flex;gap:6px;margin:0}.tv-f select{flex:1;min-width:0;height:50px;border:0;border-radius:999px;padding:0 16px;font-size:16px;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.tv-f button{height:50px;border:0;border-radius:999px;padding:0 20px;background:linear-gradient(#fb923c,#ea580c);color:#fff;font-weight:900;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+@media (min-width:1024px){.tv-hero{height:460px;border-radius:0 0 24px 24px}.tv-t{left:48px;bottom:110px}.tv-t h1{font-size:48px}.tv-f{left:48px;right:auto;width:560px;bottom:36px}}
+.tv-pop{display:flex;gap:6px;align-items:center;overflow-x:auto;padding:10px 16px 4px;scrollbar-width:none}.tv-pop span{flex:none;font-size:12px;font-weight:800;color:var(--sub)}
+.tv-pop button{flex:none;height:34px;padding:0 14px;border:1px solid #bae6fd;border-radius:999px;background:#f0f9ff;color:#0369a1;font-weight:800;font-size:13px;cursor:pointer}
+.tv-th{list-style:none;margin:0;padding:0 16px 6px;display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}.tv-th::-webkit-scrollbar,.tv-pop::-webkit-scrollbar{display:none}
+.tv-th button{position:relative;width:150px;height:190px;border:0;border-radius:18px;background:center/cover no-repeat;cursor:pointer;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.tv-th button::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.65))}
+.tv-th button span{position:absolute;left:12px;right:12px;bottom:12px;z-index:1;color:#fff;font-size:15px;font-weight:900;text-align:left;line-height:1.35}
+.tv-th button[aria-pressed="true"]{outline:4px solid #f59e0b;outline-offset:-4px}
+.tv-rr{display:flex;align-items:center;gap:10px;margin:14px 16px 6px;padding:18px 16px;border-radius:18px;background-size:cover;background-position:center;color:#fff;box-shadow:0 6px 18px rgba(30,58,138,.3)}
+.tv-rr-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.tv-rr-t small{font-size:11px;opacity:.95}.tv-rr-t b{font-size:21px;font-weight:900}.tv-rr-t span{font-size:11px;opacity:.95}
+.tv-rr-go{flex:none;background:#fde047;color:#1e3a8a;font-weight:900;font-size:13px;border-radius:999px;padding:9px 13px}
+.tv-gd{list-style:none;margin:0;padding:0 16px 8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tv-gd a{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:800;font-size:13px;text-align:center}
 .tv-tags{display:flex;gap:6px;overflow-x:auto;padding:0 16px 6px;scrollbar-width:none}.tv-tags button{flex:none;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;font-size:13px;cursor:pointer}
 .tv-tags button[aria-pressed="true"]{background:#0369a1;border-color:#0369a1;color:#fff}.tv-c{padding:0 16px}
 .tv-l{list-style:none;margin:0;padding:0 16px 8px;display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:10px}@media (min-width:700px){.tv-l{grid-template-columns:repeat(3,minmax(0,1fr))}}

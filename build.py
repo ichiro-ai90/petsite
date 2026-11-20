@@ -1488,10 +1488,11 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
  function go(){if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";ru.hidden=true;return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
   document.querySelectorAll(".tv-pf button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.a===a.value?"true":"false")});
   var my=++seq;c.textContent=a.value+"で探しています…";l.innerHTML="";ru.hidden=true;H=[];
-  get(1).then(function(d){if(my!==seq)return;if(d.err&&!d.hotels.length){c.textContent="今は楽天トラベルの検索ができません。時間をおいてお試しください。";return}
+  get(1).then(function(d){if(my!==seq)return;if(d.err&&!d.hotels.length){tvfail();return}
    H=d.hotels;draw(d.tot);ga("hotel_search",{area:a.value,q:tag,results:H.length});
    if(d.pages>1)setTimeout(function(){if(my!==seq)return;get(2).then(function(e){if(my!==seq||!e.hotels)return;var seen={};H.forEach(function(h){seen[h.u]=1});e.hotels.forEach(function(h){if(!seen[h.u])H.push(h)});draw(d.tot)}).catch(function(){})},1200)
-  }).catch(function(){c.textContent="今は楽天トラベルの検索ができません。"})}
+  }).catch(function(){tvfail()})}
+  function tvfail(){c.innerHTML="今は楽天トラベルの宿を出せません。<a href=\"#\" id=\"tvgo\">るるぶトラベルのペット特集</a>からお探しいただけます。";var g=document.getElementById("tvgo");if(g)g.onclick=function(e){e.preventDefault();var r=document.querySelector(".tv-rr");if(r)r.scrollIntoView({behavior:"smooth",block:"center"})}}
  f.addEventListener("submit",function(e){e.preventDefault();go();setTimeout(seen,50)});a.addEventListener("change",go);
  t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});go()});
  document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a,.tv-win a");if(x)ga("hotel_click",{area:a.value,from:x.closest(".tv-win")?"roulette":"list"})});

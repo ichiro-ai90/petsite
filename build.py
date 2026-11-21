@@ -1491,11 +1491,12 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
  function go(){if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";ru.hidden=true;return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
   document.querySelectorAll(".tv-pf button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.a===a.value?"true":"false")});
   var my=++seq;c.textContent=a.value+"で探しています…";l.innerHTML="";ru.hidden=true;H=[];
-  get(1).then(function(d){if(my!==seq)return;if(d.err&&!d.hotels.length){tvfail();return}
+  get(1).then(function(d){if(my!==seq)return;if(d.err&&!d.hotels.length){tvfail(d.rt);return}
    H=d.hotels;draw(d.tot);ga("hotel_search",{area:a.value,q:tag,results:H.length});
    if(d.pages>1)setTimeout(function(){if(my!==seq)return;get(2).then(function(e){if(my!==seq||!e.hotels)return;var seen={};H.forEach(function(h){seen[h.u]=1});e.hotels.forEach(function(h){if(!seen[h.u])H.push(h)});draw(d.tot)}).catch(function(){})},1200)
   }).catch(function(){tvfail()})}
-  function tvfail(){c.innerHTML="今は楽天トラベルの宿を出せません。<a href=\"#\" id=\"tvgo\">るるぶトラベルのペット特集</a>からお探しいただけます。";var g=document.getElementById("tvgo");if(g)g.onclick=function(e){e.preventDefault();var r=document.querySelector(".tv-rr");if(r)r.scrollIntoView({behavior:"smooth",block:"center"})}}
+  function tvfail(rt){if(rt){c.textContent="楽天トラベルで探せます";l.innerHTML='<li class="tv-rt"><a href="'+esc(rt)+'" target="_blank" rel="sponsored nofollow noopener" data-ga="hotel_rt"><b>'+esc(a.value+(tag?"・"+tag:""))+'</b>のペットと泊まれる宿を<br>楽天トラベルで見る（外部サイト）›</a><small>検索条件：「'+esc(["ペット",a.value,tag].filter(Boolean).join(" "))+'」。楽天トラベルの検索結果に移動します。空室・料金・ペットの条件はリンク先で確認してください</small></li>';ga("hotel_rt_show",{area:a.value,q:tag});return}
+   c.innerHTML="今は楽天トラベルの宿を出せません。<a href=\"#\" id=\"tvgo\">るるぶトラベルのペット特集</a>からお探しいただけます。";var g=document.getElementById("tvgo");if(g)g.onclick=function(e){e.preventDefault();var r=document.querySelector(".tv-rr");if(r)r.scrollIntoView({behavior:"smooth",block:"center"})}}
  f.addEventListener("submit",function(e){e.preventDefault();go();setTimeout(seen,50)});a.addEventListener("change",go);
  t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});go()});
  document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a,.tv-win a");if(x)ga("hotel_click",{area:a.value,from:x.closest(".tv-win")?"roulette":"list"})});
@@ -1878,6 +1879,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .uk-f{display:flex;flex-wrap:wrap;gap:6px}.uk-c{display:flex;flex-wrap:wrap;gap:6px;width:100%}.uk-c button{border:1px solid #f0abfc;background:none;color:#fff;border-radius:999px;padding:5px 12px;font-weight:700;font-size:12px;cursor:pointer}
 .uk-c button[aria-pressed="true"]{background:#facc15;color:#3b0764;border-color:#facc15}.uk-f input{flex:1;min-width:0;height:36px;border-radius:10px;border:0;padding:0 10px;font-size:14px}.uk-ok{height:36px;border:0;border-radius:10px;background:#facc15;color:#3b0764;font-weight:900;padding:0 16px;cursor:pointer}
 .gc-btn,.gc-rr{position:relative;z-index:2}
+.tv-rt{list-style:none;grid-column:1/-1}.tv-rt a{display:block;padding:16px;border-radius:14px;background:linear-gradient(90deg,#bf0000,#e8492f);color:#fff;text-decoration:none;font-size:15px;line-height:1.5}.tv-rt a b{font-size:18px}.tv-rt small{display:block;margin-top:6px;color:var(--sub,#6b7280);font-size:12px}
 .gc-top{display:flex;gap:12px;align-items:center}.gc-mc{flex:none;width:110px;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
 .gc-mc.go{animation:gmc .6s}@keyframes gmc{20%{transform:rotate(-6deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
 .gc-hd{display:flex;flex-direction:column;gap:4px;min-width:0}.gc-hd b{font-size:26px;font-weight:900;letter-spacing:1px;text-shadow:0 0 14px #f0abfc,0 2px 0 #7c2d12}

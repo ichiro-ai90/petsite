@@ -23,12 +23,20 @@ async function call(env, path, params) {
   const t = (await r.text()).slice(0, 200);
   if (r.status === 404 && t.includes("not_found")) return { hotels: [], pagingInfo: { recordCount: 0 } };
   // 原因切り分け用に楽天の応答本文の先頭だけ返す（キー類は伏せる）
-  const safe = t.replace(/[A-Za-z0-9_-]{24,}/g, "*").replace(/\s+/g, " ").slice(0, 120);
+  const safe = t.replace(/pk_[A-Za-z0-9_-]+|[0-9a-f]{8}-[0-9a-f-]{27}/gi, "*").replace(/\s+/g, " ").slice(0, 120);
   throw new Error(r.status + " " + safe);
 }
 
+// 楽天トラベルの「キーワード検索結果」ページへのアフィリエイトリンク（APIを使わない。楽天の管理画面メンテ中で
+// トラベルAPIの許可を足せない間の受け皿。11/21 Taku 案A）
+function rtLink(env, area, q) {
+  const u = "https://kw.travel.rakuten.co.jp/keyword/Search.do?charset=utf-8&f_query=" + encodeURIComponent(["ペット", area, q].filter(Boolean).join(" "));
+  const id = env.RAKUTEN_AFFILIATE_ID || "";
+  return /^[0-9a-f.]+$/i.test(id) ? "https://hb.afl.rakuten.co.jp/hgc/" + id + "/?pc=" + encodeURIComponent(u) + "&m=" + encodeURIComponent(u) : u;
+}
+
 export async function onRequestGet({ request, env, waitUntil }) {
-  if (!env.RAKUTEN_APP_ID) return J({ err: "no_key", hotels: [] }, 200);
+  if (!env.RAKUTEN_APP_ID) return J({ err: "no_key", hotels: [], rt: rtLink(env, "", "") }, 200);
   const url = new URL(request.url);
   const area = (url.searchParams.get("area") || "").trim().slice(0, 10);
   const q = (url.searchParams.get("q") || "").trim().slice(0, 30);
@@ -41,7 +49,7 @@ export async function onRequestGet({ request, env, waitUntil }) {
     if (env.RAKUTEN_AFFILIATE_ID) params.affiliateId = env.RAKUTEN_AFFILIATE_ID;
     if (area) {
       const code = PREF[area] || PREF[area.replace(/[都府県]$/, "")];
-      if (!code) return J({ area, err: "area", hotels: [] });
+      if (!code) return J({ area, err: "area", hotels: [], rt: rtLink(env, area, q) });
       params.middleClassCode = code;
     }
     const d = await call(env, "KeywordHotelSearch/20260731", params);
@@ -52,11 +60,11 @@ export async function onRequestGet({ request, env, waitUntil }) {
         min: +b.hotelMinCharge || 0, ra: +b.reviewAverage || 0, rc: +b.reviewCount || 0,
         ad: ((b.address1 || "") + (b.address2 || "")).slice(0, 40), st: b.nearestStation || "", sp: (b.hotelSpecial || "").slice(0, 80) };
     }).filter((x) => x.n && x.u);
-    const res = J({ area, q, page: +page, pages: +(d.pagingInfo || {}).pageCount || 1, at: new Date().toISOString(), tot: +(d.pagingInfo || {}).recordCount || hotels.length, hotels }, 200,
+    const res = J({ area, q, page: +page, pages: +(d.pagingInfo || {}).pageCount || 1, rt: rtLink(env, area, q), at: new Date().toISOString(), tot: +(d.pagingInfo || {}).recordCount || hotels.length, hotels }, 200,
       { "cache-control": `public, max-age=${TTL}` });
     if (hotels.length) waitUntil(cache.put(key, res.clone()));
     return res;
   } catch (e) {
-    return J({ area, q, err: String(e.message || e).slice(0, 140), hotels: [] }, 200, { "cache-control": "no-store" });
+    return J({ area, q, err: String(e.message || e).slice(0, 140), hotels: [], rt: rtLink(env, area, q) }, 200, { "cache-control": "no-store" });
   }
 }

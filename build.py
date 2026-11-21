@@ -1147,7 +1147,9 @@ def main():
                     + f'<span class="dc-b">{round(x["d"] / x["hi"] * 100)}%安い※</span></span><span class="dc-n">{E(show_name(x["p"]["name"]))}</span>'
                     f'<span class="dc-pr"><b>{x["now"]:,}</b>円</span><span class="dc-o">他店 {x["hi"]:,}円</span></a></li>' for x in _ds[:12])
     deal_sec = (f'<section class="dc-sec"><h2 class="h2">他店より安い商品<a class="h2a" href="weekly.html">すべて見る</a></h2><p class="h2n">※同じ内容量の他店中央値との差・取得時点・送料別</p><ul class="dcs">{deals}</ul></section>' if deals else "")
-    _gs = sorted(_ds, key=lambda x: -x["d"] / x["hi"])[:300]
+    # ガチャもバナーと同じ条件（11/21 Taku）: 衛生用品（砂・シーツ等）を外し、レビュー100件以上・★4.2以上の定番を優先、欲しい物は重み2倍
+    _gpop = [x for x in _ok if x["p"].get("reviewCount", 0) >= 100 and x["p"].get("reviewAverage", 0) >= 4.2]
+    _gs = sorted(_gpop if len(_gpop) >= 30 else _ok, key=lambda x: -_bscore(x))[:300]
     _a2p = {a: pid for pid, _n, _i, ans in PETS for a in ans}
     gdata = json.dumps([{"t": _a2p.get(x["g"].get("animal"), ""), "i": x["p"]["productId"], "n": show_name(x["p"]["name"])[:40], "m": img(x["p"].get("image"), 200) or "",
                          "p": x["now"], "h": x["hi"], "c": round(x["d"] / x["hi"] * 100)} for x in _gs], ensure_ascii=False).replace("</", "<\\/")

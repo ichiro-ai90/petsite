@@ -20,15 +20,20 @@ jobs:
           with sync_playwright() as p:
               b = p.chromium.launch()
               pg = b.new_page(viewport={"width": 390, "height": 900})
-              for u in ["https://kw.travel.rakuten.co.jp/keyword/Search.do?charset=utf-8&f_query=" + urllib.parse.quote("ペット 長野県"),
-                        "https://travel.rakuten.co.jp/yado/nagano/",
-                        "https://travel.rakuten.co.jp/special/pet/"]:
-                  try:
-                      r = pg.goto(u, timeout=45000); pg.wait_for_timeout(4000)
-                      n = pg.evaluate("document.querySelectorAll('a[href*=\"/HOTEL/\"],a[href*=\"hotelinfo\"]').length")
-                      print("TRV", r.status if r else None, pg.url[:120], "|", pg.title()[:60], "| hotels", n, "| pet", pg.content().count("ペット"))
-                  except Exception as e: print("TRV ERR", u[:60], str(e)[:120])
-              pg.goto("https://kw.travel.rakuten.co.jp/keyword/Search.do?charset=utf-8&f_query=" + urllib.parse.quote("ペット 長野県")); pg.wait_for_timeout(3000); pg.screenshot(path="kw.png")
+              pg.goto("https://petnavi.niconote.jp/travel.html?v=1121g"); pg.wait_for_timeout(2500)
+              print("PF", pg.evaluate("""(()=>{var x=[...document.querySelectorAll('.tv-pf')].find(e=>e.textContent.trim().startsWith('長野'));if(!x)return 'none';x.click();return x.textContent})()"""))
+              pg.wait_for_timeout(5000)
+              h = pg.evaluate("(document.querySelector('.tv-rt a')||{}).href||''")
+              print("RT", "hb.afl" if h.startswith("https://hb.afl.rakuten.co.jp/hgc/") else ("plain" if h else "none"), "kw" if "kw.travel.rakuten.co.jp" in urllib.parse.unquote(h) else "")
+              print("TVC", pg.evaluate("document.getElementById('tvc').textContent"), "| RU hidden", pg.evaluate("(document.getElementById('tvru')||{}).hidden"))
+              el = pg.locator(".tv-rt")
+              if el.count(): el.scroll_into_view_if_needed(); pg.wait_for_timeout(500); pg.screenshot(path="rt.png")
+              if h:
+                  pg2 = b.new_page(viewport={"width": 390, "height": 900})
+                  r = pg2.goto(h, timeout=60000); pg2.wait_for_timeout(5000)
+                  n = pg2.evaluate("document.querySelectorAll('a[href*=\"/HOTEL/\"],a[href*=\"hotelinfo\"]').length")
+                  print("DEST", urllib.parse.urlsplit(pg2.url).netloc, "|", pg2.title()[:50], "| hotels", n)
+                  pg2.screenshot(path="dest.png")
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

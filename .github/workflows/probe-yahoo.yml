@@ -20,8 +20,8 @@ jobs:
           with sync_playwright() as p:
               b = p.chromium.launch()
               pg = b.new_page(viewport={"width": 390, "height": 900})
-              pg.goto("https://petnavi.niconote.jp/travel.html?v=1121g"); pg.wait_for_timeout(2500)
-              print("PF", pg.evaluate("""(()=>{var x=[...document.querySelectorAll('.tv-pf')].find(e=>e.textContent.trim().startsWith('長野'));if(!x)return 'none';x.click();return x.textContent})()"""))
+              pg.goto("https://petnavi.niconote.jp/travel.html?v=1121h"); pg.wait_for_timeout(2500)
+              print("PF", pg.evaluate("""(()=>{var x=[...document.querySelectorAll('.tv-pf button')].find(e=>e.textContent.trim().startsWith('長野'));if(!x)return 'none';x.click();return x.textContent})()"""))
               pg.wait_for_timeout(5000)
               h = pg.evaluate("(document.querySelector('.tv-rt a')||{}).href||''")
               print("RT", "hb.afl" if h.startswith("https://hb.afl.rakuten.co.jp/hgc/") else ("plain" if h else "none"), "kw" if "kw.travel.rakuten.co.jp" in urllib.parse.unquote(h) else "")

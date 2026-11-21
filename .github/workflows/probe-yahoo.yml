@@ -20,18 +20,15 @@ jobs:
           with sync_playwright() as p:
               b = p.chromium.launch()
               pg = b.new_page(viewport={"width": 390, "height": 900})
-              pg.goto("https://petnavi.niconote.jp/?v=1121f"); pg.wait_for_timeout(3000)
-              g = json.loads(pg.evaluate("document.getElementById('gdata').textContent"))
-              bad = [x["n"] for x in g if re.search(r"砂|シーツ|ティッシュ|消臭|除菌|トイレ|おむつ|マナー|ペレット|ゴミ袋|うんち", x["n"])]
-              print("GN", len(g), "bad", len(bad), bad[:5])
-              print("GTOP", [ (x["n"][:24], x["c"]) for x in g[:8]])
-              print("GS", pg.evaluate("document.querySelector('.gc-s').textContent"))
-              pg.locator("#gacha").scroll_into_view_if_needed(); pg.locator("#gacha").screenshot(path="gacha.png")
-              pg.click("#gbtn"); pg.wait_for_timeout(4500)
-              print("GCARD", pg.evaluate("(document.getElementById('gcard')||{}).textContent||''")[:120])
-              pg.locator("#gacha").screenshot(path="gacha_pull.png")
-              pg.goto("https://petnavi.niconote.jp/api/hotels?v=1121f&area=" + urllib.parse.quote("長野県"))
-              d = json.loads(pg.inner_text("body")); print("HOT tot", d.get("tot"), "n", len(d.get("hotels", [])), "err", repr(d.get("err")))
+              for u in ["https://kw.travel.rakuten.co.jp/keyword/Search.do?charset=utf-8&f_query=" + urllib.parse.quote("ペット 長野県"),
+                        "https://travel.rakuten.co.jp/yado/nagano/",
+                        "https://travel.rakuten.co.jp/special/pet/"]:
+                  try:
+                      r = pg.goto(u, timeout=45000); pg.wait_for_timeout(4000)
+                      n = pg.evaluate("document.querySelectorAll('a[href*=\"/HOTEL/\"],a[href*=\"hotelinfo\"]').length")
+                      print("TRV", r.status if r else None, pg.url[:120], "|", pg.title()[:60], "| hotels", n, "| pet", pg.content().count("ペット"))
+                  except Exception as e: print("TRV ERR", u[:60], str(e)[:120])
+              pg.goto("https://kw.travel.rakuten.co.jp/keyword/Search.do?charset=utf-8&f_query=" + urllib.parse.quote("ペット 長野県")); pg.wait_for_timeout(3000); pg.screenshot(path="kw.png")
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

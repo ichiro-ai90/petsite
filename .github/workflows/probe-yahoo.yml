@@ -11,67 +11,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: 楽天API切り分け
-        env:
-          AID: ${{ secrets.RAKUTEN_APP_ID }}
-          AK: ${{ secrets.RAKUTEN_ACCESS_KEY }}
-          SO: ${{ vars.SITE_ORIGIN }}
-        run: |
-          python - <<'PY'
-          import os, re, time, urllib.request, urllib.parse
-          A, K = os.environ["AID"], os.environ["AK"]
-          def m(t): return re.sub(r"pk_[A-Za-z0-9_-]+|[0-9a-f]{8}-[0-9a-f-]{27}", "*", " ".join(t.split()).replace(A, "*").replace(K, "*"))[:300]
-          O = "https://petnavi.niconote.jp"
-          base = {"applicationId": A, "accessKey": K, "format": "json", "formatVersion": "2"}
-          SO = os.environ.get("SO", "")
-          print("API SITE_ORIGIN", SO)
-          IU = "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401"; IQ = {"keyword": "ちゅーる", "hits": "1"}
-          TU = "https://openapi.rakuten.co.jp/engine/api/Travel/KeywordHotelSearch/20260731"; TQ = {"keyword": "ペット", "hits": "1"}
-          tests = []
-          for tag, h in [("origin_SO", {"Origin": SO}), ("referer_SO", {"Referer": SO + "/"}), ("origin_petnavi", {"Origin": O}), ("referer_pages", {"Referer": "https://petsite-ichiro.pages.dev/"}), ("both_SO", {"Origin": SO, "Referer": SO + "/"})]:
-              tests += [("ichiba_" + tag, IU, IQ, h), ("travel_" + tag, TU, TQ, h)]
-          for name, u, q, h in tests:
-              time.sleep(1.5)
-              req = urllib.request.Request(u + "?" + urllib.parse.urlencode({**base, **q}), headers={"User-Agent": "petnavi-probe", **h})
-              try:
-                  r = urllib.request.urlopen(req, timeout=20); print("API", name, r.status, m(r.read().decode()[:200]))
-              except urllib.error.HTTPError as e:
-                  print("API", name, e.code, m(e.read().decode()))
-          PY
       - name: 画面
         run: |
           pip -q install playwright && python -m playwright install --with-deps chromium >/dev/null 2>&1
           python - <<'PY'
+          import json, re, urllib.parse
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p:
               b = p.chromium.launch()
-              import urllib.parse, json
-              pg = b.new_page()
-              pg.goto("https://petnavi.niconote.jp/api/msearch?v=1121e&q=" + urllib.parse.quote("ちゅーる"))
-              d = json.loads(pg.inner_text("body")); ys = [x["u"] for x in d.get("items", []) if x["m"] == "y"]
-              print("YURL", len(ys), "vc" if any("valuecommerce" in u and "892753714" in u for u in ys) else "no-vc", (ys[0][:110] if ys else ""))
-              for q in ("", "ドッグラン"):
-                  pg.goto("https://petnavi.niconote.jp/api/hotels?v=1121e&area=" + urllib.parse.quote("長野県") + "&q=" + urllib.parse.quote(q))
-                  t = pg.inner_text("body"); 
-                  try:
-                      d = json.loads(t); print("HOT", q, "tot", d.get("tot"), "n", len(d.get("hotels", [])), "err", repr(d.get("err")), "u", (d.get("hotels") or [{}])[0].get("u", "")[:90])
-                  except Exception as e:
-                      print("HOT", q, "raw", t[:300])
-              pg2 = b.new_page(viewport={"width": 390, "height": 900})
-              pg2.goto("https://petnavi.niconote.jp/travel.html?v=1121e"); pg2.wait_for_timeout(3000)
-              pg2.select_option("#tva", "長野県"); pg2.wait_for_timeout(5000)
-              pg2.screenshot(path="travel.png", full_page=True)
-              print("TVC", pg2.evaluate("document.getElementById('tvc').textContent"))
-              print("NL", pg2.evaluate("document.querySelectorAll('#tvl a').length"))
-              print("RR", pg2.evaluate("(document.querySelector('.tv-rr a')||{}).href||''")[:120])
-              try:
-                  pg2.click("#tvsp"); pg2.wait_for_timeout(6000)
-                  print("WIN", pg2.evaluate("(document.getElementById('tvwin')||{}).textContent||''")[:200])
-                  pg2.locator("#tvru").screenshot(path="roulette.png")
-              except Exception as e: print("RUERR", str(e)[:200])
-              pg3 = b.new_page(viewport={"width": 1440, "height": 900})
-              pg3.goto("https://petnavi.niconote.jp/travel.html?v=1121e"); pg3.wait_for_timeout(3000)
-              pg3.screenshot(path="travel1440.png")
+              pg = b.new_page(viewport={"width": 390, "height": 900})
+              pg.goto("https://petnavi.niconote.jp/?v=1121f"); pg.wait_for_timeout(3000)
+              g = json.loads(pg.evaluate("document.getElementById('gdata').textContent"))
+              bad = [x["n"] for x in g if re.search(r"砂|シーツ|ティッシュ|消臭|除菌|トイレ|おむつ|マナー|ペレット|ゴミ袋|うんち", x["n"])]
+              print("GN", len(g), "bad", len(bad), bad[:5])
+              print("GTOP", [ (x["n"][:24], x["c"]) for x in g[:8]])
+              print("GS", pg.evaluate("document.querySelector('.gc-s').textContent"))
+              pg.locator("#gacha").scroll_into_view_if_needed(); pg.locator("#gacha").screenshot(path="gacha.png")
+              pg.click("#gbtn"); pg.wait_for_timeout(4500)
+              print("GCARD", pg.evaluate("(document.getElementById('gcard')||{}).textContent||''")[:120])
+              pg.locator("#gacha").screenshot(path="gacha_pull.png")
+              pg.goto("https://petnavi.niconote.jp/api/hotels?v=1121f&area=" + urllib.parse.quote("長野県"))
+              d = json.loads(pg.inner_text("body")); print("HOT tot", d.get("tot"), "n", len(d.get("hotels", [])), "err", repr(d.get("err")))
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

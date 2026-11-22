@@ -1051,8 +1051,11 @@ def main():
     _popular = [("長野県", "軽井沢・白馬"), ("栃木県", "那須"), ("静岡県", "伊豆"), ("神奈川県", "箱根"), ("山梨県", "富士五湖"), ("千葉県", "房総")]
     _regions = [('北海道・東北', '北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県'), ('関東', '茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県'), ('甲信越・北陸', '新潟県 富山県 石川県 福井県 山梨県 長野県'), ('東海', '岐阜県 静岡県 愛知県 三重県'), ('近畿', '滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県'), ('中国・四国', '鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県'), ('九州・沖縄', '福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県')]
     _budgets = [("", "予算こだわらない"), ("0-10000", "〜1万円"), ("10000-20000", "1〜2万円"), ("20000-30000", "2〜3万円"), ("30000-50000", "3〜5万円"), ("50000-", "5万円〜")]
+    # お泊まりの持ち物チェックリスト（予約のあと、ここへ戻ってきてもらう。11/23 Taku）
     _goods = [("キャリーバッグ", "ペット キャリー"), ("ドライブボックス", "犬 ドライブボックス"), ("折りたたみボウル", "ペット 折りたたみ ボウル"),
-              ("マナーパンツ", "マナーパンツ 犬"), ("携帯シーツ", "トイレシーツ 携帯"), ("ライフジャケット", "犬 ライフジャケット")]
+              ("いつものフード（小分け）", "ドッグフード 小分け"), ("マナーパンツ", "マナーパンツ 犬"), ("携帯シーツ", "トイレシーツ 携帯"),
+              ("消臭スプレー", "ペット 消臭スプレー"), ("粘着クリーナー", "粘着クリーナー ペット"), ("迷子札", "迷子札 犬"),
+              ("リード（予備）", "犬 リード"), ("おやつ", "犬 おやつ"), ("ライフジャケット", "犬 ライフジャケット")]
     tv = ('<div class="tv-hero"><span class="tv-ph" style="background-image:url(travel/car.jpg)"></span><div class="tv-t"><small>ペットと泊まれる宿</small>'
           '<h1>うちの子と、<br>旅に出よう。</h1></div>'
           '<form class="tv-f" id="tvf"><label class="sr" for="tva">行き先</label><select id="tva"><option value="">どこへ行く？（都道府県）</option>'
@@ -1077,8 +1080,12 @@ def main():
           '<button type="button" class="tv-sp" id="tvsp" data-ga="roulette_spin">ルーレットを回す</button><ol class="tv-lg" id="tvlg"></ol>'
           '<div class="tv-win" id="tvwin" hidden></div><p class="h2n">エリア・予算・テーマに合う宿から、最大8件をランダムに選んで回します</p></section>'
           '<ul class="tv-l" id="tvl"></ul>'
-          '<h2 class="h2">旅の持ち物も、最安で</h2><ul class="tv-gd">'
-          + "".join(f'<li><a href="search.html?q={urllib.parse.quote(q)}" data-ga="travel_goods">{E(n)}</a></li>' for n, q in _goods) + '</ul>'
+          f'<section class="tv-pr" id="prep"><h2 class="h2">お泊まり持ち物チェックリスト<span class="tv-prn" id="tvprn">0/{len(_goods)}</span></h2>'
+          '<div class="tv-prb"><i id="tvprb"></i></div><p class="h2n">そろえた物にチェック。足りない物は、その場で最安を探せます</p><ul class="tv-pl">'
+          + "".join(f'<li><label><input type="checkbox" data-pk="{i}"><span>{E(n)}</span></label><a href="search.html?q={urllib.parse.quote(q)}" data-ga="travel_goods">最安を見る ›</a></li>' for i, (n, q) in enumerate(_goods)) + '</ul></section>'
+          '<script>(function(){var k="pn_prep",m={};try{m=JSON.parse(localStorage.getItem(k)||"{}")}catch(e){}var bs=document.querySelectorAll("[data-pk]"),n=document.getElementById("tvprn"),b=document.getElementById("tvprb");'
+          'function d(){var c=0;bs.forEach(function(x){x.checked=!!m[x.dataset.pk];x.closest("li").classList.toggle("on",x.checked);if(x.checked)c++});n.textContent=c+"/"+bs.length;b.style.width=(100*c/bs.length)+"%";if(c===bs.length)n.textContent="そろった！"}'
+          'bs.forEach(function(x){x.onchange=function(){m[x.dataset.pk]=x.checked?1:0;try{localStorage.setItem(k,JSON.stringify(m))}catch(e){}d();if(x.checked){ga("prep_check",{i:+x.dataset.pk});if(window.pnXP)pnXP()}}});d()})()</script>'
           '<p class="nayami-n">宿の名前やプランに「ペット」とある宿を出しています。泊まれるペットの種類・大きさ・頭数・料金は宿ごとに違うので、予約の前にリンク先の「ペット宿泊情報」で必ず確かめてください。'
           '料金は1室1泊の最安の目安（検索した時点）で、予約時はリンク先の料金が適用されます。リンク先は楽天トラベル・るるぶトラベルです。</p>')
     open(os.path.join(out, "travel.html"), "w", encoding="utf-8").write(page(f"ペットと泊まれる宿を探す｜{SITE}", tv,
@@ -1148,6 +1155,8 @@ def main():
                     f'<span class="dc-pr"><b>{x["now"]:,}</b>円</span><span class="dc-o">他店 {x["hi"]:,}円</span></a></li>' for x in _ds[:12])
     deal_sec = (f'<section class="dc-sec"><h2 class="h2">他店より安い商品<a class="h2a" href="weekly.html">すべて見る</a></h2><p class="h2n">※同じ内容量の他店中央値との差・取得時点・送料別</p><ul class="dcs">{deals}</ul></section>' if deals else "")
     # ガチャもバナーと同じ条件（11/21 Taku）: 衛生用品（砂・シーツ等）を外し、レビュー100件以上・★4.2以上の定番を優先、欲しい物は重み2倍
+    # 療法食は獣医師の指示で与えるものなので、ガチャの当たりにはしない（11/23 Taku）。比較ページには載せる
+    _ok = [x for x in _ok if not re.search(r"療法食|食事療法|消化器サポート|腎臓サポート|pHコントロール|ユリナリー|肝臓サポート|心臓サポート|皮膚サポート|満腹感サポート|減量サポート|退院サポート|[cdikjlrwz]/d\b|プリスクリプション|ベテリナリー|VETERINARY|PRESCRIPTION", x["g"].get("title", "") + " " + x["p"].get("name", ""), re.I)]
     _gpop = [x for x in _ok if x["p"].get("reviewCount", 0) >= 100 and x["p"].get("reviewAverage", 0) >= 4.2]
     _gs = sorted(_gpop if len(_gpop) >= 30 else _ok, key=lambda x: -_bscore(x))[:300]
     _gcond = "レビュー100件以上・★4.2以上の定番で" if len(_gpop) >= 30 else ""
@@ -1337,6 +1346,14 @@ function paint(){mlEmpty();var bm=bload(),wl=wload();document.querySelectorAll("
  b.innerHTML=b.classList.contains("mini")?sv:sv+(on?"お気に入り済み":"お気に入り")});
  var c=document.getElementById("favn");if(c){var n=Object.keys(f).length;c.textContent=n?"（"+n+"）":""}}
 function ga(n,p){try{if(window.gtag)gtag("event",n,p||{})}catch(e){}}
+(function(){var K="pn_trip";function ld(){try{return JSON.parse(localStorage.getItem(K)||"null")}catch(e){return null}}function sv(v){try{localStorage.setItem(K,JSON.stringify(v))}catch(e){}}
+ document.addEventListener("click",function(e){var a=e.target.closest(".tv-l a,.tv-rt a,a.tv-rr,.tv-win a");if(!a)return;var ar=document.getElementById("tva");sv({a:ar?ar.value:"",t:Date.now()})},true);
+ function show(from){var t=ld(),now=Date.now();if(!t||t.d||now-t.t<5000||now-t.t>14*864e5||(t.sn&&now<t.sn)||location.hash==="#prep"||document.getElementById("tvbk"))return;
+  var s=document.createElement("div");s.id="tvbk";s.className="tvbk";s.setAttribute("role","dialog");s.setAttribute("aria-label","お泊まりの準備");
+  s.innerHTML='<button type="button" class="tvbk-x" aria-label="閉じる">×</button><b>'+(t.a?esc(t.a)+"の":"")+'お宿、決まりましたか？</b><p>うちの子とのお泊まり。持ち物を最安でそろえましょう</p><a class="tvbk-go" href="travel.html#prep" data-ga="trip_return">持ち物チェックリストへ ›</a><button type="button" class="tvbk-n">まだ決まっていない</button>';
+  document.body.appendChild(s);ga("trip_return_show",{from:from});
+  s.addEventListener("click",function(e){if(e.target.closest(".tvbk-go")){t.d=1}else if(e.target.closest(".tvbk-n")){t.sn=Date.now()+864e5}else if(e.target.closest(".tvbk-x")){t.d=1}else return;sv(t);s.remove()})}
+ document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")show("back")});show("load")})();
 document.addEventListener("click",function(e){var g=e.target.closest("[data-ga]");if(g)ga(g.dataset.ga,{rank:+g.dataset.rank||0})});
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
  if(a)ga("click_rakuten",{link_type:a.classList.contains("big")?"best_shop":(a.classList.contains("sub-link")?"all_shops":"shop"),page_path:location.pathname})},true);
@@ -1495,7 +1512,7 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
    H=d.hotels;draw(d.tot);ga("hotel_search",{area:a.value,q:tag,results:H.length});
    if(d.pages>1)setTimeout(function(){if(my!==seq)return;get(2).then(function(e){if(my!==seq||!e.hotels)return;var seen={};H.forEach(function(h){seen[h.u]=1});e.hotels.forEach(function(h){if(!seen[h.u])H.push(h)});draw(d.tot)}).catch(function(){})},1200)
   }).catch(function(){tvfail()})}
-  function tvfail(rt){if(rt){c.textContent="楽天トラベルで探せます";l.innerHTML='<li class="tv-rt"><a href="'+esc(rt)+'" target="_blank" rel="sponsored nofollow noopener" data-ga="hotel_rt"><b>'+esc(a.value+(tag?"・"+tag:""))+'</b>のペットと泊まれる宿を<br>楽天トラベルで見る（外部サイト）›</a><small>検索条件：「'+esc(["ペット",a.value,tag].filter(Boolean).join(" "))+'」。楽天トラベルの検索結果に移動します。空室・料金・ペットの条件はリンク先で確認してください</small></li>';ga("hotel_rt_show",{area:a.value,q:tag});return}
+  function tvfail(rt){if(rt){c.textContent="楽天トラベルで探せます";l.innerHTML='<li class="tv-rt"><a href="'+esc(rt)+'" target="_blank" rel="sponsored nofollow noopener" data-ga="hotel_rt"><b>'+esc(a.value+(tag?"・"+tag:""))+'</b>のペットと泊まれる宿を<br>楽天トラベルで見る（外部サイト）›</a><small>検索条件：「'+esc(["ペット",a.value,tag].filter(Boolean).join(" "))+'」。楽天トラベルの検索結果に移動します。空室・料金・ペットの条件はリンク先で確認してください。予約できたら、下の持ち物チェックリストへ</small></li>';ga("hotel_rt_show",{area:a.value,q:tag});return}
    c.innerHTML="今は楽天トラベルの宿を出せません。<a href=\"#\" id=\"tvgo\">るるぶトラベルのペット特集</a>からお探しいただけます。";var g=document.getElementById("tvgo");if(g)g.onclick=function(e){e.preventDefault();var r=document.querySelector(".tv-rr");if(r)r.scrollIntoView({behavior:"smooth",block:"center"})}}
  f.addEventListener("submit",function(e){e.preventDefault();go();setTimeout(seen,50)});a.addEventListener("change",go);
  t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});go()});
@@ -1859,6 +1876,15 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tv-lg li{font-size:11px;background:rgba(0,0,0,.25);border-radius:8px;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tv-lg li.on{background:#fde047;color:#7c2d12;font-weight:900}
 .tv-win{margin-top:12px;text-align:left}.tv-win[hidden]{display:none}.tv-win a{display:flex;gap:10px;background:#fff;color:var(--txt);border-radius:16px;overflow:hidden;box-shadow:0 0 0 4px #fde047,0 0 30px #fde047;animation:gin .45s cubic-bezier(.2,1.6,.4,1)}
 .tv-win .tv-im{flex:none;width:120px;min-height:120px}.tv-win .tv-b{padding:10px}
+.tv-pr .h2{display:flex;align-items:center;justify-content:space-between}.tv-prn{font-size:14px;color:#16a34a;font-weight:800}
+.tv-prb{margin:0 16px 4px;height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden}.tv-prb i{display:block;height:100%;width:0;background:#16a34a;transition:width .3s}
+.tv-pl{list-style:none;margin:0;padding:0 16px 8px;display:grid;gap:6px}.tv-pl li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.tv-pl li.on{background:#f0fdf4;border-color:#bbf7d0}.tv-pl li.on span{color:#6b7280;text-decoration:line-through}.tv-pl label{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;flex:1;min-height:28px}
+.tv-pl input{width:22px;height:22px;accent-color:#16a34a}.tv-pl a{font-size:13px;font-weight:800;color:var(--brand);white-space:nowrap}
+.tvbk{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:480px;margin:0 auto;padding:16px 16px 12px;border-radius:16px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);animation:tvbk .25s ease-out}
+@keyframes tvbk{from{transform:translateY(24px);opacity:0}}.tvbk b{display:block;font-size:17px;padding-right:28px}.tvbk p{margin:4px 0 10px;font-size:13px;color:#6b7280}
+.tvbk-go{display:block;height:48px;line-height:48px;text-align:center;border-radius:12px;background:var(--brand);color:#fff;font-weight:800;text-decoration:none}
+.tvbk-n{display:block;width:100%;margin-top:6px;padding:8px;border:0;background:none;color:#6b7280;font-size:13px}.tvbk-x{position:absolute;top:8px;right:8px;width:36px;height:36px;border:0;background:none;font-size:20px;color:#6b7280}
 .tv-gd{list-style:none;margin:0;padding:0 16px 8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .tv-gd a{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:800;font-size:13px;text-align:center}
 .tv-tags{display:flex;gap:6px;overflow-x:auto;padding:0 16px 6px;scrollbar-width:none}.tv-tags button{flex:none;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700;font-size:13px;cursor:pointer}

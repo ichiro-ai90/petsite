@@ -664,7 +664,7 @@ def product_row(p, g, fn):
     _d = deal(p, g["unit"])
     gapt = (f'<span class="save-s">他店より {_d["d"]:,}円安い※</span>' if _d and not OUTLET.search(o["name"]) else "")
     fb = free_best(p["offers"])
-    fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fshop="{E(fb["shop"])}"' if fb else "")
+    fattr = (f' data-fprice="{fb["price"]}" data-feff="{fb["effective"]}" data-fpt="{fb["points"]}" data-frate="{fb["pointRate"]}" data-fptt="{E(ptxt(fb, 'ポイント'))}（目安）" data-fshop="{E(fb["shop"])}"' if fb else "")
     tbadge = trend_badge(trend(p["productId"], o["price"]))
     mr = max(x["pointRate"] for x in p["offers"])
     hit = f'<span class="hi-pt">ポイント{mr}倍の店あり</span>' if mr >= HI_RATE else ""
@@ -1353,7 +1353,10 @@ function ga(n,p){try{if(window.gtag)gtag("event",n,p||{})}catch(e){}}
   s.innerHTML='<button type="button" class="tvbk-x" aria-label="閉じる">×</button><b>'+(t.a?esc(t.a)+"の":"")+'お宿、決まりましたか？</b><p>うちの子とのお泊まり。持ち物を最安でそろえましょう</p><a class="tvbk-go" href="travel.html#prep" data-ga="trip_return">持ち物チェックリストへ ›</a><button type="button" class="tvbk-n">まだ決まっていない</button>';
   document.body.appendChild(s);ga("trip_return_show",{from:from});
   s.addEventListener("click",function(e){if(e.target.closest(".tvbk-go")){t.d=1}else if(e.target.closest(".tvbk-n")){t.sn=Date.now()+864e5}else if(e.target.closest(".tvbk-x")){t.d=1}else return;sv(t);s.remove()})}
- document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")show("back")});show("load")})();
+ function bar(){var t=ld();if(!t||Date.now()-t.t>30*864e5||/travel\.html/.test(location.pathname)||document.getElementById("tvbar"))return;var m={};try{m=JSON.parse(localStorage.getItem("pn_prep")||"{}")}catch(e){}
+  var c=0;for(var k in m)if(m[k])c++;if(c>=12)return;var a=document.createElement("a");a.id="tvbar";a.className="tvbar";a.href="travel.html#prep";a.setAttribute("data-ga","trip_bar");
+  a.innerHTML='<b>'+(t.a?esc(t.a)+"への":"")+'旅の準備</b><span class="tvbar-g"><i style="width:'+(100*c/12)+'%"></i></span><span>'+c+'/12 ›</span>';var h=document.querySelector("main")||document.body;h.insertBefore(a,h.firstChild)}
+ document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")show("back")});show("load");bar()})();
 document.addEventListener("click",function(e){var g=e.target.closest("[data-ga]");if(g)ga(g.dataset.ga,{rank:+g.dataset.rank||0})});
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
  if(a)ga("click_rakuten",{link_type:a.classList.contains("big")?"best_shop":(a.classList.contains("sub-link")?"all_shops":"shop"),page_path:location.pathname})},true);
@@ -1376,7 +1379,7 @@ document.addEventListener("change",function(e){if(e.target.id!=="freeonly")retur
  var n=0;[].slice.call(l.children).forEach(function(li){
   if(li.dataset.free!==undefined){li.hidden=on&&li.dataset.free!=="1";if(!li.hidden)n++;return}
   if(on){if(!li.dataset.fprice){li.hidden=true;return}li.hidden=false;n++;li.dataset.price=li.dataset.fprice;li.dataset.eff=li.dataset.feff;
-   li.querySelector(".pv").textContent=yen(li.dataset.fprice);li.querySelector(".shipv").innerHTML='<span class="ship free">送料無料</span>'+(li.dataset.fprice!==li.dataset.aprice?'<small class="alt-p">（送料別の最安 '+yen(li.dataset.aprice)+'円）</small>':'');li.querySelector(".ptv").textContent=yen(li.dataset.fpt)+"ポイント（"+li.dataset.frate+"倍・目安）";var sc=li.querySelector(".scope");if(sc){sc.dataset.o=sc.dataset.o||sc.textContent;sc.textContent="送料無料のショップの中で最安"}li.querySelectorAll(".up,.save-s").forEach(function(z){z.style.display="none"})}
+   li.querySelector(".pv").textContent=yen(li.dataset.fprice);li.querySelector(".shipv").innerHTML='<span class="ship free">送料無料</span>'+(li.dataset.fprice!==li.dataset.aprice?'<small class="alt-p">（送料別の最安 '+yen(li.dataset.aprice)+'円）</small>':'');li.querySelector(".ptv").textContent=li.dataset.fptt||(yen(li.dataset.fpt)+"ポイント（"+li.dataset.frate+"倍・目安）");var sc=li.querySelector(".scope");if(sc){sc.dataset.o=sc.dataset.o||sc.textContent;sc.textContent="送料無料のショップの中で最安"}li.querySelectorAll(".up,.save-s").forEach(function(z){z.style.display="none"})}
   else{li.hidden=false;n++;li.dataset.price=li.dataset.aprice;li.dataset.eff=li.dataset.aeff;var o=li.dataset.orig;if(o){var x=JSON.parse(o);li.querySelector(".pv").textContent=x.p;li.querySelector(".shipv").innerHTML=x.s;li.querySelector(".ptv").textContent=x.t}var sc2=li.querySelector(".scope");if(sc2&&sc2.dataset.o)sc2.textContent=sc2.dataset.o;li.querySelectorAll(".up,.save-s").forEach(function(z){z.style.display=""})}});
  var fe=document.getElementById("freeempty");if(fe)fe.hidden=n>0;var act=document.querySelector('.sort button[aria-pressed="true"]');if(act)act.click()});
 function keepOrig(){document.querySelectorAll("#list li[data-fprice], #list li[data-aprice]").forEach(function(li){if(li.dataset.orig)return;var pv=li.querySelector(".pv"),sv=li.querySelector(".shipv"),tv=li.querySelector(".ptv");if(pv&&sv&&tv)li.dataset.orig=JSON.stringify({p:pv.textContent,s:sv.innerHTML,t:tv.textContent})})}
@@ -1881,6 +1884,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tv-pl{list-style:none;margin:0;padding:0 16px 8px;display:grid;gap:6px}.tv-pl li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
 .tv-pl li.on{background:#f0fdf4;border-color:#bbf7d0}.tv-pl li.on span{color:#6b7280;text-decoration:line-through}.tv-pl label{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;flex:1;min-height:28px}
 .tv-pl input{width:22px;height:22px;accent-color:#16a34a}.tv-pl a{font-size:13px;font-weight:800;color:var(--brand);white-space:nowrap}
+.tvbar{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;font-weight:700;text-decoration:none}.tvbar b{white-space:nowrap}.tvbar-g{flex:1;height:8px;border-radius:4px;background:#dcfce7;overflow:hidden}.tvbar-g i{display:block;height:100%;background:#16a34a}
 .tvbk{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:480px;margin:0 auto;padding:16px 16px 12px;border-radius:16px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);animation:tvbk .25s ease-out}
 @keyframes tvbk{from{transform:translateY(24px);opacity:0}}.tvbk b{display:block;font-size:17px;padding-right:28px}.tvbk p{margin:4px 0 10px;font-size:13px;color:#6b7280}
 .tvbk-go{display:block;height:48px;line-height:48px;text-align:center;border-radius:12px;background:var(--brand);color:#fff;font-weight:800;text-decoration:none}

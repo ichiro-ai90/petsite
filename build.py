@@ -1103,7 +1103,7 @@ def main():
           '料金は1室1泊の最安の目安（検索した時点）で、予約時はリンク先の料金が適用されます。リンク先は楽天トラベル・るるぶトラベルです。</p></div>')
     open(os.path.join(out, "travel.html"), "w", encoding="utf-8").write(page(f"ペットと泊まれる宿を探す｜{TRAVEL_BRAND}（{SITE}）", tv,
          "犬・猫と泊まれる宿を都道府県から探して、楽天トラベルで予約。ドッグラン・温泉・大型犬OKなどで絞り込めます。", sample,
-         ((TRAVEL_BRAND, None),), canonical=(f"{origin}/travel.html" if origin else ""), brand="travel"))
+         ((TRAVEL_BRAND, None),), canonical=(f"{origin}/travel.html" if origin else ""), og_image=(f"{origin}/travel/car.jpg" if origin else "travel/car.jpg"), brand="travel"))
     files.append("travel.html")
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド<a class="h2a" href="brands.html">すべて見る</a></h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す<a class="h2a" href="nayami.html">すべて見る</a></h2><ul class="nayami-l">{"".join(nayami)}</ul>'

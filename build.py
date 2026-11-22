@@ -289,7 +289,7 @@ def ga_note():
             '<a href="privacy.html">アクセス解析について</a></p>')
 
 
-def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noindex=False):
+def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noindex=False, brand=""):
     if not og_image:  # 個別の画像が無いページ（検索・マイリスト等）は、トップの共有画像を使う
         og_image = (ORIGIN_FOR_LD + "/og-today.png") if ORIGIN_FOR_LD else "og-today.png"
     band = ('<p class="sample">【サンプル表示】API 未接続のため架空の商品・価格です。実在の商品ではありません。</p>' if sample else "")
@@ -302,15 +302,26 @@ def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noinde
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">{head_extra(title, desc, canonical, og_image, noindex)}
 <link rel="stylesheet" href="style.css">{ga_tag()}<script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
-{band}<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk">{icon("paw", 20)}</span>{SITE}</a>
-<span class="hd-note">楽天の公式サイトではありません</span><a class="hd-fav" href="favorites.html">{icon("star", 16)}マイリスト<span id="favn"></span></a></div>
-<form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
-<input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">{icon("search", 18)}<span>検索</span></button></form></header>
+{band}{header_html(brand)}
 <main>{bc}{body}</main>
 <footer><p>このサイトで掲載されている情報は、ペット用品 最安ナビの作成者により運営されています。価格、販売可能情報は、変更される場合があります。購入時に楽天市場店舗（www.rakuten.co.jp）に表示されている価格が、その商品の販売に適用されます。</p>
 <p>運営: 合同会社にこのて（AI〈一郎〉が自動で作成）・楽天グループ株式会社とは関係ありません｜<a href="about.html">注記・このサイトについて</a></p>
 <p>{CREDIT}</p>{yahoo_foot()}</footer>
 </body></html>"""
+
+
+
+TRAVEL_BRAND = "最安ナビ トラベル"  # 旅行ページのサブブランド（11/23 Taku）
+
+
+def header_html(brand=""):
+    if brand == "travel":  # サブブランド: 名前を前に、親ブランドは小さく添える。用品の検索窓は出さない（旅行ページに検索カードがあるため）
+        return (f'<header class="hd hd-tv"><div class="hd-in"><a class="logo lg-tv" href="travel.html"><span class="lg-tv-n">{TRAVEL_BRAND}</span></a>'
+                f'<a class="hd-par" href="index.html">by {SITE}</a><span class="hd-note">楽天の公式サイトではありません</span></div></header>')
+    return f'''<header class="hd"><div class="hd-in"><a class="logo" href="index.html"><span class="mk">{icon("paw", 20)}</span>{SITE}</a>
+<span class="hd-note">楽天の公式サイトではありません</span><a class="hd-fav" href="favorites.html">{icon("star", 16)}マイリスト<span id="favn"></span></a></div>
+<form class="hd-search" action="search.html" role="search"><label for="hq" class="sr">商品を探す</label>
+<input type="search" id="hq" name="q" placeholder="商品名・メーカー・カテゴリで探す" autocomplete="off"><button type="submit">{icon("search", 18)}<span>検索</span></button></form></header>'''
 
 
 HISTORY = {}
@@ -1065,9 +1076,6 @@ def main():
           '<div class="tv-fr"><span class="tv-fl">ご予算（1室1泊）</span><div class="tv-bd" id="tvbd">'
           + "".join(f'<button type="button" data-b="{v}" aria-pressed="{"true" if not v else "false"}">{E(n)}</button>' for v, n in _budgets) + '</div></div>'
           '<button type="submit" class="tv-go-b">宿を探す</button></form>'
-          + _sh("FEATURE", "愛犬と叶える、旅のかたち", "テーマを選ぶと、行き先の宿をその条件で探します")
-          + '<ul class="tv-th">'
-          + "".join(f'<li><button type="button" data-q="{E(q)}"><span class="tv-thp" style="background-image:url(travel/{k}.jpg)"></span><span class="tv-tht">{E(t)}</span></button></li>' for k, t, q in _themes) + '</ul>'
           + _sh("DESTINATION", "人気の行き先")
           + '<div class="tv-pop">' + "".join(f'<button type="button" data-a="{E(p)}"><b>{E(n)}</b><small>{E(p)}</small></button>' for p, n in _popular) + '</div>'
           '<section class="tv-ar">' + _sh("AREA", "エリアから探す") + '<div class="tv-rg" id="tvrg" role="tablist">'
@@ -1093,9 +1101,9 @@ def main():
           'bs.forEach(function(x){x.onchange=function(){m[x.dataset.pk]=x.checked?1:0;try{localStorage.setItem(k,JSON.stringify(m))}catch(e){}d();if(x.checked){ga("prep_check",{i:+x.dataset.pk});if(window.pnXP)pnXP()}}});d()})()</script>'
           '<p class="nayami-n">宿の名前やプランに「ペット」とある宿を出しています。泊まれるペットの種類・大きさ・頭数・料金は宿ごとに違うので、予約の前にリンク先の「ペット宿泊情報」で必ず確かめてください。'
           '料金は1室1泊の最安の目安（検索した時点）で、予約時はリンク先の料金が適用されます。リンク先は楽天トラベル・るるぶトラベルです。</p></div>')
-    open(os.path.join(out, "travel.html"), "w", encoding="utf-8").write(page(f"ペットと泊まれる宿を探す｜{SITE}", tv,
+    open(os.path.join(out, "travel.html"), "w", encoding="utf-8").write(page(f"ペットと泊まれる宿を探す｜{TRAVEL_BRAND}（{SITE}）", tv,
          "犬・猫と泊まれる宿を都道府県から探して、楽天トラベルで予約。ドッグラン・温泉・大型犬OKなどで絞り込めます。", sample,
-         (("ペットと泊まれる宿", None),), canonical=(f"{origin}/travel.html" if origin else "")))
+         ((TRAVEL_BRAND, None),), canonical=(f"{origin}/travel.html" if origin else ""), og_image=(f"{origin}/travel/car.jpg" if origin else "travel/car.jpg"), brand="travel"))
     files.append("travel.html")
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド<a class="h2a" href="brands.html">すべて見る</a></h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す<a class="h2a" href="nayami.html">すべて見る</a></h2><ul class="nayami-l">{"".join(nayami)}</ul>'
@@ -1913,6 +1921,8 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tvx .nayami-n{margin:28px 16px 8px;font-size:11px;line-height:1.8;color:var(--mute)}
 @media (min-width:1024px){.tv-hero{height:520px}.tv-t{left:64px;bottom:96px}.tvx h1{font-size:40px}.tv-f{max-width:760px;margin:-56px auto 0;display:grid;grid-template-columns:1fr 1.6fr auto;gap:20px;align-items:end}.tv-fr{border:0;margin:0;padding:0}.tv-go-b{width:180px}.tv-th{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-pop{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-pop button,.tv-pop button:nth-child(odd){border-right:1px solid var(--hair)}.tv-pf{grid-template-columns:repeat(6,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-l,.tv-pl,.tv-rr{max-width:1000px;margin-left:auto;margin-right:auto}}
 
+.hd-tv .hd-in{align-items:baseline;gap:10px;flex-wrap:wrap}.lg-tv{text-decoration:none}.lg-tv-n{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-size:21px;font-weight:600;letter-spacing:.08em;color:#1c1c1c}
+.hd-par{font-size:11px;color:#8c6a3f;letter-spacing:.04em;text-decoration:none;border-bottom:1px solid #c2a476}.hd-tv .hd-note{margin-left:auto}
 .tvbar{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;font-weight:700;text-decoration:none}.tvbar b{white-space:nowrap}.tvbar-g{flex:1;height:8px;border-radius:4px;background:#dcfce7;overflow:hidden}.tvbar-g i{display:block;height:100%;background:#16a34a}
 .tvbk{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:480px;margin:0 auto;padding:16px 16px 12px;border-radius:16px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);animation:tvbk .25s ease-out}
 @keyframes tvbk{from{transform:translateY(24px);opacity:0}}.tvbk b{display:block;font-size:17px;padding-right:28px}.tvbk p{margin:4px 0 10px;font-size:13px;color:#6b7280}

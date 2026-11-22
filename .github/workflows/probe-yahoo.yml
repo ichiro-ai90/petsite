@@ -9,8 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: { ref: dev/travel-premium, path: pv }
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - name: PR版を作る
+        run: |
+          cd pv && python auto/get_prices.py && python build.py >/dev/null && (cd site && python -m http.server 8000 >/dev/null 2>&1 &) && sleep 2
       - name: 画面
         run: |
           pip -q install playwright && python -m playwright install --with-deps chromium >/dev/null 2>&1
@@ -19,21 +24,14 @@ jobs:
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p:
               b = p.chromium.launch()
-              pg = b.new_page(viewport={"width": 390, "height": 900})
-              pg.goto("https://petnavi.niconote.jp/travel.html?v=1121h"); pg.wait_for_timeout(2500)
-              print("PF", pg.evaluate("""(()=>{var x=[...document.querySelectorAll('.tv-pf button')].find(e=>e.textContent.trim().startsWith('長野'));if(!x)return 'none';x.click();return x.textContent})()"""))
-              pg.wait_for_timeout(5000)
-              h = pg.evaluate("(document.querySelector('.tv-rt a')||{}).href||''")
-              print("RT", "hb.afl" if h.startswith("https://hb.afl.rakuten.co.jp/hgc/") else ("plain" if h else "none"), "kw" if "kw.travel.rakuten.co.jp" in urllib.parse.unquote(h) else "")
-              print("TVC", pg.evaluate("document.getElementById('tvc').textContent"), "| RU hidden", pg.evaluate("(document.getElementById('tvru')||{}).hidden"))
-              el = pg.locator(".tv-rt")
-              if el.count(): el.scroll_into_view_if_needed(); pg.wait_for_timeout(500); pg.screenshot(path="rt.png")
-              if h:
-                  pg2 = b.new_page(viewport={"width": 390, "height": 900})
-                  r = pg2.goto(h, timeout=60000); pg2.wait_for_timeout(5000)
-                  n = pg2.evaluate("document.querySelectorAll('a[href*=\"/HOTEL/\"],a[href*=\"hotelinfo\"]').length")
-                  print("DEST", urllib.parse.urlsplit(pg2.url).netloc, "|", pg2.title()[:50], "| hotels", n)
-                  pg2.screenshot(path="dest.png")
+              pg = b.new_page(viewport={"width": 390, "height": 844})
+              pg.goto("http://localhost:8000/travel.html"); pg.wait_for_timeout(2000)
+              pg.screenshot(path="tv_full.png", full_page=True)
+              pg.screenshot(path="tv_1.png")
+              pg.evaluate("""(()=>{var x=[...document.querySelectorAll('.tv-pf button')].find(e=>e.textContent.trim()==='長野県');x&&x.click()})()""")
+              pg.wait_for_timeout(2500); pg.locator("#tvh").scroll_into_view_if_needed(); pg.screenshot(path="tv_res.png")
+              pc = b.new_page(viewport={"width": 1440, "height": 900})
+              pc.goto("http://localhost:8000/travel.html"); pc.wait_for_timeout(1500); pc.screenshot(path="tv_pc.png")
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

@@ -1085,7 +1085,7 @@ def main():
           '<a class="tv-rr" href="https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3788390&amp;pid=892753722&amp;vc_url=https%3A%2F%2Fwww.rurubu.travel%2Ftheme%2Fpet%2F%3Futm_source%3Dvaluecommerce%26utm_medium%3Daffiliate" '
           'target="_blank" rel="sponsored nofollow noopener" data-ga="rurubu_pet"><img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3788390&amp;pid=892753722" height="1" width="0" alt="" style="border:0">'
           '<span class="tv-rrp" style="background-image:url(travel/beach.jpg)"></span><span class="tv-rr-t"><small>るるぶトラベル（JTB）の特集</small><b>ペットと泊まれる宿</b><span>ドッグラン・愛犬用風呂・大型犬OKなどで選べる</span></span><span class="tv-rr-go">特集を見る ›</span></a>'
-          f'<section class="tv-pr" id="prep">' + _sh("PREPARATION", "お泊まりの持ち物") + f'<div class="tv-prr"><span>そろえた物にチェック。足りない物は、その場で最安を</span><b class="tv-prn" id="tvprn">0/{len(_goods)}</b></div>'
+          f'<section class="tv-pr" id="prep">' + _sh("PREPARATION", "お泊まりの持ち物") + f'<div class="tv-prr"><span>チェックして準備。足りない物は、その場で最安を探せます</span><b class="tv-prn" id="tvprn">0/{len(_goods)}</b></div>'
           '<div class="tv-prb"><i id="tvprb"></i></div><ul class="tv-pl">'
           + "".join(f'<li><label><input type="checkbox" data-pk="{i}"><span>{E(n)}</span></label><a href="search.html?q={urllib.parse.quote(q)}" data-ga="travel_goods">最安を見る ›</a></li>' for i, (n, q) in enumerate(_goods)) + '</ul></section>'
           '<script>(function(){var k="pn_prep",m={};try{m=JSON.parse(localStorage.getItem(k)||"{}")}catch(e){}var bs=document.querySelectorAll("[data-pk]"),n=document.getElementById("tvprn"),b=document.getElementById("tvprb");'
@@ -1901,10 +1901,10 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tv-ru .h2n{color:rgba(255,255,255,.6);font-size:11px;margin:12px 0 0}
 .tv-win{margin-top:18px;text-align:left}.tv-win[hidden]{display:none}.tv-wint{margin:0 0 4px;font-size:16px;color:var(--gl);text-align:center}
 .tv-win p{color:rgba(255,255,255,.7)!important;text-align:center}.tv-win a{display:block;background:#fff;color:var(--ink);text-decoration:none;animation:gin .45s ease-out}.tv-win .tv-b{padding:12px 14px 14px}
-.tv-rr{display:flex;flex-wrap:wrap;align-items:stretch;margin:36px 16px 0;background:#fff;border:1px solid var(--hair);color:var(--ink);text-decoration:none}
-.tv-rrp{flex:none;width:38%;background:center/cover no-repeat}.tv-rr-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;padding:16px 14px}
+.tv-rr{position:relative;display:grid;grid-template-columns:38% minmax(0,1fr);margin:36px 16px 0;background:#fff;border:1px solid var(--hair);color:var(--ink);text-decoration:none}.tv-rr img{position:absolute;left:0;top:0}
+.tv-rrp{grid-row:1/3;min-height:150px;background:center/cover no-repeat}.tv-rr-t{min-width:0;display:flex;flex-direction:column;gap:4px;padding:16px 14px 6px}
 .tv-rr-t small{font-size:10px;letter-spacing:.12em;color:var(--mute)}.tv-rr-t b{font-size:18px}.tv-rr-t span{font-size:11px;color:var(--mute);line-height:1.6}
-.tv-rr-go{margin:0 14px 14px auto;font-size:12px;color:var(--g);border-bottom:1px solid var(--g);white-space:nowrap}
+.tv-rr-go{grid-column:2;justify-self:start;margin:0 14px 14px;font-size:12px;color:var(--g);border-bottom:1px solid var(--g);white-space:nowrap}
 .tv-prr{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 16px 8px;font-size:12px;color:var(--mute)}.tv-prn{font-size:15px;color:var(--g);font-weight:700;white-space:nowrap}
 .tv-prb{margin:0 16px 8px;height:2px;background:var(--hair)}.tv-prb i{display:block;height:100%;width:0;background:var(--g);transition:width .3s}
 .tv-pl{list-style:none;margin:0 16px;padding:0;border-top:1px solid var(--hair)}.tv-pl li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 2px;border-bottom:1px solid var(--hair)}

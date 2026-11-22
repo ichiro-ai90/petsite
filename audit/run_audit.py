@@ -69,7 +69,8 @@ def shots():
         pages += [("カテゴリの商品一覧", f"{first['c']}.html", False), ("商品ごとのショップ比較", f"item-{first['id']}.html", True)]
         kw = (first.get("m") or first["n"]).split(" ")[0]
         pages += [("検索結果", f"search.html?q={urllib.request.quote(kw)}", False)]
-    for nm, fn in (("今週の値下がりランキング", "weekly.html"), ("1分診断", "shindan.html")):
+    for nm, fn in (("今週の値下がりランキング", "weekly.html"), ("1分診断", "shindan.html"), ("悩みから探す", "nayami.html"),
+                   ("海外ブランド", "brands.html"), ("ペットと泊まれる宿（旅行）", "travel.html")):
         if os.path.exists(os.path.join(ROOT, "site", fn)):
             pages.append((nm, fn, False))
     pages += [("お気に入り（登録後）", "favorites.html", False)]
@@ -116,6 +117,31 @@ def shots():
                 pg.goto("http://localhost:8000/index.html", wait_until="networkidle", timeout=30000)
                 pg.wait_for_timeout(1200)
                 out.append(("トップ（何も押していない再訪者の例：前に見た商品が安くなった。ボタン操作なしで自動表示）", "index.html", pg.screenshot(), ""))
+        # 使いたくなるかを見るための「操作した後」の画面（オーナー指示 2026-11-23）
+        try:
+            pg.goto("http://localhost:8000/index.html", wait_until="networkidle", timeout=30000)
+            if pg.query_selector("#gacha"):
+                pg.locator("#gacha").scroll_into_view_if_needed()
+                out.append(("お得ガチャ（引く前）", "index.html#gacha", pg.screenshot(), ""))
+                if pg.query_selector("#gbtn"):
+                    pg.click("#gbtn")
+                    pg.wait_for_timeout(4500)
+                    out.append(("お得ガチャ（1回引いた直後）", "index.html#gacha", pg.screenshot(), ""))
+            pg.goto("http://localhost:8000/travel.html", wait_until="networkidle", timeout=30000)
+            pg.evaluate("""() => { const x = [...document.querySelectorAll('.tv-pf button')].find(e => e.textContent.trim() === '長野県'); if (x) x.click(); }""")
+            pg.wait_for_timeout(2500)
+            if pg.query_selector("#tvl"):
+                pg.locator("#tvl").scroll_into_view_if_needed()
+            out.append(("泊まれる宿（長野県を選んだ直後。監査環境では楽天トラベルの API が無いため、宿が出せないときの画面）", "travel.html", pg.screenshot(), ""))
+            if pg.query_selector("#prep"):
+                pg.locator("#prep").scroll_into_view_if_needed()
+                out.append(("お泊まり持ち物チェックリスト", "travel.html#prep", pg.screenshot(), ""))
+            pg.evaluate("() => localStorage.setItem('pn_trip', JSON.stringify({a: '長野県', t: Date.now() - 3600e3}))")
+            pg.goto("http://localhost:8000/index.html", wait_until="networkidle", timeout=30000)
+            pg.wait_for_timeout(1200)
+            out.append(("宿の予約サイトへ移ったあと、サイトに戻ってきた人のトップ（下に出る案内）", "index.html", pg.screenshot(), ""))
+        except Exception as e:
+            print("操作後の画面を撮れませんでした:", e)
         b.close()
     for nm, fn in (("共有したときのプレビュー画像（トップ og-today.png・毎朝自動生成）", "og-today.png"),
                    ("共有したときのプレビュー画像（今週のランキング og-weekly.png）", "og-weekly.png"),

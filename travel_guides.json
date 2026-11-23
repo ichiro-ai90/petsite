@@ -36,6 +36,14 @@
      "desc": "駅前のアウトレット。芝生のドッグランもあり、買い物の合間に遊ばせられます。",
      "cond": "施設内はリード必須。入店できる店は店頭のステッカーで確認",
      "src": "https://www.mapple.net/original/349931/"
+    },
+    {
+     "name": "軽井沢スノーパーク「わんわんパラダイス」",
+     "where": "嬬恋村（軽井沢から車で）",
+     "desc": "浅間山のふもとにある、わんこ専用の遊び場とお散歩コース。",
+     "cond": "「わんわんパラダイス」内とお散歩コースで同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/snowpark/",
+     "asof": "2018年10月"
     }
    ],
    "shops": [
@@ -73,6 +81,14 @@
      "desc": "2025年にできた丸山珈琲の店舗。",
      "cond": "テラス席のみ同伴OK（大型犬まで）",
      "src": "https://www.inutome.jp/c/column_2-680-54774.html"
+    },
+    {
+     "name": "イタリアンカフェ フェルマータ",
+     "where": "軽井沢町",
+     "desc": "軽井沢のイタリアンカフェ。",
+     "cond": "ケージに入れれば店内OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/fermata/",
+     "asof": "2018年8月"
     }
    ]
   },
@@ -110,6 +126,21 @@
      "desc": "湖のほとりの牧場。カフェのテラスで愛犬とひと休みできます。",
      "cond": "カフェのテラス席は同伴OK",
      "src": "https://hoshinoresorts.com/jp/guide/area/kanto/tochigi/nasu/nasu-pet/"
+    },
+    {
+     "name": "那須とりっくあーとぴあ",
+     "where": "那須町",
+     "desc": "目の錯覚を楽しむトリックアートの美術館。",
+     "cond": "館内すべて同伴OK（階段などは抱っこ・迂回で対応）",
+     "src": "https://www.honda.co.jp/dog/travel/data/trick-art/",
+     "asof": "2025年3月"
+    },
+    {
+     "name": "那須ステンドグラス美術館",
+     "where": "那須町",
+     "desc": "英国の田舎の館をイメージしたステンドグラスの美術館。",
+     "cond": "館内・ショップ・ガーデンで同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-stained/"
     }
    ],
    "shops": [
@@ -147,6 +178,14 @@
      "desc": "チーズガーデンの敷地内、緑に囲まれたカフェ。",
      "cond": "テラス席で同伴OK（大型犬OK）",
      "src": "https://wankonowa.com/column/3027/"
+    },
+    {
+     "name": "Cafe Peache",
+     "where": "那須町",
+     "desc": "那須高原のドッグカフェ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/cafepeache/",
+     "asof": "2025年10月"
     }
    ]
   },
@@ -177,6 +216,38 @@
      "desc": "柳並木と石畳が続く、幕末の面影が残る散策路。",
      "cond": "リード着用で散策OK。沿道に同伴OKのカフェも",
      "src": "https://yadohanabusa.com/media/642"
+    },
+    {
+     "name": "伊豆シャボテン動物公園",
+     "where": "伊東市",
+     "desc": "サボテンと動物たちのテーマパーク。",
+     "cond": "一部エリアを除き同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-shaboten/",
+     "asof": "2017年2月"
+    },
+    {
+     "name": "伊豆ぐらんぱる公園",
+     "where": "伊東市",
+     "desc": "アスレチックやイルミネーションで遊べる公園。",
+     "cond": "園内同伴OK。飲食店はテラス席を利用",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-granpa/",
+     "asof": "2017年2月"
+    },
+    {
+     "name": "河津バガテル公園",
+     "where": "河津町",
+     "desc": "パリのバガテル公園を再現したバラ園。",
+     "cond": "屋外すべて同伴OK。カフェはテラスのみ、ショップは抱っこで",
+     "src": "https://www.honda.co.jp/dog/travel/data/bagatelle/",
+     "asof": "2017年2月"
+    },
+    {
+     "name": "ベルクルーズいとう",
+     "where": "伊東市",
+     "desc": "伊東の海をめぐる遊覧船。",
+     "cond": "遊覧船内で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/bellcruise-ito/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -214,6 +285,14 @@
      "desc": "下田の、アメリカンな雰囲気のカフェ。",
      "cond": "店内・テラスとも同伴OK",
      "src": "https://wankonowa.com/column/2993/"
+    },
+    {
+     "name": "ドッグガーデン びわの木（ドッグカフェ）",
+     "where": "下田市",
+     "desc": "ドッグランのある下田のドッグカフェ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/biwacafe/",
+     "asof": "2018年9月"
     }
    ]
   },
@@ -244,6 +323,34 @@
      "desc": "芦ノ湖のほとりの水族館。",
      "cond": "貸し出しのケージを使えば一緒に回れる",
      "src": "https://www.hakonenavi.jp/feature/7616"
+    },
+    {
+     "name": "湯遊び処 箱根の湯",
+     "where": "箱根町",
+     "desc": "日帰り温泉施設。犬専用の露天風呂と、犬と休める個室がある。",
+     "cond": "犬専用露天風呂・同伴できる個室あり",
+     "src": "https://www.honda.co.jp/dog/travel/odekake/kanto/"
+    },
+    {
+     "name": "箱根神社（九頭龍神社）",
+     "where": "箱根町元箱根",
+     "desc": "杉並木の参道が続く、芦ノ湖畔の古社。",
+     "cond": "本殿まではリード着用で同伴OK。本殿では抱っこかキャリーで",
+     "src": "https://wankonowa.com/column/1588/"
+    },
+    {
+     "name": "箱根関所",
+     "where": "箱根町",
+     "desc": "江戸時代の関所を復元した施設。",
+     "cond": "関所を抜ける道はリードで通れる。展示エリアは抱っこかスリングで",
+     "src": "https://petokoto.com/articles/2582"
+    },
+    {
+     "name": "箱根 芦ノ湖遊覧船",
+     "where": "箱根町",
+     "desc": "富士山や箱根神社の「平和の鳥居」を湖上から眺められる遊覧船。",
+     "cond": "船内はキャリーかケージ。デッキは抱っこかスリングでOK",
+     "src": "https://petokoto.com/articles/2582"
     }
    ],
    "shops": [
@@ -281,6 +388,20 @@
      "desc": "仙石原の洋館で味わうイタリア料理。",
      "cond": "晴れた日のみテラス席で同伴OK",
      "src": "https://wankonowa.com/column/2933/"
+    },
+    {
+     "name": "はこね天空のテラス",
+     "where": "箱根町",
+     "desc": "大文字山を望む絶景テラスのカフェ。",
+     "cond": "テラス席で同伴OK・大型犬OK",
+     "src": "https://wankonowa.com/column/2726/"
+    },
+    {
+     "name": "箱根唐揚げKARATTO",
+     "where": "箱根町（芦ノ湖近く）",
+     "desc": "芦ノ湖近くの唐揚げ店。",
+     "cond": "全席ペット同伴OK",
+     "src": "https://petokoto.com/articles/1636"
     }
    ]
   },
@@ -318,6 +439,22 @@
      "desc": "温室や展望デッキのあるハーブの庭園。",
      "cond": "庭園は小型〜大型犬まで入場OK",
      "src": "https://petokoto.com/articles/884"
+    },
+    {
+     "name": "西湖いやしの里根場",
+     "where": "富士河口湖町",
+     "desc": "かやぶき屋根の民家が並ぶ里。富士山の眺めも。",
+     "cond": "屋外は散歩OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/saikoiyashinosatonenba/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "山中湖遊覧船「白鳥の湖号」",
+     "where": "山中湖村",
+     "desc": "白鳥の形の遊覧船で山中湖を一周。",
+     "cond": "リード・抱っこなら2階デッキで同乗OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/hakuchonomizuumigo/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -355,6 +492,14 @@
      "desc": "大石エリアのベーカリー。",
      "cond": "ガーデンエリアとテラス席で同伴OK",
      "src": "https://crexgroup.com/ja/travel/niche/fuji-five-lakes-dog-friendly-spots/"
+    },
+    {
+     "name": "ほっとcafeり楽S",
+     "where": "富士河口湖町",
+     "desc": "ガーデンカフェ。",
+     "cond": "ガーデンカフェ全エリアで同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/hotcaferelax/",
+     "asof": "2026年4月"
     }
    ]
   },
@@ -422,6 +567,30 @@
      "desc": "150〜200種のハーブ園に、レストランとドッグランを併設。",
      "cond": "ガーデンはリード着用、レストランはテラス席で同伴OK",
      "src": "https://petodekake.com/withdog/bousou-dog-odekake/"
+    },
+    {
+     "name": "オドーリ・キッチン",
+     "where": "南房総市白浜町",
+     "desc": "南房総・白浜のレストラン。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/odori-kitchen/",
+     "asof": "2020年3月"
+    },
+    {
+     "name": "ドッグ＆ベジレストラン トゥルシー",
+     "where": "館山市",
+     "desc": "野菜料理が中心の、わんこ同伴のレストラン。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/tul/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "カーサマリーナ",
+     "where": "南房総市千倉町",
+     "desc": "千倉の海辺のレストラン。",
+     "cond": "店内の一部で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/casa/",
+     "asof": "2017年1月"
     }
    ]
   },
@@ -459,6 +628,21 @@
      "desc": "牧場とドイツの農村の町並み。サッカーコートより広いドッグランもあります。",
      "cond": "建物の中以外は同伴OK。レストランのテラス席で一緒に食事可",
      "src": "https://car-me.jp/articles/4385"
+    },
+    {
+     "name": "FANTAIL（ファンテイル）",
+     "where": "みなかみ町",
+     "desc": "みなかみの自然でカヌーやスノーシューを楽しむアウトドアツアー。",
+     "cond": "犬も一緒にツアーに参加できる",
+     "src": "https://www.honda.co.jp/dog/travel/odekake/kanto/"
+    },
+    {
+     "name": "草津熱帯圏",
+     "where": "草津町",
+     "desc": "温泉熱を使った熱帯動植物園。",
+     "cond": "施設内すべて同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/nettai/",
+     "asof": "2018年9月"
     }
    ],
    "shops": [
@@ -489,6 +673,14 @@
      "desc": "せせらぎが聞こえる、アットホームなカフェ。",
      "cond": "テラスと中庭のみ同伴OK（店内は不可）",
      "src": "https://wankonowa.com/column/2491/"
+    },
+    {
+     "name": "だんべえ茶寮",
+     "where": "草津町周辺（吾妻郡）",
+     "desc": "わんこと一緒に入れる茶寮。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/danbee/",
+     "asof": "2018年9月"
     }
    ]
   },
@@ -525,7 +717,23 @@
      "where": "つくば市",
      "desc": "筑波山の麓の、犬と猫のテーマパーク。芝生のドッグランもあります。",
      "cond": "園内は愛犬と一緒に入場OK（ふれあい広場は不可）。ドッグランは入場料のみで利用可",
-     "src": "https://www.honda.co.jp/dog/travel/data/shop-tsukuba"
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-tsukuba",
+     "asof": "2015年11月"
+    },
+    {
+     "name": "こもれび森のイバライド",
+     "where": "稲敷市",
+     "desc": "森の中のテーマパーク。大型犬用と小型犬用に分かれた広いドッグランがある。",
+     "cond": "レストランとファストフード店に犬と座れる屋外席あり",
+     "src": "https://www.honda.co.jp/dog/travel/odekake/kanto/"
+    },
+    {
+     "name": "筑波山ロープウェイ",
+     "where": "つくば市",
+     "desc": "筑波山の山頂へ向かうロープウェイ。",
+     "cond": "わんこも乗車OK（レストハウスは不可）",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-rope/",
+     "asof": "2018年8月"
     }
    ],
    "shops": [
@@ -556,13 +764,21 @@
      "desc": "広い芝生のドッグランがある、赤い屋根のカフェ。",
      "cond": "テラス席のみ同伴OK",
      "src": "https://wankonowa.com/column/3262/"
+    },
+    {
+     "name": "DogCafe168",
+     "where": "稲敷市",
+     "desc": "ドッグカフェ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/cafe168/",
+     "asof": "2018年10月"
     }
    ]
   },
   {
    "slug": "tokyo",
    "pref": "東京都",
-   "name": "東京（下町・都心）",
+   "name": "東京（下町・都心・多摩）",
    "photo": "car",
    "lead": "浅草寺や柴又の参道、都心の公園まで。ルールを守れば、東京観光も愛犬と一緒に楽しめます。",
    "spots": [
@@ -600,6 +816,21 @@
      "desc": "都心で、散策とショッピングを愛犬と。",
      "cond": "館内は抱っこかキャリーバッグ、館外はリード着用",
      "src": "https://wankonowa.com/column/2481/"
+    },
+    {
+     "name": "国営昭和記念公園",
+     "where": "立川市",
+     "desc": "7エリアに分かれたドッグラン（アジリティ器具エリアあり）がある広大な公園。",
+     "cond": "ドッグランは犬の性格に合わせてエリアを選べる",
+     "src": "https://www.honda.co.jp/dog/travel/odekake/kanto/"
+    },
+    {
+     "name": "御岳山ケーブルカー",
+     "where": "青梅市",
+     "desc": "御岳山へのハイキングに使えるケーブルカー。",
+     "cond": "わんこも乗車OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/mitaketozan/",
+     "asof": "2016年5月"
     }
    ],
    "shops": [
@@ -630,6 +861,22 @@
      "desc": "東京タワー近くの、写真映えするカフェ。",
      "cond": "テラス・店内とも同伴OK（テラスにリードフックあり）",
      "src": "https://wankonowa.com/column/1915/"
+    },
+    {
+     "name": "大師茶屋",
+     "where": "調布市",
+     "desc": "深大寺の参道で、武蔵野の緑に囲まれて深大寺そばを。",
+     "cond": "テラス席で同伴OK（全犬種OK）",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-tai/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "八十八夜",
+     "where": "武蔵野市",
+     "desc": "井の頭公園のすぐ近く、吉祥寺通り沿いのカフェ。",
+     "cond": "店内の一部で同伴OK（大型犬はテラス席のみ）",
+     "src": "https://www.honda.co.jp/dog/travel/data/hachijuhachiya/",
+     "asof": "2016年3月"
     }
    ]
   },
@@ -667,6 +914,21 @@
      "desc": "オランダ風の回遊式庭園がある公園。",
      "cond": "園内の散歩OK（神社の境内は立ち入り不可）",
      "src": "https://wankonowa.com/column/3802/"
+    },
+    {
+     "name": "湯沢高原パノラマパーク",
+     "where": "湯沢町",
+     "desc": "大型ロープウェイで標高約1,000mの高原へ。",
+     "cond": "わんこもロープウェイに同乗できる（ルールは施設案内で確認）",
+     "src": "https://www.honda.co.jp/dog/travel/data/yuzawakogen/"
+    },
+    {
+     "name": "妙高高原スカイケーブル",
+     "where": "妙高市",
+     "desc": "妙高の絶景を見渡すゴンドラ。",
+     "cond": "わんこも同乗できる（ルールは施設案内で確認）",
+     "src": "https://www.honda.co.jp/dog/travel/data/myoko-skycable/",
+     "asof": "2025年5月"
     }
    ],
    "shops": [
@@ -697,6 +959,14 @@
      "desc": "看板犬が迎えてくれるカフェレストラン。",
      "cond": "店内・テラスOK（20kg以上はテラスのみ）",
      "src": "https://wankonowa.com/column/4114/"
+    },
+    {
+     "name": "ドッグカフェ＆レストラン 丘の風",
+     "where": "南魚沼市",
+     "desc": "広いドッグランと山々を眺めながらランチできる。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/okanokaze/",
+     "asof": "2016年5月"
     }
    ]
   },
@@ -734,6 +1004,14 @@
      "desc": "一日遊べる大きな公園。",
      "cond": "無料ドッグランは小型犬専用",
      "src": "https://wankonowa.com/column/3553/"
+    },
+    {
+     "name": "DOGRUN海岸通り 庭工房絵草",
+     "where": "富山市",
+     "desc": "海のすぐそばにある大きなドッグラン。",
+     "cond": "施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/ekusa/",
+     "asof": "2016年6月"
     }
    ],
    "shops": [
@@ -764,6 +1042,14 @@
      "desc": "室内ドッグランを併設したランチのお店。",
      "cond": "レストランに同伴OK",
      "src": "https://wankonowa.com/column/3553/"
+    },
+    {
+     "name": "ワンズクラブ アルプラザ小杉店",
+     "where": "射水市",
+     "desc": "ショッピングセンターの敷地内にある、わんこのトータルショップ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/wans01/",
+     "asof": "2016年3月"
     }
    ]
   },
@@ -794,6 +1080,27 @@
      "desc": "体験型の現代アートが楽しめる美術館。",
      "cond": "館内は不可。屋外の作品は見学OK",
      "src": "https://wankonowa.com/column/3177/"
+    },
+    {
+     "name": "長町武家屋敷跡",
+     "where": "金沢市",
+     "desc": "土塀と石畳が続く、藩政時代の武家屋敷の町並み。",
+     "cond": "愛犬と散策できるスポットとして紹介（屋内施設は各施設に確認）",
+     "src": "https://wankonowa.com/column/3177/"
+    },
+    {
+     "name": "健民海浜公園",
+     "where": "金沢市",
+     "desc": "約47haの海浜公園。大池のボートやバーベキュー広場がある。",
+     "cond": "犬と行ける公園として紹介",
+     "src": "https://wankonowa.com/column/3803/"
+    },
+    {
+     "name": "卯辰山公園",
+     "where": "金沢市",
+     "desc": "金沢の街を見渡せる丘の上の公園。",
+     "cond": "犬と行ける公園として紹介（入園無料）",
+     "src": "https://wankonowa.com/column/3803/"
     }
    ],
    "shops": [
@@ -824,6 +1131,22 @@
      "desc": "加賀の郷土料理が味わえるお店。",
      "cond": "ペット同伴OK",
      "src": "https://wankonowa.com/column/3177/"
+    },
+    {
+     "name": "インドレストラン シャルマ",
+     "where": "金沢市",
+     "desc": "金沢のインド料理店。名物のカレーをわんこと。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/restaurant_sharaman/",
+     "asof": "2016年5月"
+    },
+    {
+     "name": "トリミング＆ドッグカフェ Amber Jade",
+     "where": "野々市市",
+     "desc": "トリミングサロン併設のドッグカフェ。金沢の隣町。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/amber-jade/",
+     "asof": "2018年7月"
     }
    ]
   },
@@ -861,6 +1184,21 @@
      "desc": "旧鯖街道の宿場町の古い町並み。",
      "cond": "リードを着ければ散策OK",
      "src": "https://wankonowa.com/column/3415/"
+    },
+    {
+     "name": "スキージャム勝山（ドッグラン）",
+     "where": "勝山市",
+     "desc": "高原のスキー場にある、風が気持ちいいドッグラン。",
+     "cond": "屋外とホテルレストランのテラス席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/jam/",
+     "asof": "2016年5月"
+    },
+    {
+     "name": "東尋坊",
+     "where": "坂井市",
+     "desc": "柱状の岩が並ぶ断崖の景勝地。",
+     "cond": "海岸を愛犬と一緒にめぐれる。段差が多いので抱っこの用意を",
+     "src": "https://wankonowa.com/column/2765/"
     }
    ],
    "shops": [
@@ -891,6 +1229,20 @@
      "desc": "越前海岸を望むテラスのカフェ。",
      "cond": "テラス席は全席同伴OK",
      "src": "https://wankonowa.com/column/3415/"
+    },
+    {
+     "name": "やまに水産",
+     "where": "坂井市（東尋坊）",
+     "desc": "東尋坊の通りにある、創業80年の海鮮の店。",
+     "cond": "屋根付きテラス席で同伴OK",
+     "src": "https://wankonowa.com/column/2300/"
+    },
+    {
+     "name": "ル・ブル",
+     "where": "福井市",
+     "desc": "フレンチブルドッグの看板犬がいるビストロカフェ。店の裏に無料のドッグラン。",
+     "cond": "愛犬とランチを楽しめる（ドッグラン無料）",
+     "src": "https://wankonowa.com/column/4101/"
     }
    ]
   },
@@ -921,6 +1273,30 @@
      "desc": "年平均12℃の涼しい天然の鍾乳洞。",
      "cond": "ペット料金なしで入洞OK（階段が多く、小型犬はバッグがおすすめ）",
      "src": "https://wankonowa.com/column/2979/"
+    },
+    {
+     "name": "飛騨の里",
+     "where": "高山市",
+     "desc": "飛騨の古い民家が集まる郷土テーマパーク。",
+     "cond": "屋外のみ同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/hidanosato/",
+     "asof": "2017年1月"
+    },
+    {
+     "name": "恵那 銀の森",
+     "where": "恵那市",
+     "desc": "中央アルプスの食と自然を楽しめる施設。",
+     "cond": "店舗内とレストランのテラス以外で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/ginnomori/",
+     "asof": "2017年1月"
+    },
+    {
+     "name": "まきばの森（ドッグラン）",
+     "where": "郡上市高鷲町",
+     "desc": "森一面がドッグランになっている、ひるがの高原の施設。",
+     "cond": "屋外・おみやげショップ1階で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/makibanomori-run/",
+     "asof": "2018年9月"
     }
    ],
    "shops": [
@@ -951,6 +1327,30 @@
      "desc": "川沿いのテラスで緑や紅葉を楽しめるカフェ。",
      "cond": "テラス同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/dogcafe/1448/"
+    },
+    {
+     "name": "飛騨琢磨",
+     "where": "高山市",
+     "desc": "本場の飛騨牛を味わえる店。",
+     "cond": "店内の一部で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/takuma/",
+     "asof": "2017年3月"
+    },
+    {
+     "name": "馬籠館 そば処まごめや",
+     "where": "中津川市",
+     "desc": "石畳の宿場町・馬籠宿のそば処。",
+     "cond": "敷地内とわんこ同伴専用の別棟で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/magomeya/",
+     "asof": "2017年2月"
+    },
+    {
+     "name": "まきばの森（カフェ）",
+     "where": "郡上市高鷲町",
+     "desc": "ひるがの高原の森の中でランチ。",
+     "cond": "喫茶コーナー1階と屋外で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/makibanomori-cafe/",
+     "asof": "2018年9月"
     }
    ]
   },
@@ -981,6 +1381,22 @@
      "desc": "川遊びやブルーベリー狩りができる施設。",
      "cond": "喫茶のテラス席・BBQ場も犬連れOK（ドッグランは狂犬病・ワクチン証明書が必要）",
      "src": "https://wankonowa.com/column/2979/"
+    },
+    {
+     "name": "愛・地球博記念公園（モリコロパーク）",
+     "where": "長久手市",
+     "desc": "万博の跡地につくられた、愛知県最大級の公園。",
+     "cond": "建物内と日本庭園以外は同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/aichikyuhaku/",
+     "asof": "2017年4月"
+    },
+    {
+     "name": "南知多ビーチランド",
+     "where": "美浜町",
+     "desc": "わんこと一緒に入れる、ふれあい体験型の水族館。",
+     "cond": "飲食・売店・おもちゃ王国パビリオン以外は同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/minamichita/",
+     "asof": "2016年12月"
     }
    ],
    "shops": [
@@ -997,6 +1413,38 @@
      "desc": "ワンコメニューと看板犬がいる、屋根付きのカフェ。",
      "cond": "犬は入場料が必要（屋外ドッグランは無料）",
      "src": "https://wankonowa.com/column/2979/"
+    },
+    {
+     "name": "Twins cafe 風雅",
+     "where": "犬山市",
+     "desc": "ドッグランで遊びながらコーヒーを楽しめるカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/cafe-fuga/",
+     "asof": "2016年12月"
+    },
+    {
+     "name": "Wan's cafe",
+     "where": "名古屋市西区",
+     "desc": "季節の庭を眺めながらのんびり過ごせるカフェ。",
+     "cond": "店内の一部とテラス席で同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/wans/",
+     "asof": "2017年1月"
+    },
+    {
+     "name": "パナリ CAKE＆CAFE",
+     "where": "名古屋市天白区",
+     "desc": "街の小さなケーキ工房のカフェ。",
+     "cond": "テラス席で同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/panari/",
+     "asof": "2016年12月"
+    },
+    {
+     "name": "Chou＆Cream（シュウ＆クリーム）",
+     "where": "安城市",
+     "desc": "カフェダイニングとわんこグッズの店。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/chow/",
+     "asof": "2016年12月"
     }
    ]
   },
@@ -1027,6 +1475,22 @@
      "desc": "国内最大級のアウトレット。通路は屋根付きです。",
      "cond": "約100店舗に犬連れで入店OK",
      "src": "https://wankonowa.com/column/2979/"
+    },
+    {
+     "name": "ランプラッツ ヘルヘン",
+     "where": "菰野町",
+     "desc": "天然芝とハーブのドッグラン。",
+     "cond": "ドッグランとカフェテラスで同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/herrchen/",
+     "asof": "2017年4月"
+    },
+    {
+     "name": "ROSA FIELD",
+     "where": "桑名市長島町",
+     "desc": "愛犬と思いきり遊べるフィールド。長島観光のついでに。",
+     "cond": "全エリア同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/rosa-field/",
+     "asof": "2023年12月"
     }
    ],
    "shops": [
@@ -1057,6 +1521,14 @@
      "desc": "ハワイ料理と、ノーリードで遊べるドッグラン。",
      "cond": "店内・テラスOK・大型犬OK",
      "src": "https://wankonowa.com/column/3212/"
+    },
+    {
+     "name": "JACK GAIN（カフェ）",
+     "where": "伊賀市",
+     "desc": "地元のわんこが集まるドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/jackcaffe/",
+     "asof": "2018年2月"
     }
    ]
   },
@@ -1094,6 +1566,22 @@
      "desc": "海に浮かぶように並ぶ舟屋を海から眺めます。",
      "cond": "バッグやケージに入れて頭を出さなければ、ペット料金なしで乗船OK",
      "src": "https://wankonowa.com/column/2121/"
+    },
+    {
+     "name": "天橋立ビューランド",
+     "where": "宮津市",
+     "desc": "日本三景・天橋立を見下ろす展望遊園地。",
+     "cond": "園内の建物の中以外は同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/viewland/",
+     "asof": "2017年3月"
+    },
+    {
+     "name": "嵐山－高雄パークウエイ ワン遊ランド",
+     "where": "京都市右京区",
+     "desc": "山と池に囲まれたドライブウェイのドッグラン。",
+     "cond": "ドッグラン以外はリード着用。カフェ・売店は不可",
+     "src": "https://www.honda.co.jp/dog/travel/data/wanyuuland/",
+     "asof": "2018年3月"
     }
    ],
    "shops": [
@@ -1110,6 +1598,30 @@
      "desc": "季節のコース料理を完全個室で。",
      "cond": "室内犬のみ・電話で事前申告・キャリーやバッグで来店",
      "src": "https://wankonowa.com/column/2121/"
+    },
+    {
+     "name": "茶房らんむ",
+     "where": "京丹後市網野町",
+     "desc": "夕日ヶ浦の海が目の前に広がる絶景カフェ。",
+     "cond": "全店同伴OK（中型犬まで。しつけができていれば大型犬も可）",
+     "src": "https://www.honda.co.jp/dog/travel/data/sabou-ranmu/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "雍州路",
+     "where": "京都市左京区（鞍馬）",
+     "desc": "鞍馬山のふもとで精進料理を味わえる店。鞍馬寺の参拝と合わせて。",
+     "cond": "座敷以外は同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/yoshuji/",
+     "asof": "2017年9月"
+    },
+    {
+     "name": "EllieとCafe",
+     "where": "京都市左京区",
+     "desc": "友だちの家に招かれたような、かわいいカフェ。",
+     "cond": "全店同伴OK（大型犬は基本テラス席）",
+     "src": "https://www.honda.co.jp/dog/travel/data/ellie/",
+     "asof": "2017年9月"
     }
    ]
   },
@@ -1177,6 +1689,30 @@
      "desc": "ドッグランとドッグカフェの施設。",
      "cond": "店内同伴OK（小型〜大型犬）",
      "src": "https://www.inutome.jp/spots?area_code=10&category_id%5B%5D=1&picky_item_id%5B%5D=14"
+    },
+    {
+     "name": "ドッグカフェこふみ",
+     "where": "大阪市生野区",
+     "desc": "小粋なドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/cafekofumi-cafe/",
+     "asof": "2018年2月"
+    },
+    {
+     "name": "Otter Tail（カフェ）",
+     "where": "大阪市東住吉区",
+     "desc": "長居公園の目の前、トリミングとショップ併設のドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/ottertail-cafe/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "わん子ん家 ひまカフェ",
+     "where": "大阪市都島区",
+     "desc": "アットホームなドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/wankonchi/",
+     "asof": "2018年8月"
     }
    ]
   },
@@ -1214,6 +1750,22 @@
      "desc": "船から明石海峡大橋を見上げます。",
      "cond": "8kg以下でケージに入れれば乗船OK",
      "src": "https://wankonowa.com/column/2199/"
+    },
+    {
+     "name": "南あわじドッグラン・飛行犬撮影所",
+     "where": "南あわじ市",
+     "desc": "自然いっぱいのドッグラン。ジャンプの瞬間を撮る「飛行犬」撮影も。",
+     "cond": "施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/awajirun/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "ゆいまーる淡路（ドッグラン）",
+     "where": "淡路市",
+     "desc": "コテージ村に併設された広いドッグラン。",
+     "cond": "ドッグラン以外ではリード着用",
+     "src": "https://www.honda.co.jp/dog/travel/data/yuimaru/",
+     "asof": "2016年11月"
     }
    ],
    "shops": [
@@ -1244,6 +1796,14 @@
      "desc": "地産地消の料理が楽しめるお店。",
      "cond": "ペット同伴OK",
      "src": "https://wankonowa.com/column/2199/"
+    },
+    {
+     "name": "キャンパスCAFE カプチーノ",
+     "where": "洲本市",
+     "desc": "オーガニック素材が基本のカフェ。",
+     "cond": "テラス席で同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-cappuccino/",
+     "asof": "2018年7月"
     }
    ]
   },
@@ -1281,6 +1841,14 @@
      "desc": "松林と海の絶景が広がる庭園。",
      "cond": "リード着用で入園OK",
      "src": "https://wankonowa.com/column/3265/"
+    },
+    {
+     "name": "小原洞窟恐竜ランド",
+     "where": "かつらぎ町",
+     "desc": "わんこと一緒に洞窟探検ができるスポット。",
+     "cond": "施設内すべて同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/kyoryu/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -1311,6 +1879,14 @@
      "desc": "フランスの家庭料理のビストロ。",
      "cond": "テラスのみ同伴OK",
      "src": "https://wankonowa.com/column/3265/"
+    },
+    {
+     "name": "Paws Cafe",
+     "where": "岩出市",
+     "desc": "紀の川のそば、自然に囲まれたドッグカフェ。",
+     "cond": "店内どこでも同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/pawscafe/",
+     "asof": "2017年11月"
     }
    ]
   },
@@ -1341,9 +1917,70 @@
      "desc": "食べ放題のブルーベリー摘み。",
      "cond": "犬連れで入園OK",
      "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "ハーブロード いどべ",
+     "where": "大山町",
+     "desc": "大山の山麓に100種類以上のハーブが育つハーブ園。ドッグランも併設。",
+     "cond": "リード着用で建物内を含む全エリア同伴OK（わんこ入園料あり・4〜11月営業）",
+     "src": "https://www.honda.co.jp/dog/travel/data/idobe/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "浦富海岸シーカヤック（USKAYAK）",
+     "where": "岩美町",
+     "desc": "山陰海岸ジオパークの海をカヤックでめぐる体験。",
+     "cond": "犬と乗れるコースが2つ・犬用ライフジャケットの貸出あり（冬は犬同伴コースなし）",
+     "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "あおぞらドッグラン",
+     "where": "鳥取市",
+     "desc": "約700坪の全面芝生のドッグラン。セルフシャンプーもある。",
+     "cond": "有料（ビジター1,650円）。フリーエリアは大型犬もOK",
+     "src": "https://wankonowa.com/column/4082/"
     }
    ],
-   "shops": []
+   "shops": [
+    {
+     "name": "ウッディキッチン 木土愛楽園",
+     "where": "鳥取市",
+     "desc": "山と渓流に囲まれたログハウスのレストラン。リブステーキなどアメリカンな料理。",
+     "cond": "店内どこでも同伴OK・全犬種OK。そばの渓流で水遊びも",
+     "src": "https://www.honda.co.jp/dog/travel/data/kidoairaku/",
+     "asof": "2016年8月"
+    },
+    {
+     "name": "ペットのおみやげ かんだや、",
+     "where": "倉吉市",
+     "desc": "白壁土蔵群の町にある、わんこグッズの専門店。わんこ用甲冑のレンタルが話題。",
+     "cond": "店内どこでも同伴OK（大型犬まで）",
+     "src": "https://www.honda.co.jp/dog/travel/data/kandaya/",
+     "asof": "2018年6月"
+    },
+    {
+     "name": "ビンチェーロ",
+     "where": "鳥取市",
+     "desc": "鳥取でも指折りの品ぞろえのドッグフード専門店。",
+     "cond": "店内どこでも同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/murphyfamily/",
+     "asof": "2018年6月"
+    },
+    {
+     "name": "Riku One Cafe",
+     "where": "鳥取市気高町",
+     "desc": "全天候型のドッグパークを併設したドッグカフェ。",
+     "cond": "カフェ同伴OK（小型・中型犬 20kgまで）",
+     "src": "https://wankonowa.com/column/4082/"
+    },
+    {
+     "name": "hush hush",
+     "where": "伯耆町",
+     "desc": "大山のふもとの小さなカレー店。室内ドッグランを併設。",
+     "cond": "カフェ同伴OK",
+     "src": "https://wankonowa.com/column/4082/"
+    }
+   ]
   },
   {
    "slug": "shimane",
@@ -1371,6 +2008,20 @@
      "where": "大田市",
      "desc": "芝生のドッグランがある道の駅。",
      "cond": "小型犬用と中・大型犬用のドッグランあり",
+     "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "Dog Run 遊",
+     "where": "益田市",
+     "desc": "ドッグランとカフェ、トリミングがそろう施設。ボルゾイの看板犬がいる。",
+     "cond": "ドッグラン・カフェを犬連れで利用できる",
+     "src": "https://wankonowa.com/column/2214/"
+    },
+    {
+     "name": "鬼の舌震",
+     "where": "奥出雲町",
+     "desc": "国の名勝・天然記念物の渓谷を歩ける遊歩道。",
+     "cond": "犬連れおでかけスポットとして紹介（積雪期は除雪がないため控える）",
      "src": "https://wankonowa.com/column/3176/"
     }
    ],
@@ -1425,6 +2076,30 @@
      "desc": "屋根付き通路で雨の日も歩けるアウトレット。",
      "cond": "店舗によって同伴OK（ケージか抱っこで入店）",
      "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "蒜山ハーブガーデン ハービル",
+     "where": "真庭市蒜山",
+     "desc": "西日本最大級のラベンダー畑が広がるハーブ園。",
+     "cond": "建物内以外は同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/herbill/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "牛窓オリーブ園",
+     "where": "瀬戸内市牛窓町",
+     "desc": "瀬戸内の海と緑に包まれたオリーブ園。",
+     "cond": "建物内以外の広場で同伴OK（売店内は不可）",
+     "src": "https://www.honda.co.jp/dog/travel/data/olive-palace/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "ブラジリアンパーク 鷲羽山ハイランド",
+     "where": "倉敷市下津井",
+     "desc": "瀬戸内海と瀬戸大橋を見下ろす遊園地。",
+     "cond": "レストラン・館内以外で同伴OK（小型犬のみ）",
+     "src": "https://www.honda.co.jp/dog/travel/data/w-highland/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -1441,6 +2116,30 @@
      "desc": "看板犬に会えるドッグカフェ。",
      "cond": "大型犬も同伴OK",
      "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "ドッグラン＆カフェBowWow（カフェ）",
+     "where": "岡山市東区",
+     "desc": "ドッグランで遊んだあとにひと息つけるカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/bowwow-cafe/",
+     "asof": "2018年5月"
+    },
+    {
+     "name": "Cafe bar＆zakka ANTICA",
+     "where": "倉敷市阿知",
+     "desc": "古民家をリノベーションしたカフェバーと雑貨の店。美観地区の近く。",
+     "cond": "テラス席で同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/antica/",
+     "asof": "2017年5月"
+    },
+    {
+     "name": "農マル園芸 吉備路農園（花の直売所）",
+     "where": "総社市",
+     "desc": "わんこと一日楽しめる観光農園。",
+     "cond": "ドッグランと花の直売所で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/nomaruengei/",
+     "asof": "2018年8月"
     }
    ]
   },
@@ -1471,6 +2170,29 @@
      "desc": "広島県最大級の国営公園。",
      "cond": "リード着用で入園OK",
      "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "神石高原ティアガルテン（ドッグラン）",
+     "where": "神石高原町",
+     "desc": "3か所のドッグランとドッグカフェがある、西日本最大級のドッグラン。",
+     "cond": "ドッグランとドッグカフェで同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/peace-wanko/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "くれワンドッグラン",
+     "where": "呉市",
+     "desc": "呉のドッグラン。",
+     "cond": "ドッグラン利用（詳細は施設案内で確認）",
+     "src": "https://www.honda.co.jp/dog/travel/data/kurewandogrun/",
+     "asof": "2021年8月"
+    },
+    {
+     "name": "HIROSHIMA GATE PARK",
+     "where": "広島市中区",
+     "desc": "旧市民球場の跡地を生かした、2023年リニューアルの公園。",
+     "cond": "リード着用で入園OK。一部のカフェ・レストランも同伴可",
+     "src": "https://wankonowa.com/column/3176/"
     }
    ],
    "shops": [
@@ -1494,6 +2216,22 @@
      "desc": "瀬戸内海を望む海辺のカフェレストラン。",
      "cond": "屋内のテラス席で同伴OK",
      "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "Pacem",
+     "where": "庄原市",
+     "desc": "天然芝のドッグランを併設した、見晴らしのよいドッグカフェ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/pacem/",
+     "asof": "2018年4月"
+    },
+    {
+     "name": "BRINDLE",
+     "where": "広島市南区",
+     "desc": "鉄工所をリフォームしたレトロ風のカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/brindle/",
+     "asof": "2018年8月"
     }
    ]
   },
@@ -1524,6 +2262,20 @@
      "desc": "花・遊園地・動物園がそろう総合公園。",
      "cond": "園内の通路はリード着用で同伴OK（ミュージアムなどはケージか抱っこ）",
      "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "須金フルーツランド",
+     "where": "周南市",
+     "desc": "14の農園が集まるフルーツ狩りの里。",
+     "cond": "13農園で犬連れのフルーツ狩りOK（ぶどう狩りは全農園）",
+     "src": "https://wankonowa.com/column/3176/"
+    },
+    {
+     "name": "熊の山公園",
+     "where": "長門市（湯本温泉）",
+     "desc": "ツツジの名所。湯本温泉街から歩いて行ける。",
+     "cond": "遊歩道はワンコOK",
+     "src": "https://wankonowa.com/column/2621/"
     }
    ],
    "shops": [
@@ -1554,6 +2306,14 @@
      "desc": "レストラン跡にできた複合施設のカフェ。",
      "cond": "店内のワンコ専用席で同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3898/"
+    },
+    {
+     "name": "Marie's Dog Cafe",
+     "where": "宇部市",
+     "desc": "「わんこが楽しめる」がコンセプトのドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/maries/",
+     "asof": "2018年8月"
     }
    ]
   },
@@ -1584,6 +2344,21 @@
      "desc": "西日本最長級のロープウェイ。川と山の絶景。",
      "cond": "ペットは無料で同乗OK（大型犬は窓口で事前確認）",
      "src": "https://wankonowa.com/column/2551/"
+    },
+    {
+     "name": "こうつドッグわん",
+     "where": "吉野川市",
+     "desc": "キャンプやバーベキューもできる、四国最大級のドッグラン。",
+     "cond": "施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/koutsu-dogwan/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "月見ヶ丘海浜公園 ドッグラン",
+     "where": "松茂町",
+     "desc": "コテージやBBQ施設のある海浜公園のドッグラン。",
+     "cond": "大型犬と小型犬のエリア分けあり",
+     "src": "https://wankonowa.com/column/2442/"
     }
    ],
    "shops": [
@@ -1606,6 +2381,21 @@
      "where": "鳴門市",
      "desc": "屋根付きテラスのあるログハウスカフェ。",
      "cond": "屋根付きテラスで同伴OK・大型犬OK",
+     "src": "https://wankonowa.com/column/3197/"
+    },
+    {
+     "name": "Lanan cafe",
+     "where": "徳島市",
+     "desc": "わんこ連れも、わんこ好きも歓迎のカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/lanan/",
+     "asof": "2018年6月"
+    },
+    {
+     "name": "農家カフェ＆ドッグラン apo",
+     "where": "吉野川市",
+     "desc": "自家農園の野菜を使った料理のカフェ。",
+     "cond": "テラス席で同伴OK。カフェ利用でドッグラン無料",
      "src": "https://wankonowa.com/column/3197/"
     }
    ]
@@ -1637,6 +2427,21 @@
      "desc": "瀬戸内海を望むギリシャ風車とオリーブの園。",
      "cond": "建物の中以外は散策OK",
      "src": "https://wankonowa.com/column/2551/"
+    },
+    {
+     "name": "dog resort one's club",
+     "where": "高松市",
+     "desc": "中・大型犬エリアだけで約720㎡あるドッグリゾート。",
+     "cond": "施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/onesclub/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "丸亀城",
+     "where": "丸亀市",
+     "desc": "日本100名城のひとつ。石垣の美しい城。",
+     "cond": "場内を愛犬と散歩できる（天守には入れない）",
+     "src": "https://petokoto.com/articles/1942"
     }
    ],
    "shops": [
@@ -1660,6 +2465,21 @@
      "desc": "農家の納屋を改装した、ドッグラン付きカフェ。",
      "cond": "テラス同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3198/"
+    },
+    {
+     "name": "Foochi",
+     "where": "高松市",
+     "desc": "デザイン性の高いわんこグッズのセレクトショップ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/foo/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "Cafe Tiamo",
+     "where": "高松市",
+     "desc": "元和食の料理人がつくるランチが人気の、ドッグラン併設カフェ。",
+     "cond": "ドッグラン併設・犬連れで利用できるカフェ",
+     "src": "https://wankonowa.com/column/3906/"
     }
    ]
   },
@@ -1690,6 +2510,22 @@
      "desc": "約400種のバラが咲く、しまなみ海道沿いの無料公園。",
      "cond": "犬連れで入園OK",
      "src": "https://wankonowa.com/column/2551/"
+    },
+    {
+     "name": "道後フォレストガーデン",
+     "where": "松山市",
+     "desc": "道後から車で15分ほど、完全貸切のドッグラン。",
+     "cond": "全域利用可（貸切制）",
+     "src": "https://www.honda.co.jp/dog/travel/data/dogo-forestgarden/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "ぱるCafe＆Dogrun（ドッグラン）",
+     "where": "松山市",
+     "desc": "カフェに併設のドッグラン。",
+     "cond": "フィールド内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/parucafe-run/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -1713,6 +2549,22 @@
      "desc": "自家製ローストビーフが人気のお店。",
      "cond": "店内・テラスとも同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3226/"
+    },
+    {
+     "name": "ぱるCafe＆Dogrun（カフェ）",
+     "where": "松山市",
+     "desc": "ドッグランを眺めながらティータイム。",
+     "cond": "テラス席で同伴OK（暖房あり）",
+     "src": "https://www.honda.co.jp/dog/travel/data/parucafe-cafe/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "コーヒーハウス モンジュリ",
+     "where": "東温市",
+     "desc": "川のほとりの隠れ家的な喫茶店。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/monjuri/",
+     "asof": "2018年8月"
     }
    ]
   },
@@ -1743,6 +2595,22 @@
      "desc": "太平洋を望む水族館。",
      "cond": "抱っこかケージ・キャリー・カートで、地面を歩かせなければ入館OK",
      "src": "https://wankonowa.com/column/2551/"
+    },
+    {
+     "name": "ゆとりすとパークおおとよ",
+     "where": "大豊町",
+     "desc": "標高750mにある、わんこ同伴OKの複合レジャー施設。",
+     "cond": "屋内以外で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/yutorisut/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "Dog and Sea",
+     "where": "高知市春野町",
+     "desc": "南風を感じる天然芝のドッグラン。",
+     "cond": "施設内どこでも利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/dog-and-sea/",
+     "asof": "2016年2月"
     }
    ],
    "shops": [
@@ -1773,6 +2641,13 @@
      "desc": "道の駅の中で海の幸を楽しめるお店。",
      "cond": "テラスのみ同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3227/"
+    },
+    {
+     "name": "Step Do! 薊野店",
+     "where": "高知市",
+     "desc": "ドッグランを併設したカフェ。",
+     "cond": "店内・テラスとも同伴OK",
+     "src": "https://wankonowa.com/column/2402/"
     }
    ]
   },
@@ -1810,6 +2685,14 @@
      "desc": "四季の花と動物ふれあいの農業公園。無料ドッグランも。",
      "cond": "入園時に予防接種と狂犬病の証明書の提示が必要",
      "src": "https://wankonowa.com/column/2377/"
+    },
+    {
+     "name": "びわこ箱館山ゆり園",
+     "where": "高島市",
+     "desc": "ゴンドラで上る山頂のゆり園。琵琶湖の眺めも。",
+     "cond": "屋外とゴンドラで同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/hakodateyama/",
+     "asof": "2017年8月"
     }
    ],
    "shops": [
@@ -1833,6 +2716,30 @@
      "desc": "近江牛が味わえる、陶芸テーマパークのレストラン。",
      "cond": "ペット同伴席あり（店内は抱っこかキャリー）",
      "src": "https://wankonowa.com/column/2377/"
+    },
+    {
+     "name": "ホリデーアフタヌーン",
+     "where": "大津市",
+     "desc": "琵琶湖を見渡す、自然に囲まれたカフェ。",
+     "cond": "テラス席・ツリーハウス席・芝生席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/holi-cafe/",
+     "asof": "2017年9月"
+    },
+    {
+     "name": "ビーチカフェ くつろぎ",
+     "where": "野洲市",
+     "desc": "大きなわんこも歓迎の湖畔のカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/kutsurogi/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "Wan's Garden",
+     "where": "長浜市",
+     "desc": "温かな雰囲気のドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/wansgarden-cafe/",
+     "asof": "2017年8月"
     }
    ]
   },
@@ -1870,6 +2777,14 @@
      "desc": "飛鳥時代の自然と文化財にふれる公園。",
      "cond": "リードを着ければ散策OK（建物の中は不可）",
      "src": "https://wankonowa.com/column/3387/"
+    },
+    {
+     "name": "OCEAN PAPA LAND（ドッグラン）",
+     "where": "橿原市",
+     "desc": "アットホームなドッグラン。",
+     "cond": "施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/opl-run/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -1900,6 +2815,14 @@
      "desc": "野菜ランチとスムージーのドッグカフェ。",
      "cond": "店内で一緒に食事OK",
      "src": "https://wankonowa.com/column/3387/"
+    },
+    {
+     "name": "OCEAN PAPA LAND（カフェ）",
+     "where": "橿原市",
+     "desc": "ノーリードで過ごせるドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/opl-cafe/",
+     "asof": "2018年7月"
     }
    ]
   },
@@ -1923,6 +2846,43 @@
      "desc": "動物とのふれあいやバーベキューが楽しめます。",
      "cond": "犬の入園料は無料",
      "src": "https://wankonowa.com/column/2179/"
+    },
+    {
+     "name": "ドッグフレンドリーパーク うえらんから糸島",
+     "where": "糸島市",
+     "desc": "自然にやさしい空間でのびのび遊べるドッグパーク。グラウンドは2面。",
+     "cond": "全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/ueramkara/",
+     "asof": "2019年6月"
+    },
+    {
+     "name": "HUWAN（ドッグラン）",
+     "where": "北九州市小倉北区",
+     "desc": "ドッグカフェに併設された全天候型ドッグラン。",
+     "cond": "全犬種OK・施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/huwan-run/",
+     "asof": "2018年5月"
+    },
+    {
+     "name": "大濠公園",
+     "where": "福岡市中央区",
+     "desc": "大きな池をぐるりと囲む、1周約2kmの公園。",
+     "cond": "散歩OK。貸しボートもケージに入れれば一緒に乗れる",
+     "src": "https://wankonowa.com/column/1693/"
+    },
+    {
+     "name": "油山市民の森",
+     "where": "福岡市",
+     "desc": "吊り橋や展望台がある森の散策路。季節の花や夏の沢も楽しめる。",
+     "cond": "愛犬とハイキングOK（キャンプ場の犬同伴宿泊は不可）",
+     "src": "https://petokoto.com/articles/1943"
+    },
+    {
+     "name": "だざいふ遊園地",
+     "where": "太宰府市",
+     "desc": "1957年開園、昔なつかしいアトラクションの遊園地。",
+     "cond": "犬連れで入園OK",
+     "src": "https://wankonowa.com/column/2417/"
     }
    ],
    "shops": [
@@ -1953,6 +2913,29 @@
      "desc": "倉庫を改装した、登録制ドッグラン併設のカフェ。",
      "cond": "店内同伴OK・大型犬OK・愛犬用メニューあり",
      "src": "https://wankonowa.com/column/3784/"
+    },
+    {
+     "name": "HUWAN（カフェ）",
+     "where": "北九州市小倉北区",
+     "desc": "わんこと飼い主が一緒にくつろげるドッグカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/huwan-cafe/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "ちりきら☆ROOM",
+     "where": "福岡市早良区",
+     "desc": "料理が自慢の、わんこと一緒に過ごせるカフェ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/chirikira/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "Bakery Restaurant CURRENT",
+     "where": "糸島市",
+     "desc": "玄界灘を望むベーカリーレストラン。",
+     "cond": "テラス席で同伴OK（入口横から直接テラスへ）",
+     "src": "https://petokoto.com/articles/1896"
     }
    ]
   },
@@ -1976,6 +2959,27 @@
      "desc": "海中の魚や洞窟をめぐる遊覧船。",
      "cond": "小型犬のみ、抱っこかケージで乗船OK",
      "src": "https://wankonowa.com/column/2179/"
+    },
+    {
+     "name": "森とリスの遊園地 メルヘン村 ドッグパーク",
+     "where": "武雄市",
+     "desc": "遊園地の中にある、県内最大級の芝生のドッグラン。",
+     "cond": "1頭600円（入園料を払えば無料・1名2頭まで）。登録・ワクチン証明書が必要",
+     "src": "https://wankonowa.com/column/2674/"
+    },
+    {
+     "name": "吉野berry観光農園 ドッグラン",
+     "where": "吉野ヶ里町",
+     "desc": "トンネルや小山の遊具がある観光農園のドッグラン。吉野ヶ里歴史公園の近く。",
+     "cond": "1頭500円。ブルーベリー狩り（7〜8月）もリード着用で同伴OK・火曜休み",
+     "src": "https://wankonowa.com/column/2674/"
+    },
+    {
+     "name": "厳木ドッグラン",
+     "where": "唐津市",
+     "desc": "起伏のある森林ドッグランもある会員制のドッグラン。",
+     "cond": "年会費と利用料が必要。初回登録は日祝のみ・ワクチン証明書が必要",
+     "src": "https://wankonowa.com/column/2674/"
     }
    ],
    "shops": [
@@ -2005,6 +3009,27 @@
      "where": "鳥栖市",
      "desc": "昼はカフェ、夜は居酒屋の、動物優先のお店。",
      "cond": "店内同伴OK・大型犬OK",
+     "src": "https://wankonowa.com/column/3897/"
+    },
+    {
+     "name": "レストランそよ風",
+     "where": "神埼市脊振町",
+     "desc": "イノシシカレーが名物の、ドッグラン併設のカフェレストラン。",
+     "cond": "店内同伴OK（物産館は通らずテラスか北口から入店）・大型犬OK・水曜休み",
+     "src": "https://wankonowa.com/column/3897/"
+    },
+    {
+     "name": "JONAI SQUARE CAFE",
+     "where": "佐賀市",
+     "desc": "佐賀城公園の近く、テレビ局の1階にあるヘルシーなカフェ。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://wankonowa.com/column/3897/"
+    },
+    {
+     "name": "OND CAFE",
+     "where": "武雄市",
+     "desc": "ダッチベイビーパンケーキが人気のカフェ。",
+     "cond": "半屋外のテラス席で同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3897/"
     }
    ]
@@ -2043,6 +3068,14 @@
      "desc": "ヨーロッパの街並みと花のテーマパーク。",
      "cond": "参加規約に同意し同意書に署名（一部施設は入場不可）",
      "src": "https://wankonowa.com/column/2179/"
+    },
+    {
+     "name": "ドッグラン＆カフェRUN＆RUN",
+     "where": "平戸市",
+     "desc": "新しいスタイルのドッグランとカフェ。",
+     "cond": "ドッグラン利用（詳細は施設案内で確認）",
+     "src": "https://www.honda.co.jp/dog/travel/data/run-run/",
+     "asof": "2022年5月"
     }
    ],
    "shops": [
@@ -2066,6 +3099,22 @@
      "desc": "うなぎサンドやパフェのおしゃれなカフェ。",
      "cond": "店内・テラスとも同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3784/"
+    },
+    {
+     "name": "CHILD BOX",
+     "where": "長崎市",
+     "desc": "長崎市の中心にある、愛犬とひと息つけるカフェ。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/child/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "カフェ＆レストラン DOG HILL",
+     "where": "東彼杵町",
+     "desc": "コーギーたちが出迎える海辺のカフェレストラン。",
+     "cond": "テラス席で同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/doghill/",
+     "asof": "2016年7月"
     }
    ]
   },
@@ -2096,6 +3145,22 @@
      "desc": "ドーナツ形の建物の水族館。",
      "cond": "リード着用、またはカゴなどに入れて常に管理",
      "src": "https://wankonowa.com/column/2179/"
+    },
+    {
+     "name": "あそ望の郷くぎの",
+     "where": "南阿蘇村",
+     "desc": "阿蘇の大パノラマが広がる道の駅。",
+     "cond": "ドッグランと芝生広場で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/asobou/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "はな阿蘇美",
+     "where": "阿蘇市",
+     "desc": "日本最大級のバラドームがあるローズガーデン。",
+     "cond": "バラ園・ドームは同伴OK（館内は不可）",
+     "src": "https://www.honda.co.jp/dog/travel/data/hanaasobi/",
+     "asof": "2018年8月"
     }
    ],
    "shops": [
@@ -2119,6 +3184,28 @@
      "desc": "ハワイがテーマの料理と雑貨、屋外ドッグラン付き。",
      "cond": "店内・テラスとも同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3784/"
+    },
+    {
+     "name": "PEACEFUL HEART",
+     "where": "南阿蘇村",
+     "desc": "阿蘇の自然に囲まれた、わんこグッズとドッグランの店。",
+     "cond": "全店同伴OK・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-peace/",
+     "asof": "2018年10月"
+    },
+    {
+     "name": "ドッグランつきカフェ フラッペ×フラッペ",
+     "where": "熊本市",
+     "desc": "手作りかき氷が人気の、無料ドッグラン付きカフェ。",
+     "cond": "店内・テラス席とも同伴OK・大型犬OK",
+     "src": "https://petokoto.com/articles/2470"
+    },
+    {
+     "name": "ドッグラン＆カフェ Hug me",
+     "where": "熊本市中央区",
+     "desc": "熊本市内で唯一の室内ドッグランがあるカフェ。",
+     "cond": "店内・テラス同伴OK（小型犬専用）",
+     "src": "https://petokoto.com/articles/2470"
     }
    ]
   },
@@ -2149,6 +3236,30 @@
      "desc": "約3億年かけてできた鍾乳洞。",
      "cond": "犬も入場OK",
      "src": "https://wankonowa.com/column/2179/"
+    },
+    {
+     "name": "ガンジー牧場",
+     "where": "竹田市",
+     "desc": "久住連山のふもとの体験型牧場。無料のドッグランあり。",
+     "cond": "屋外は同伴OK（牛舎はNG）・全犬種OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/guernsey-farm/",
+     "asof": "2017年5月"
+    },
+    {
+     "name": "体験型ハーブ園 大神ファーム",
+     "where": "日出町",
+     "desc": "別府湾を見渡しながら散歩できるハーブ園。",
+     "cond": "園内散策OK。レストランはテラス席のみ同伴可",
+     "src": "https://www.honda.co.jp/dog/travel/data/ogafarm/",
+     "asof": "2017年5月"
+    },
+    {
+     "name": "わんわん花みち園",
+     "where": "中津市",
+     "desc": "四季の花と木々の中を歩ける全長1kmの散歩道。",
+     "cond": "散歩道は全犬種同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/hanamiti/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -2158,6 +3269,36 @@
      "desc": "森の中のような雰囲気の、3エリアのドッグラン併設カフェ。",
      "cond": "テラス同伴OK・大型犬OK（店内可否は記事で表記が分かれるため要確認）",
      "src": "https://wankonowa.com/column/3784/"
+    },
+    {
+     "name": "SORAcafe",
+     "where": "宇佐市",
+     "desc": "ドッグランを併設したカフェ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/sora0102/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "大神ファームのレストラン（テラス席）",
+     "where": "日出町",
+     "desc": "ハーブ園の中のレストラン。別府湾を眺めながら食事できる。",
+     "cond": "テラス席で同伴OK（店内は不可）",
+     "src": "https://www.honda.co.jp/dog/travel/data/ogafarm/",
+     "asof": "2017年5月"
+    },
+    {
+     "name": "CafeBar Tiara（カフェバル ティアラ）",
+     "where": "宇佐市院内町",
+     "desc": "ワンコメニューもあるカフェ。",
+     "cond": "ワンコ同伴OK",
+     "src": "https://wankonowa.com/column/2769/"
+    },
+    {
+     "name": "ドッグラン＆カフェ blue mountain",
+     "where": "佐伯市",
+     "desc": "屋外・屋根付き・室内のドッグランとカフェがある施設。",
+     "cond": "カフェ併設のドッグラン",
+     "src": "https://wankonowa.com/column/2769/"
     }
    ]
   },
@@ -2195,6 +3336,20 @@
      "desc": "雲海と大パノラマが望める丘。",
      "cond": "一緒にご来光を見に行けます",
      "src": "https://wankonowa.com/column/3788/"
+    },
+    {
+     "name": "生駒高原",
+     "where": "小林市",
+     "desc": "季節の花が咲く高原。コスモスの名所でカフェもある。",
+     "cond": "ドッグランあり",
+     "src": "https://wankonowa.com/column/3788/"
+    },
+    {
+     "name": "青島神社",
+     "where": "宮崎市",
+     "desc": "縁結びの言い伝えがある、島の中の神社。",
+     "cond": "マナーを守れば同伴参拝OK",
+     "src": "https://wankonowa.com/column/3788/"
     }
    ],
    "shops": [
@@ -2218,6 +3373,27 @@
      "desc": "ドッグランや夏のプールも使えるカフェ。",
      "cond": "店内同伴OK・大型犬OK",
      "src": "https://wankonowa.com/column/3784/"
+    },
+    {
+     "name": "SHIMOASO CAFE",
+     "where": "延岡市",
+     "desc": "下阿蘇ビーチを望むカフェ。小さなドッグランあり。",
+     "cond": "テラス席とミニドッグランで同伴OK",
+     "src": "https://wankonowa.com/column/3788/"
+    },
+    {
+     "name": "The Terrace",
+     "where": "宮崎市",
+     "desc": "霧島牛のグリルが楽しめるレストラン。",
+     "cond": "テラス席のみ同伴OK",
+     "src": "https://wankonowa.com/column/3788/"
+    },
+    {
+     "name": "Nicol Café & Zakka",
+     "where": "綾町",
+     "desc": "ヤギやブランコのあるテラスが楽しい、手づくり雑貨のカフェ。",
+     "cond": "テラス席のみ同伴OK",
+     "src": "https://wankonowa.com/column/3788/"
     }
    ]
   },
@@ -2255,6 +3431,14 @@
      "desc": "季節のフルーツ狩りの観光農園。",
      "cond": "ケージに入れれば入園OK（ハウスの中は不可）",
      "src": "https://wankonowa.com/column/3554/"
+    },
+    {
+     "name": "DOGCOM.Park",
+     "where": "鹿児島市",
+     "desc": "西別府町のドッグラン。",
+     "cond": "施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/dogcompark/",
+     "asof": "2018年7月"
     }
    ],
    "shops": [
@@ -2278,15 +3462,37 @@
      "desc": "動物病院の隣の、ワンプレートランチのカフェ。",
      "cond": "店内・テラスとも同伴OK",
      "src": "https://wankonowa.com/column/3554/"
+    },
+    {
+     "name": "Dog's partner LEE-LE",
+     "where": "鹿児島市",
+     "desc": "わんこの服やグッズの店。",
+     "cond": "全店同伴OK（中型犬まで）",
+     "src": "https://www.honda.co.jp/dog/travel/data/lee/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "Camp＆Cafe ワンだふるガーデン",
+     "where": "霧島市",
+     "desc": "デイキャンプ気分を味わえるカフェ。小型・中型犬用ドッグランあり。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://wankonowa.com/column/communication/953/"
+    },
+    {
+     "name": "Ora Cafe Salon 鹿児島",
+     "where": "鹿児島市",
+     "desc": "照国神社の近く、奄美大島をイメージした店内のカフェ。",
+     "cond": "店内で一緒にランチOK",
+     "src": "https://wankonowa.com/column/3554/"
     }
    ]
   },
   {
    "slug": "hokkaido",
    "pref": "北海道",
-   "name": "北海道（函館）",
+   "name": "北海道（函館・札幌・美瑛）",
    "photo": "lake",
-   "lead": "港町・函館のレトロな街並みと五稜郭を、愛犬と一緒に。海鮮丼やお寿司を一緒に味わえるお店もあります。",
+   "lead": "港町・函館の街歩きに加えて、美瑛の花畑や苫小牧の牧場、札幌のドッグカフェまで。北の大地を愛犬とめぐるガイド。",
    "spots": [
     {
      "name": "五稜郭公園",
@@ -2315,6 +3521,38 @@
      "desc": "医療と温泉の神さまを祀る神社。",
      "cond": "大型犬も一緒に参拝OK",
      "src": "https://wankonowa.com/column/3238/"
+    },
+    {
+     "name": "四季彩の丘",
+     "where": "美瑛町",
+     "desc": "美瑛の丘に色とりどりの花畑が広がる。",
+     "cond": "屋外は同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/shikisai/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "ノーザンホースパーク",
+     "where": "苫小牧市",
+     "desc": "馬とふれあえるテーマパーク。",
+     "cond": "屋外と一部レストランのテラス席で同伴OK（建物内は不可）",
+     "src": "https://www.honda.co.jp/dog/travel/data/horsepark/",
+     "asof": "2018年7月"
+    },
+    {
+     "name": "Dog！Com（ドッグラン）",
+     "where": "七飯町",
+     "desc": "函館山を望むドッグラン。",
+     "cond": "施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/com-run/",
+     "asof": "2018年10月"
+    },
+    {
+     "name": "津軽海峡フェリー ブルーマーメイド（函館港）",
+     "where": "函館市",
+     "desc": "函館〜青森を結ぶフェリー。ドッグルームやドッグバルコニーがある。",
+     "cond": "ドッグルーム・ドッグバルコニーで一緒に過ごせる",
+     "src": "https://www.honda.co.jp/dog/travel/data/blue-mermaid/",
+     "asof": "2018年11月"
     }
    ],
    "shops": [
@@ -2338,13 +3576,45 @@
      "desc": "愛犬同伴で海鮮丼が味わえるお店。",
      "cond": "同伴OK（ルールはお店に確認を）",
      "src": "https://wankonowa.com/column/3238/"
+    },
+    {
+     "name": "Dog！Com（カフェ）",
+     "where": "七飯町",
+     "desc": "ドッグランで遊びながら過ごせるドッグカフェ。函館から車で行ける。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/com-cafe/",
+     "asof": "2018年10月"
+    },
+    {
+     "name": "北菓楼ドッグガーデンカフェ",
+     "where": "砂川市",
+     "desc": "芝生がまぶしいオープンカフェ。北菓楼のスイーツを。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/kitakaro/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "レストラワン",
+     "where": "札幌市北区",
+     "desc": "わんこと一緒に本格的なレストランの料理を味わえる。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/reswan/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "カフェ 花七曜",
+     "where": "上富良野町",
+     "desc": "大自然とかわいい雑貨に囲まれたカフェ。",
+     "cond": "ウッドデッキ席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/hanasichiyo/",
+     "asof": "2018年5月"
     }
    ]
   },
   {
    "slug": "aomori",
    "pref": "青森県",
-   "name": "青森（十和田湖）",
+   "name": "青森（十和田湖・青森市・八戸・弘前）",
    "photo": "lake",
    "lead": "十和田湖を、愛犬と一緒にクルーズやカヌーで。大型犬も参加できるツアーがあります。",
    "spots": [
@@ -2361,6 +3631,30 @@
      "desc": "十和田湖のカヌーなどネイチャーツアー。",
      "cond": "わんちゃんと一緒のカヌーツアーあり（大型犬も参加OK）",
      "src": "https://wankonowa.com/column/2936/"
+    },
+    {
+     "name": "ドッグランてくてくピクニック",
+     "where": "八戸市",
+     "desc": "南郷の広大なフィールドを思いきり走れるドッグラン。",
+     "cond": "全犬種OK・施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/teku2wanko/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "津軽海峡フェリー（青森港）",
+     "where": "青森市",
+     "desc": "青森〜函館を約3時間40分で結ぶフェリー。ドッグルームやドッグバルコニーがある。",
+     "cond": "ドッグルーム・ドッグバルコニーで一緒に過ごせる",
+     "src": "https://www.honda.co.jp/dog/travel/data/bluedolphin-aomori/",
+     "asof": "2015年6月"
+    },
+    {
+     "name": "DOG RUN ちゃむ",
+     "where": "階上町",
+     "desc": "自然に囲まれた天然芝のドッグラン。",
+     "cond": "施設内どこでも利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/cham/",
+     "asof": "2016年8月"
     }
    ],
    "shops": [
@@ -2377,6 +3671,27 @@
      "desc": "自家製の料理とワンちゃんメニューのカフェバー。",
      "cond": "店内同伴OK（各席リードフック付き）",
      "src": "https://www.inutome.jp/spots/1026"
+    },
+    {
+     "name": "ひら埜",
+     "where": "つがる市",
+     "desc": "ドッグラン付きの古民家カフェ。",
+     "cond": "ドッグランは無料（イヌトミィ掲載情報）",
+     "src": "https://www.inutome.jp/spots?area_code=0202&category_id%5B%5D=1"
+    },
+    {
+     "name": "LITTLE NOOK（リトルノック）",
+     "where": "弘前市（岩木山のふもと）",
+     "desc": "岩木山のふもとにあるドッグカフェ。ケーキとコーヒーを。",
+     "cond": "わんこ連れで利用できるドッグカフェ",
+     "src": "https://wankonowa.com/column/2770/"
+    },
+    {
+     "name": "南部曲屋（星野リゾート 青森屋）",
+     "where": "三沢市",
+     "desc": "青森屋の敷地内にある古民家レストラン。青森の郷土料理を。",
+     "cond": "愛犬と食事できる専用の部屋あり（有料・要予約）",
+     "src": "https://wankonowa.com/column/2770/"
     }
    ]
   },
@@ -2407,6 +3722,22 @@
      "desc": "断崖の渓谷を舟でめぐる川下り。",
      "cond": "リードを着ければ同乗OK（繁忙期は不可の場合あり）",
      "src": "https://wankonowa.com/column/3287/"
+    },
+    {
+     "name": "安比高原 雲海ゴンドラ遊覧",
+     "where": "八幡平市",
+     "desc": "雲海が見られることもある、安比高原のゴンドラ。",
+     "cond": "わんこもゴンドラに同乗OK（レストラン・ホテル以外）",
+     "src": "https://www.honda.co.jp/dog/travel/data/gondola/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "八幡平ワンわんドッグパーク",
+     "where": "八幡平市",
+     "desc": "「サラダファーム」の中にあるドッグパーク。",
+     "cond": "ドッグラン内と施設の一部で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/wanwandogpark/",
+     "asof": "2018年8月"
     }
    ],
    "shops": [
@@ -2430,6 +3761,22 @@
      "desc": "自家製パンやパスタが楽しめる広いカフェ。",
      "cond": "テラス席で同伴OK",
      "src": "https://wankonowa.com/column/3287/"
+    },
+    {
+     "name": "レストラン花の森",
+     "where": "八幡平市",
+     "desc": "八幡平フラワーランドに隣接する、岩手グルメのレストラン。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/hananomori/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "小岩井農場まきば園の屋外売店・テラス",
+     "where": "雫石町",
+     "desc": "まきば園の中の売店やテラス。名物のソフトクリームをわんこのそばで。",
+     "cond": "一部施設を除くまきば園内で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/koiwai/",
+     "asof": "2018年8月"
     }
    ]
   },
@@ -2467,6 +3814,14 @@
      "desc": "落差55mの滝。",
      "cond": "遊歩道を一緒に歩けます",
      "src": "https://wankonowa.com/column/3231/"
+    },
+    {
+     "name": "ガモウパーク 海の近くのドッグラン",
+     "where": "仙台市宮城野区",
+     "desc": "東北最大級をうたう、海の近くのドッグラン。",
+     "cond": "ドッグラン利用（詳細は施設案内で確認）",
+     "src": "https://www.honda.co.jp/dog/travel/data/gamoupark/",
+     "asof": "2021年8月"
     }
    ],
    "shops": [
@@ -2483,6 +3838,30 @@
      "desc": "トリミングやペットホテルも併設したドッグカフェ。",
      "cond": "店内同伴OK",
      "src": "https://www.inutome.jp/spots?area_code=02&category_id%5B%5D=1"
+    },
+    {
+     "name": "dogwood",
+     "where": "仙台市青葉区",
+     "desc": "カフェとショップが併設された、自然との調和を大切にする店。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-dogwood/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "BUTCH DOG＆CAT",
+     "where": "仙台市青葉区",
+     "desc": "マニアックな品ぞろえが自慢の隠れ家的なペットショップ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/butch/",
+     "asof": "2022年3月"
+    },
+    {
+     "name": "ドッグカフェ ハッピーわん",
+     "where": "仙台市青葉区",
+     "desc": "カフェやグッズがそろう複合型のわんこショップ。",
+     "cond": "施設内どこでも同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/happyone/",
+     "asof": "2016年6月"
     }
    ]
   },
@@ -2506,6 +3885,35 @@
      "desc": "ホッキョクグマやアシカに会える水族館。",
      "cond": "持ち運べる小型犬まで、ケージに完全に入れれば入館OK",
      "src": "https://wankonowa.com/column/2936/"
+    },
+    {
+     "name": "県営田沢湖オートキャンプ場 縄文の森たざわこ ドッグラン",
+     "where": "仙北市",
+     "desc": "田沢湖のほとりのキャンプ場に併設されたドッグラン。",
+     "cond": "全犬種OK・施設内すべて利用可",
+     "src": "https://www.honda.co.jp/dog/travel/data/jomon-run/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "千秋公園",
+     "where": "秋田市",
+     "desc": "久保田城跡の公園。季節の花と、秋田犬に会える「秋田犬ふれあい処」がある。",
+     "cond": "ウォーカープラスのペット同伴可スポットに掲載。リード着用で散策",
+     "src": "https://www.walkerplus.com/spot_list/ar0205/ss1007"
+    },
+    {
+     "name": "秋田県立北欧の杜公園",
+     "where": "北秋田市",
+     "desc": "大館能代空港の近くにある、北欧の雰囲気の広い公園。入園無料。",
+     "cond": "ウォーカープラスのペット同伴可スポットに掲載",
+     "src": "https://www.walkerplus.com/spot_list/ar0205/ss1007"
+    },
+    {
+     "name": "秋田ペットプラザ 絆",
+     "where": "秋田市",
+     "desc": "屋外と室内の両方にドッグランがある施設。",
+     "cond": "犬の大きさごとにエリア分け・カフェ風の休憩スペースあり",
+     "src": "https://petokoto.com/articles/1319"
     }
    ],
    "shops": [
@@ -2515,6 +3923,28 @@
      "desc": "家にいるようにくつろげる、ミニドッグラン付きのカフェ。",
      "cond": "店内同伴OK（マナーパンツ・マナーバンド着用、小型犬はリードフリー可）",
      "src": "https://www.inutome.jp/spots/1072"
+    },
+    {
+     "name": "Eden Of Dog",
+     "where": "美郷町",
+     "desc": "わんこグッズのショップ。隣にドッグランがある。",
+     "cond": "全店同伴OK（中型犬まで）",
+     "src": "https://www.honda.co.jp/dog/travel/data/edenofdog/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "サウンズグッド!",
+     "where": "仙北市田沢湖",
+     "desc": "田沢湖のそばの飲食店・宿。",
+     "cond": "わんこ同伴OKの飲食店（イヌトミィ掲載）",
+     "src": "https://www.inutome.jp/spots?area_code=02&category_id%5B%5D=1&picky_item_id%5B%5D=22"
+    },
+    {
+     "name": "宿り木荘のカフェ",
+     "where": "潟上市",
+     "desc": "発酵調味料を使った野菜中心の料理を出す宿のカフェ。",
+     "cond": "カフェは愛犬同伴OK",
+     "src": "https://wankonowa.com/column/3290/"
     }
    ]
   },
@@ -2552,6 +3982,22 @@
      "desc": "2万株のバラが咲く広い公園。",
      "cond": "マナーを守れば入園OK",
      "src": "https://wankonowa.com/column/2936/"
+    },
+    {
+     "name": "スタジオセディック庄内オープンセット",
+     "where": "鶴岡市",
+     "desc": "時代劇などの撮影に使われる巨大なオープンセット。",
+     "cond": "基本的に全エリア同伴OK（注意事項は施設案内で確認）",
+     "src": "https://www.honda.co.jp/dog/travel/data/openset-sedic/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "たきぐち果樹園",
+     "where": "東根市",
+     "desc": "果樹王国・山形で果物狩りが楽しめる果樹園。",
+     "cond": "施設内すべて同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/takiguchi/",
+     "asof": "2018年9月"
     }
    ],
    "shops": [
@@ -2575,6 +4021,22 @@
      "desc": "ヨーロッパ風の庭でパンケーキ。",
      "cond": "テラス席で同伴OK",
      "src": "https://wankonowa.com/column/3539/"
+    },
+    {
+     "name": "仲野観光果樹園の売店",
+     "where": "天童市",
+     "desc": "果物狩りの果樹園の売店。",
+     "cond": "畑・駐車場・売店で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/nakanofruit/",
+     "asof": "2015年10月"
+    },
+    {
+     "name": "王将果樹園の売店・カフェ",
+     "where": "天童市",
+     "desc": "サクランボなどの果樹園。売店ではフルーツのスイーツも。",
+     "cond": "施設内すべて同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/ohsyo/",
+     "asof": "2018年9月"
     }
    ]
   },
@@ -2605,6 +4067,22 @@
      "desc": "街の人に愛される、リニューアルした公園。",
      "cond": "犬連れで入園OK",
      "src": "https://wankonowa.com/column/2936/"
+    },
+    {
+     "name": "ハーブスペース バンディア",
+     "where": "北塩原村",
+     "desc": "四季の花が美しいハーブガーデン。",
+     "cond": "売店以外は同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/shop-han/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "EN RESORT Grandeco DOG RUN",
+     "where": "北塩原村",
+     "desc": "標高1,000mを超える涼しい高原のドッグラン。",
+     "cond": "ドッグラン利用（詳細は施設案内で確認）",
+     "src": "https://www.honda.co.jp/dog/travel/data/grandeco_dogrun/",
+     "asof": "2023年9月"
     }
    ],
    "shops": [
@@ -2621,6 +4099,38 @@
      "desc": "アットホームなドッグカフェ。ランチやデザートも。",
      "cond": "店内・テラスとも同伴OK",
      "src": "https://www.inutome.jp/spots/1093"
+    },
+    {
+     "name": "Run＆cafe 磐梯スノーDogs",
+     "where": "猪苗代町",
+     "desc": "屋内ドッグランを見渡せるカフェ・レストラン。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/snowdogscafe/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "玉川屋",
+     "where": "南会津町",
+     "desc": "大自然に囲まれた、わんこ歓迎のそば店。",
+     "cond": "デッキ席で同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/tamagawaya/",
+     "asof": "2018年9月"
+    },
+    {
+     "name": "アロマテラス",
+     "where": "北塩原村",
+     "desc": "緑に囲まれた裏磐梯のカフェ。",
+     "cond": "テラス席で同伴OK（雨の日は一室のみ店内も可・要問い合わせ）",
+     "src": "https://www.honda.co.jp/dog/travel/data/aroma/",
+     "asof": "2018年8月"
+    },
+    {
+     "name": "Heart of WAN",
+     "where": "二本松市",
+     "desc": "ドッグランとトリミングを併設したカフェ。",
+     "cond": "全店同伴OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/heartofwan/",
+     "asof": "2018年10月"
     }
    ]
   },
@@ -2651,6 +4161,27 @@
      "desc": "フォトスポットの多い海沿いの街。",
      "cond": "海沿いにテラス席が多く、犬連れで食事できる店あり",
      "src": "https://petokoto.com/articles/927"
+    },
+    {
+     "name": "沖縄県総合運動公園 ドッグラン",
+     "where": "沖縄市",
+     "desc": "キャンプ場やスポーツ施設がある広い公園の中の芝生のドッグラン。",
+     "cond": "初回のみ申請書の記入が必要",
+     "src": "https://wankonowa.com/column/dogrun/1194/"
+    },
+    {
+     "name": "豊崎海浜公園 美らSUNビーチ",
+     "where": "豊見城市",
+     "desc": "那覇空港から近い海浜公園とビーチ。",
+     "cond": "入園無料。愛犬とおでかけできる公園として紹介",
+     "src": "https://wankonowa.com/column/2522/"
+    },
+    {
+     "name": "北谷公園（サンセットビーチ）",
+     "where": "北谷町",
+     "desc": "夕日の名所・サンセットビーチがある公園。アメリカンビレッジのそば。",
+     "cond": "愛犬の散歩にも向くビーチとして紹介",
+     "src": "https://wankonowa.com/column/2522/"
     }
    ],
    "shops": [
@@ -2659,7 +4190,8 @@
      "where": "恩納村",
      "desc": "海が目の前に広がる、ハワイアンなカフェ。朝7時から営業。",
      "cond": "店内は全犬種同伴OK（マナーを守って）",
-     "src": "https://www.honda.co.jp/dog/travel/data/kaiholo/"
+     "src": "https://www.honda.co.jp/dog/travel/data/kaiholo/",
+     "asof": "2018年8月"
     },
     {
      "name": "いぬともcafe WanCha",
@@ -2681,6 +4213,164 @@
      "desc": "ハワイアンカフェ。",
      "cond": "テラス席のみ同伴OK",
      "src": "https://www.inutome.jp/spots?area_code=15&category_id%5B%5D=1"
+    },
+    {
+     "name": "KOA",
+     "where": "糸満市",
+     "desc": "青い海を眺めながらスフレパンケーキを味わえるハワイアンカフェ。",
+     "cond": "テラス席のみ同伴OK・大型犬OK",
+     "src": "https://petokoto.com/articles/2465"
+    },
+    {
+     "name": "犬と行くカフェ Perro",
+     "where": "北中城村",
+     "desc": "屋根付きドッグランを併設した、犬連れOKのカフェ。",
+     "cond": "本館・別館とも利用OK",
+     "src": "https://petokoto.com/articles/2222"
+    }
+   ]
+  },
+  {
+   "slug": "saitama",
+   "pref": "埼玉県",
+   "name": "埼玉（秩父・長瀞・飯能）",
+   "photo": "mountain",
+   "lead": "都心から約90分の秩父・長瀞は、犬専用温泉にドッグラン付きカフェ、テラスで一緒に食べられるお店がそろう“わんこ旅”の近場の定番。",
+   "spots": [
+    {
+     "name": "Ell's Park 長瀞（エルズパーク）",
+     "where": "長瀞町",
+     "desc": "体重別に分かれた天然芝の大型ドッグランとドッグプールがある犬連れ専用施設。",
+     "cond": "カフェは店内まで同伴OK・わんこメニューあり（日帰り利用の可否・料金は公式で確認）",
+     "src": "https://ellspark-nagatoro.jp/"
+    },
+    {
+     "name": "スパ・ドッグズラン秩父",
+     "where": "秩父市",
+     "desc": "芝と砂のドッグランと、源泉かけ流しの「わんこ温泉」がある犬専用スポット。",
+     "cond": "10:00〜17:00。ビジター料金 1頭2,300円〜",
+     "src": "https://rurubu.jp/andmore/spot/80008729"
+    },
+    {
+     "name": "秩父ミューズパーク",
+     "where": "秩父市・小鹿野町",
+     "desc": "約3kmのイチョウ並木「スカイロード」や芝生広場がある入園無料の丘陵公園。",
+     "cond": "リード着用で散歩OK（ドッグランはなし・屋内施設は各施設に確認）",
+     "src": "https://recommend-dog.com/travel/spots/chichibu/chichibu-muse-park"
+    },
+    {
+     "name": "ウォーターパーク長瀞",
+     "where": "皆野町",
+     "desc": "荒川沿いのキャンプ場。ライン下りの受付も併設。",
+     "cond": "ミニドッグランあり。わんこをひざに乗せればライン下りに同乗OK",
+     "src": "https://www.honda.co.jp/dog/travel/data/waterpark"
+    },
+    {
+     "name": "メッツァビレッジ",
+     "where": "飯能市",
+     "desc": "宮沢湖のほとりに広がる北欧風の商業エリア。",
+     "cond": "湖畔のドッグラン「ウーテピルス ドッグラン」を併設",
+     "src": "https://www.nap-camp.com/mag/72259"
+    },
+    {
+     "name": "プライムランド・ドッグランもろやま",
+     "where": "毛呂山町",
+     "desc": "すべり台付きのドッグプールが人気のドッグパーク。ランは4エリア。",
+     "cond": "オープンテラスのカフェ併設",
+     "src": "https://www.honda.co.jp/dog/travel/odekake/kanto/"
+    }
+   ],
+   "shops": [
+    {
+     "name": "にぐるまやダイニング（荷車屋）",
+     "where": "秩父市",
+     "desc": "秩父市街を見晴らす丘の上の洋食店。名物は牛肉100％のハンバーグ。",
+     "cond": "テラス席で同伴OK（大型犬も可）・月曜定休",
+     "src": "https://www.nigurumaya.co.jp/"
+    },
+    {
+     "name": "Cafe Terrace ディーノ",
+     "where": "秩父市",
+     "desc": "無添加食材のやさしい料理のカフェ。ウッドチップのドッグラン併設。",
+     "cond": "テラス席OK（屋根・風除けあり）。店内は蓋の閉まるキャリー・カート等なら可",
+     "src": "https://www.hotpepper.jp/strJ003324091/"
+    },
+    {
+     "name": "わん's広場（カフェ併設）",
+     "where": "秩父市",
+     "desc": "秩父最大級のドッグランに併設のカフェ。室内ランもあり雨の日も安心。",
+     "cond": "店内同伴OK・ドッグメニューあり（ラン利用は1頭1,000円）",
+     "src": "https://www.wanshiroba-chichibu.com/"
+    },
+    {
+     "name": "Cafe & Bar Poteto & Cheese",
+     "where": "長瀞町",
+     "desc": "Ell's Park 長瀞の中のカフェ。各席にリードフック付き。",
+     "cond": "店内・テラスとも同伴OK・愛犬用メニューあり",
+     "src": "https://ellspark-nagatoro.jp/"
+    },
+    {
+     "name": "doggie cafe SMOOCH（スムーチ）",
+     "where": "秩父市",
+     "desc": "築100年超の古民家を使った、秩父初のドッグカフェ。西武秩父駅から歩ける距離。",
+     "cond": "大型犬まで店内OK（リード着用）・ワンコごはんあり・木曜定休",
+     "src": "https://smooch-dog.jimdofree.com/"
+    },
+    {
+     "name": "TRAGHETTO（トラゲット）",
+     "where": "秩父市",
+     "desc": "元映画館をリノベーションしたイタリアン。窯焼きナポリピッツァが名物。",
+     "cond": "テラス席で同伴OK。秩父駅から徒歩3分",
+     "src": "http://www.tra-ghetto.com/"
+    },
+    {
+     "name": "JURIN's GEO（ジュリンズジオ）",
+     "where": "秩父市",
+     "desc": "札所28番・橋立堂の境内にあるスペシャルティコーヒーのカフェ。",
+     "cond": "テラス・軒下の席で同伴OK・水曜定休",
+     "src": "https://jurinsgeo.jimdofree.com/"
+    },
+    {
+     "name": "ジェラテリアHANA",
+     "where": "秩父市",
+     "desc": "定峰の山あいにある、秩父の旬素材を使った自家製ジェラートの店。",
+     "cond": "ウッドデッキのテラス席で同伴OK",
+     "src": "https://gelateriahana.com/"
+    },
+    {
+     "name": "Cafe fu.ru.ru（フルル）",
+     "where": "長瀞町",
+     "desc": "上長瀞駅前のカフェ。埼玉のブランド苺「あまりん」のパフェが名物。",
+     "cond": "テラス席で同伴OK（大型犬も可）・不定休",
+     "src": "https://www.instagram.com/cafe_fu.ru.ru/"
+    },
+    {
+     "name": "丹一（たんいち）",
+     "where": "長瀞町",
+     "desc": "明治創業の宿「秩父館」の食事処。岩畳のそばで鮎の塩焼きやざるそばを。",
+     "cond": "屋根付き和風テラス席で同伴OK（大型犬も可）",
+     "src": "http://www.chichibu-kan.co.jp/tan-ichi/"
+    },
+    {
+     "name": "お豆ふ処 うめだ屋",
+     "where": "長瀞町",
+     "desc": "築100年の養蚕農家を改装した豆腐店。秩父産大豆の「お豆ふランチ」が名物。",
+     "cond": "テラス席で同伴OK（大型犬も可）・水曜定休",
+     "src": "https://www.umedatofu.com/"
+    },
+    {
+     "name": "クリエッタ（Creatta）",
+     "where": "秩父市",
+     "desc": "武甲山を望む創作イタリアン。",
+     "cond": "屋根付きウッドデッキのテラス席で同伴OK・木曜定休",
+     "src": "https://creattaitalian.net/"
+    },
+    {
+     "name": "三峰お犬茶屋 山麓亭",
+     "where": "秩父市三峰",
+     "desc": "三峯神社の駐車場上にある食事処。そばや定食、川魚の炭火焼き。",
+     "cond": "店内同伴OK（大型犬はテラス席のみ）",
+     "src": "https://wankonowa.com/column/4280/"
     }
    ]
   }

@@ -12,41 +12,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: honda dog
+      - name: prod check
         run: |
           pip -q install playwright && python -m playwright install --with-deps chromium >/dev/null 2>&1
-          mkdir -p shots/honda
+          sudo apt-get install -y -q fonts-noto-cjk >/dev/null 2>&1 || true
+          mkdir -p shots
           python - <<'PY'
-          import json, re, time, urllib.request
           from playwright.sync_api import sync_playwright
-          print(urllib.request.urlopen("https://www.honda.co.jp/robots.txt").read().decode()[:1500])
-          PREFS = "hokkaido aomori iwate miyagi akita yamagata fukushima ibaraki tochigi gunma saitama chiba tokyo kanagawa niigata toyama ishikawa fukui yamanashi nagano gifu shizuoka aichi mie shiga kyoto osaka hyogo nara wakayama tottori shimane okayama hiroshima yamaguchi tokushima kagawa ehime kochi fukuoka saga nagasaki kumamoto oita miyazaki kagoshima okinawa".split()
+          U = "https://petnavi.niconote.jp"
           with sync_playwright() as p:
-              b = p.chromium.launch()
-              pg = b.new_page()
-              for pf in PREFS:
-                  out = []
-                  try:
-                      pg.goto(f"https://www.honda.co.jp/dog/travel/{pf}/", timeout=60000); pg.wait_for_timeout(4000)
-                      cards = pg.evaluate("""[...document.querySelectorAll('a[href*="/dog/travel/data/"]')].map(a=>{let c=a.closest('li')||a.parentElement;return {u:a.href,t:(c.innerText||'').replace(/\\s+/g,' ').slice(0,300)}})""")
-                  except Exception as e:
-                      print(pf, "ERR", e); cards = []
-                  seen = set(); cards = [c for c in cards if not (c['u'] in seen or seen.add(c['u']))]
-                  print(pf, len(cards), flush=True)
-                  n = 0
-                  for c in cards:
-                      if n >= 30: break
-                      try:
-                          pg.goto(c['u'], timeout=45000); pg.wait_for_timeout(800)
-                          body = pg.inner_text("main") if pg.query_selector("main") else pg.inner_text("body")
-                      except Exception as e:
-                          continue
-                      if re.search(r"客室総数|宿泊料金|チェックイン", body): continue
-                      n += 1
-                      out.append({"u": c['u'], "card": c['t'], "body": re.sub(r"\n{2,}", "\n", body)[:2500]})
-                      time.sleep(0.7)
-                  json.dump(out, open(f"shots/honda/{pf}.json", "w"), ensure_ascii=False, indent=0)
+              b = p.chromium.launch(); pg = b.new_page(viewport={"width": 390, "height": 844})
+              for s in ["karuizawa","nasu","izu","hakone","fujigoko","boso","ishikawa","tottori","okinawa","saitama"]:
+                  r = pg.goto(f"{U}/travel-{s}.html", timeout=60000); print("GUIDE", s, r.status, pg.evaluate("document.querySelectorAll('.tg-i').length"))
+              pg.screenshot(path="shots/p_saitama.png")
+              pg.goto(f"{U}/travel.html?area=%E7%9F%B3%E5%B7%9D%E7%9C%8C", timeout=60000); pg.wait_for_timeout(4000)
+              print("TVGD", pg.evaluate("(document.getElementById('tvgd')||{}).textContent"))
+              pg.screenshot(path="shots/p_travel_area.png")
+              e = pg.query_selector(".tv-ga")
+              if e: e.scroll_into_view_if_needed(); pg.screenshot(path="shots/p_ga.png")
+              pg.set_viewport_size({"width": 1280, "height": 900}); pg.goto(f"{U}/travel.html", timeout=60000); pg.wait_for_timeout(3000)
+              e = pg.query_selector(".tv-rr")
+              if e: e.scroll_into_view_if_needed()
+              pg.screenshot(path="shots/p_rurubu_pc.png")
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com
-          git checkout -b tmp && git add shots && git commit -qm "honda [skip ci]" && git push -q origin HEAD:dev/probe-shots --force
+          git checkout -b tmp && git add shots && git commit -qm "prod [skip ci]" && git push -q origin HEAD:dev/probe-shots --force

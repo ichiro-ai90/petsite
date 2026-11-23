@@ -22,18 +22,15 @@ jobs:
           U = "https://petnavi.niconote.jp"
           with sync_playwright() as p:
               b = p.chromium.launch(); pg = b.new_page(viewport={"width": 390, "height": 844})
-              for s in ["karuizawa","nasu","izu","hakone","fujigoko","boso","ishikawa","tottori","okinawa","saitama"]:
-                  r = pg.goto(f"{U}/travel-{s}.html", timeout=60000); print("GUIDE", s, r.status, pg.evaluate("document.querySelectorAll('.tg-i').length"))
-              pg.screenshot(path="shots/p_saitama.png")
-              pg.goto(f"{U}/travel.html?area=%E7%9F%B3%E5%B7%9D%E7%9C%8C", timeout=60000); pg.wait_for_timeout(4000)
-              print("TVGD", pg.evaluate("(document.getElementById('tvgd')||{}).textContent"))
-              pg.screenshot(path="shots/p_travel_area.png")
-              e = pg.query_selector(".tv-ga")
-              if e: e.scroll_into_view_if_needed(); pg.screenshot(path="shots/p_ga.png")
-              pg.set_viewport_size({"width": 1280, "height": 900}); pg.goto(f"{U}/travel.html", timeout=60000); pg.wait_for_timeout(3000)
-              e = pg.query_selector(".tv-rr")
-              if e: e.scroll_into_view_if_needed()
-              pg.screenshot(path="shots/p_rurubu_pc.png")
+              r = pg.goto(f"{U}/travel-saitama.html", timeout=60000); print("SAITAMA", r.status, pg.evaluate("document.querySelectorAll('.tg-i').length"))
+              pg.screenshot(path="shots/q_saitama.png")
+              pg.evaluate("document.querySelectorAll('.tg-i')[20].scrollIntoView()"); pg.screenshot(path="shots/q_saitama_shop.png")
+              r = pg.goto(f"{U}/travel-iwate.html", timeout=60000)
+              print("IWATE", r.status, pg.evaluate("[...document.querySelectorAll('.tg-s')].map(a=>a.textContent).join(' / ')"))
+              pg.evaluate("[...document.querySelectorAll('.tg-s')].find(a=>a.textContent.includes('Honda')).closest('li').scrollIntoView()"); pg.screenshot(path="shots/q_iwate.png")
+              pg.goto(f"{U}/travel.html", timeout=60000); pg.wait_for_timeout(2500)
+              print("GA_SAITAMA", pg.evaluate("!!document.querySelector('.tv-ga a[href=\"travel-saitama.html\"]')"))
+              pg.query_selector(".tv-ga").scroll_into_view_if_needed(); pg.screenshot(path="shots/q_ga.png")
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

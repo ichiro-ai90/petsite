@@ -883,7 +883,7 @@ def item_body(p, g, fetched):
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
             f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{ptxt(o, "ポイント")}{PT_NOTE}</p>'
-            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いなら 最大 <b>+約{card_pt(o["price"]):,}pt</b><span class="card-c">（会員条件・企画で変動）</span><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
+            + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いでポイントが増える場合あり<span class="card-c">（条件は楽天カード公式で確認）</span><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
                          + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")
                          + '</p>')
             + f'<p class="shop-l">{E(o["shop"])}</p>'
@@ -1386,8 +1386,7 @@ def main():
         '<li>「N店中の最安」＝当サイトが取得したショップの中での最安</li>'
         '<li>「他店」＝同じ内容量のショップ（3店以上）の価格の中央値</li>'
         '<li>価格は取得時点・税込。送料はショップにより別</li>'
-        '<li id="card">楽天カード払いなら＝楽天市場で楽天カードで支払ったときに増えるポイントの目安（楽天カード通常分：税込100円につき1pt・上限なし／'
-        '楽天カード特典分：税抜100円につき1pt・期間限定ポイント・月1,000ptまで。楽天カード公式の条件による）。その月の他の買い物で上限に達していると少なくなります</li></ul>'
+        '<li id="card">楽天カード払い＝楽天市場で楽天カードで支払うと、カードのポイントが別に付く場合があります。付く量や上限は会員の条件や時期で変わるため、このサイトでは数値を出していません。条件は楽天カード公式サイトでご確認ください</li></ul>'
         '<h2 class="h2">運営</h2><p>合同会社にこのて。価格の取得とページ作成は AI〈一郎〉が自動で行っています。'
         '楽天アフィリエイトを利用した個人運営の比較サイトで、楽天グループ株式会社とは関係ありません。'
         'リンク先で購入されると、当サイトに紹介料が支払われます。</p>'

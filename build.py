@@ -976,8 +976,13 @@ def main():
                     + f'</span><span class="circ-n">{name}</span><span class="circ-c">{n_p}商品</span></a></li>')
         side.append(f'<li class="side-pet"><a href="#{pid}">{globals()["icon"](icon, 18)}{name}</a><ul>'
                     + "".join(f'<li><a href="{g["slug"]}.html">{E(g["title"])}</a></li>'
-                              for g, ps in sorted(cats, key=lambda c: (c[0].get("priority", 9), c[0]["title"])))
+                              for g, ps in sorted(cats, key=lambda c: (c[0].get("priority", 9), c[0]["title"])) if g["animal"] != "犬・猫")
                     + '</ul></li>')
+        if pid == "cat":  # 犬・猫共通の商品（ウェットティッシュ・消臭剤など）はサイドで1回だけ
+            _both = sorted([g for g, ps in published if g["animal"] == "犬・猫"], key=lambda g: (g.get("priority", 9), g["title"]))
+            if _both:
+                side.append(f'<li class="side-pet"><a href="#dog">{globals()["icon"]("dog", 18)}犬・猫 共通</a><ul>'
+                            + "".join(f'<li><a href="{g["slug"]}.html">{E(g["title"])}</a></li>' for g in _both) + '</ul></li>')
         cs = []
         for g, ps in sorted(cats, key=lambda c: (c[0].get("priority", 9), c[0]["title"])):
             cp = min(ps, key=lambda p: best_offer(p)["price"])
@@ -986,8 +991,8 @@ def main():
             cs.append(f'<li data-q="{E(g["title"] + " " + g["keyword"])}"><a class="cat" href="{g["slug"]}.html"><span class="pic">{pic}</span>'
                       f'<span class="info"><span class="nm">{E(g["title"])}</span><span class="meta">{len(ps)}商品を比較</span></span></a></li>')
             _md = [x for x in drops([(g, ps)])]
-            if _md:
-                deal_tiles.append((max(round(x["d"] / x["hi"] * 100) for x in _md), g, len(_md), name))
+            if _md and not any(t[1] is g for t in deal_tiles):  # 犬・猫共通のカテゴリは1枚だけ（11/23 Taku）
+                deal_tiles.append((max(round(x["d"] / x["hi"] * 100) for x in _md), g, len(_md), "犬・猫" if g["animal"] == "犬・猫" else name))
         secs.append(f'<section class="pet-sec" id="{pid}" data-pet="{pid}"><h2 class="h2">{globals()["icon"](icon, 22)}{name}</h2><ul class="cats">{"".join(cs)}</ul></section>')
     from collections import Counter
     makers = [m for m, n in Counter(r["m"] for r in index_rows if r["m"]).most_common(10) if n >= 2]
@@ -1439,10 +1444,11 @@ function ga(n,p){try{if(window.gtag)gtag("event",n,p||{})}catch(e){}}
   var s=document.createElement("div");s.id="tvbk";s.className="tvbk";s.setAttribute("role","dialog");s.setAttribute("aria-label","お泊まりの準備");
   s.innerHTML='<button type="button" class="tvbk-x" aria-label="閉じる">×</button><b>'+(t.a?esc(t.a)+"の":"")+'お宿、決まりましたか？</b><p>うちの子とのお泊まり。持ち物を最安でそろえましょう</p><a class="tvbk-go" href="travel.html#prep" data-ga="trip_return">持ち物チェックリストへ ›</a><button type="button" class="tvbk-n">まだ決まっていない</button>';
   document.body.appendChild(s);ga("trip_return_show",{from:from});
-  s.addEventListener("click",function(e){if(e.target.closest(".tvbk-go")){t.d=1}else if(e.target.closest(".tvbk-n")){t.sn=Date.now()+864e5}else if(e.target.closest(".tvbk-x")){t.d=1}else return;sv(t);s.remove()})}
- function bar(){var t=ld();if(!t||Date.now()-t.t>30*864e5||/travel\.html/.test(location.pathname)||document.getElementById("tvbar"))return;var m={};try{m=JSON.parse(localStorage.getItem("pn_prep")||"{}")}catch(e){}
+  s.addEventListener("click",function(e){if(e.target.closest(".tvbk-go")){t.d=1;t.ok=1}else if(e.target.closest(".tvbk-n")){t.sn=Date.now()+864e5}else if(e.target.closest(".tvbk-x")){t.d=1}else return;sv(t);s.remove()})}
+ function bar(){var t=ld();if(!t||!t.ok||t.bx||Date.now()-t.t>30*864e5||/travel\.html/.test(location.pathname)||document.getElementById("tvbar"))return;var m={};try{m=JSON.parse(localStorage.getItem("pn_prep")||"{}")}catch(e){}
   var c=0;for(var k in m)if(m[k])c++;if(c>=12)return;var a=document.createElement("a");a.id="tvbar";a.className="tvbar";a.href="travel.html#prep";a.setAttribute("data-ga","trip_bar");
-  a.innerHTML='<b>'+(t.a?esc(t.a)+"への":"")+'旅の準備</b><span class="tvbar-g"><i style="width:'+(100*c/12)+'%"></i></span><span>'+c+'/12 ›</span>';var h=document.querySelector("main")||document.body;h.insertBefore(a,h.firstChild)}
+  a.innerHTML='<b>'+(t.a?esc(t.a)+"への":"")+'旅の準備</b><span class="tvbar-g"><i style="width:'+(100*c/12)+'%"></i></span><span>'+c+'/12 ›</span><button type="button" class="tvbar-x" aria-label="この表示を消す">×</button>';
+  a.addEventListener("click",function(e){if(e.target.closest(".tvbar-x")){e.preventDefault();t.bx=1;sv(t);a.remove();ga("trip_bar_close",{})}});var h=document.querySelector("main")||document.body;h.insertBefore(a,h.firstChild)}
  document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")show("back")});show("load");bar()})();
 document.addEventListener("click",function(e){var g=e.target.closest("[data-ga]");if(g)ga(g.dataset.ga,{rank:+g.dataset.rank||0})});
 document.addEventListener("click",function(e){var a=e.target.closest('a[rel~="sponsored"]');
@@ -2024,7 +2030,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tg-stk{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:block;padding:14px;background:var(--ink);color:#fff;text-align:center;text-decoration:none;font-size:14px;letter-spacing:.04em;box-shadow:0 6px 20px rgba(0,0,0,.25)}.tg-stk[hidden]{display:none}
 @media (min-width:1024px){.tg-act{max-width:968px;margin-left:auto;margin-right:auto}.tg-stk{left:auto;right:24px;width:320px}}
 .tv-gdl{margin:0 16px 12px;text-align:center}.tv-gdl[hidden]{display:none}.tv-gdl a{display:inline-block;padding:10px 16px;border:1px solid var(--g);color:#5c4526;background:#f3ece1;text-decoration:none;font-size:13px}
-.tvbar{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;font-weight:700;text-decoration:none}.tvbar b{white-space:nowrap}.tvbar-g{flex:1;height:8px;border-radius:4px;background:#dcfce7;overflow:hidden}.tvbar-g i{display:block;height:100%;background:#16a34a}
+.tvbar-x{flex:none;margin-left:4px;width:28px;height:28px;border:0;border-radius:50%;background:#dcfce7;color:#166534;font-size:15px;line-height:1;cursor:pointer}.tvbar{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;font-weight:700;text-decoration:none}.tvbar b{white-space:nowrap}.tvbar-g{flex:1;height:8px;border-radius:4px;background:#dcfce7;overflow:hidden}.tvbar-g i{display:block;height:100%;background:#16a34a}
 .tvbk{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:480px;margin:0 auto;padding:16px 16px 12px;border-radius:16px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);animation:tvbk .25s ease-out}
 @keyframes tvbk{from{transform:translateY(24px);opacity:0}}.tvbk b{display:block;font-size:17px;padding-right:28px}.tvbk p{margin:4px 0 10px;font-size:13px;color:#6b7280}
 .tvbk-go{display:block;height:48px;line-height:48px;text-align:center;border-radius:12px;background:var(--brand);color:#fff;font-weight:800;text-decoration:none}

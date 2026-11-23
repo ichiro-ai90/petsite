@@ -316,6 +316,7 @@ try:  # 行き先ごとの「ペットとおでかけガイド」（travel_guide
 except (OSError, ValueError):
     _TG = {"guides": [], "manners": []}
 _GUIDES, _MANNERS = _TG["guides"], _TG["manners"]
+_GBP = {g["pref"]: g for g in _GUIDES}  # 都道府県 → ガイド
 
 TRAVEL_BRAND = "最安ナビ トラベル"  # 旅行ページのサブブランド（11/23 Taku）
 
@@ -1086,13 +1087,15 @@ def main():
           '<button type="submit" class="tv-go-b">宿を探す</button></form>'
           + _sh("DESTINATION", "人気の行き先")
           + '<div class="tv-pop">' + "".join(f'<button type="button" data-a="{E(p)}"><b>{E(n)}</b><small>{E(p)}</small></button>' for p, n in _popular) + '</div>'
-          + _sh("GUIDE", "ペットとおでかけガイド", "行き先ごとに、愛犬と行ける観光スポットとお店をまとめました")
-          + '<div class="tv-gl">' + "".join(f'<a href="travel-{g["slug"]}.html" data-ga="guide_open"><span class="tv-glp" style="background-image:url(travel/{g["photo"]}.jpg)"></span><span class="tv-glt"><b>{E(g["name"])}</b><small>スポット{len(g["spots"])}・お店{len(g["shops"])}</small></span></a>' for g in _GUIDES) + '</div>'
+          + _sh("GUIDE", "ペットとおでかけガイド", "全国の都道府県ごとに、愛犬と行ける観光スポットとお店をまとめました")
+          + '<div class="tv-gl">' + "".join(f'<a href="travel-{g["slug"]}.html" data-ga="guide_open"><span class="tv-glp" style="background-image:url(travel/{g["photo"]}.jpg)"></span><span class="tv-glt"><b>{E(g["name"])}</b><small>スポット{len(g["spots"])}・お店{len(g["shops"])}</small></span></a>' for g in _GUIDES[:6]) + '</div>'
+          + '<div class="tv-ga"><p class="tv-gah">全国のガイド</p>' + "".join(f'<div class="tv-gar"><span>{E(rn)}</span><p>' + "".join(f'<a href="travel-{_GBP[p]["slug"]}.html" data-ga="guide_open">{E(p if p == "北海道" else p[:-1])}</a>' for p in ps.split() if p in _GBP) + '</p></div>' for rn, ps in _regions) + '</div>'
           '<section class="tv-ar">' + _sh("AREA", "エリアから探す") + '<div class="tv-rg" id="tvrg" role="tablist">'
           + "".join(f'<button type="button" role="tab" data-r="{k}" aria-selected="{"true" if k == 2 else "false"}">{E(n)}</button>' for k, (n, _p) in enumerate(_regions)) + '</div>'
           + "".join(f'<div class="tv-pf" data-r="{k}"{"" if k == 2 else " hidden"}>' + "".join(f'<button type="button" data-a="{E(p)}">{E(p)}</button>' for p in ps.split()) + '</div>'
                     for k, (_n, ps) in enumerate(_regions)) + '</section>'
-          + '<div id="tvh">' + _sh("HOTELS", "宿を選ぶ", "楽天トラベルの宿から、名前やプランに「ペット」とある宿") + '</div>'
+          + '<div id="tvh">' + _sh("HOTELS", "宿を選ぶ", "楽天トラベルの宿から、名前やプランに「ペット」とある宿") + '</div><p class="tv-gdl" id="tvgd" hidden></p>'
+          + '<script>window.TG=' + json.dumps({p: [g["slug"], g["name"]] for p, g in _GBP.items()}, ensure_ascii=False) + '</script>'
           '<p class="meta tv-c" id="tvc">行き先を選ぶと、ペットと泊まれる宿が出ます</p>'
           '<section class="tv-ru" id="tvru" hidden><div class="tv-ru-h"><b>迷ったら、宿ルーレット</b><span id="tvrn"></span></div>'
           '<div class="tv-wh"><div class="tv-wp" aria-hidden="true"></div><div class="tv-wl" id="tvwl"></div></div>'
@@ -1549,7 +1552,8 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
    for(var j=0;j<24;j++){var fx=document.createElement("i");fx.className="gc-fx";fx.style.background=["#c2a476","#e7d7b8","#8c6a3f","#fff"][j%4];fx.style.setProperty("--x",(Math.random()*260-130)+"px");fx.style.setProperty("--y",(Math.random()*-180-20)+"px");ru.appendChild(fx);setTimeout(function(x){x.remove()}.bind(null,fx),1100)}
    ga("roulette_result",{})},4100)});
  function get(p){return fetch("/api/hotels?area="+encodeURIComponent(a.value)+"&q="+encodeURIComponent(tag)+"&page="+p).then(function(r){return r.json()})}
- function go(){if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";ru.hidden=true;return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
+ function gd(){var e=document.getElementById("tvgd"),t=window.TG&&window.TG[a.value];if(!e)return;if(t){e.innerHTML='<a href="travel-'+t[0]+'.html" data-ga="guide_from_area">'+esc(t[1])+'のおでかけガイド（スポット・お店）›</a>';e.hidden=false}else{e.hidden=true}}
+ function go(){gd();if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";ru.hidden=true;return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
   document.querySelectorAll(".tv-pf button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.a===a.value?"true":"false")});
   var my=++seq;c.textContent=a.value+"で探しています…";l.innerHTML="";ru.hidden=true;H=[];
   get(1).then(function(d){if(my!==seq)return;if(d.err&&!d.hotels.length){tvfail(d.rt);return}
@@ -1962,7 +1966,10 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tg-m{margin:0 16px;padding:16px 16px 16px 34px;background:#fff;border:1px solid var(--hair);font-size:13px;line-height:1.9}
 .tg-cta{display:block;margin:32px 16px 0;padding:18px;background:var(--ink);color:#fff;text-align:center;text-decoration:none;font-size:15px;letter-spacing:.06em}
 .tg-back{display:block;margin:12px 16px 0;padding:14px;border:1px solid var(--ink);color:var(--ink);text-align:center;text-decoration:none;font-size:14px}
-@media (min-width:1024px){.tv-gl{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-l{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-m,.tg-cta,.tg-back{max-width:968px;margin-left:auto;margin-right:auto}}
+@media (min-width:1024px){.tv-ga{max-width:968px;margin-left:auto;margin-right:auto}.tv-gl{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-l{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-m,.tg-cta,.tg-back{max-width:968px;margin-left:auto;margin-right:auto}}
+.tv-ga{margin:20px 16px 0;padding:16px;background:#fff;border:1px solid var(--hair)}.tv-gah{margin:0 0 8px;font-size:12px;letter-spacing:.12em;color:var(--mute)}
+.tv-gar{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--hair)}.tv-gar span{flex:none;width:78px;font-size:12px;color:var(--g)}.tv-gar p{margin:0;display:flex;flex-wrap:wrap;gap:4px 12px}.tv-gar a{font-size:14px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair);line-height:1.8}
+.tv-gdl{margin:0 16px 12px;text-align:center}.tv-gdl[hidden]{display:none}.tv-gdl a{display:inline-block;padding:10px 16px;border:1px solid var(--g);color:#5c4526;background:#f3ece1;text-decoration:none;font-size:13px}
 .tvbar{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;font-weight:700;text-decoration:none}.tvbar b{white-space:nowrap}.tvbar-g{flex:1;height:8px;border-radius:4px;background:#dcfce7;overflow:hidden}.tvbar-g i{display:block;height:100%;background:#16a34a}
 .tvbk{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:480px;margin:0 auto;padding:16px 16px 12px;border-radius:16px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);animation:tvbk .25s ease-out}
 @keyframes tvbk{from{transform:translateY(24px);opacity:0}}.tvbk b{display:block;font-size:17px;padding-right:28px}.tvbk p{margin:4px 0 10px;font-size:13px;color:#6b7280}

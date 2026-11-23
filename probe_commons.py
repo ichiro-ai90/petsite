@@ -3,9 +3,10 @@ UA = {"User-Agent": "PetnaviGuideBot/1.0 (https://petnavi.niconote.jp/; ichiro-a
 def get(u):
     return json.load(urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=30))
 def norm(s): return re.sub(r"[\s・()（）「」\-ー]", "", unicodedata.normalize("NFKC", s)).lower()
-d = json.load(open("probe_guides.json")); out = []
-for g in d["guides"]:
-    for i, e in enumerate(g["spots"]):
+out = []
+for t in json.load(open("probe_commons_list.json")):
+    g = {"slug": t["slug"]}; i = t["i"]; e = t
+    if True:
         q = e["name"].split("（")[0].strip()
         try:
             r = get("https://ja.wikipedia.org/w/api.php?" + urllib.parse.urlencode({"action": "query", "format": "json", "list": "search", "srsearch": q, "srlimit": 3}))

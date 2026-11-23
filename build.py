@@ -1118,17 +1118,21 @@ def main():
          ((TRAVEL_BRAND, None),), canonical=(f"{origin}/travel.html" if origin else ""), og_image=(f"{origin}/travel/car.jpg" if origin else "travel/car.jpg"), brand="travel"))
     files.append("travel.html")
     for g in _GUIDES:  # 行き先ごとの「ペットとおでかけガイド」（宿は載せない）
+        def _srcname(u):
+            for k, v in (("honda.co.jp", "Honda Dog"), ("wankonowa.com", "ワンコnowa"), ("petokoto.com", "ペトコト"), ("inutome.jp", "イヌトミィ"), ("rurubu.jp", "るるぶ"), ("walkerplus.com", "ウォーカープラス"), ("hoshinoresorts.com", "星野リゾート"), ("nap-camp.com", "なっぷ"), ("instagram.com", "Instagram"), ("hotpepper.jp", "ホットペッパー"), ("tabelog.com", "食べログ")):
+                if k in u: return v
+            return "公式サイト"
         def _items(rows, kind):
             return "".join(f'<li class="tg-i"><span class="tg-k">{kind}</span><h3 class="tg-n">{E(n)}</h3><p class="tg-w">{E(w)}</p><p class="tg-d">{E(d)}</p>'
-                           f'<p class="tg-c"><b>同伴</b>{E(c)}</p><a class="tg-s" href="{E(u)}" target="_blank" rel="noopener nofollow">出典を見る ›</a></li>' for n, w, d, c, u in ((r["name"], r["where"], r["desc"], r["cond"], r["src"]) for r in rows))
+                           f'<p class="tg-c"><b>同伴</b>{E(c)}</p><a class="tg-s" href="{E(u)}" target="_blank" rel="noopener nofollow">出典：{E(_srcname(u))}{"（" + E(a) + "時点の掲載）" if a else ""} ›</a></li>' for n, w, d, c, u, a in ((r["name"], r["where"], r["desc"], r["cond"], r["src"], r.get("asof", "")) for r in rows))
         gb = ('<div class="tvx"><div class="tv-hero tg-hero"><span class="tv-ph" style="background-image:url(travel/' + g["photo"] + '.jpg)"></span><div class="tv-t"><small>PET FRIENDLY GUIDE</small>'
               f'<h1>{E(g["name"])}<br>ペットとおでかけ</h1><p>{E(g["lead"])}</p></div></div>'
               + _sh("SPOTS", "立ち寄りスポット") + '<ul class="tg-l">' + _items(g["spots"], "スポット") + '</ul>'
-              + _sh("DINING", "ペットと一緒に行けるお店", "同伴の条件（テラス席のみ／店内OK など）はお店ごとに違います") + '<ul class="tg-l">' + _items(g["shops"], g["name"]) + '</ul>'
+              + _sh("DINING", "ペットと一緒に行けるお店", "同伴の条件（テラス席のみ／店内OK など）はお店ごとに違います") + '<ul class="tg-l">' + _items(g["shops"], "お店") + '</ul>'
               + _sh("MANNERS", "わんこと歩くときのマナー") + '<ul class="tg-m">' + "".join(f'<li>{E(m)}</li>' for m in _MANNERS) + '</ul>'
               + f'<a class="tg-cta" href="travel.html?area={urllib.parse.quote(g["pref"])}" data-ga="guide_to_hotels">{E(g["pref"])}のペットと泊まれる宿を探す ›</a>'
               + '<a class="tg-back" href="travel.html#prep">お泊まりの持ち物をそろえる ›</a>'
-              '<p class="nayami-n">同伴の条件は、それぞれの出典記事の内容です（2026年11月23日 確認）。ルール・営業時間は変わることがあり、天候や混雑でテラス席が使えない日もあります。'
+              '<p class="nayami-n">同伴の条件は、それぞれの出典に載っている内容です（当サイトが出典を確認した日：2026年11月23日）。出典の掲載時期が古いものは「◯年時点の掲載」と書いています。ルール・営業時間は変わることがあり、天候や混雑でテラス席が使えない日もあります。'
               'お出かけの前に、各施設・お店の公式サイトで最新の情報をご確認ください。</p></div>')
         open(os.path.join(out, f'travel-{g["slug"]}.html'), "w", encoding="utf-8").write(page(
             f'{g["name"]}のペットと行ける観光スポット・お店｜{TRAVEL_BRAND}', gb,

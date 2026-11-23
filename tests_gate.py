@@ -83,7 +83,7 @@ class T(unittest.TestCase):
         self.assertIn("の店：<b>B店</b>", item)
         self.assertEqual(item.count('rel="sponsored nofollow"'), 4)  # 最安ボタン＋ショップ2件＋全ショップ
         self.assertIn("1Lあたり", item)
-        self.assertIn("楽天カード払いなら 最大 <b>+約38pt</b>", item)  # 2,000円：通常分20＋特典分（税抜1,818円）18
+        self.assertIn("楽天カード払いでポイントが増える場合あり", item); self.assertNotIn("約38pt", item)  # 具体的なpt数は出さない（監査#68）
         self.assertNotIn("最安値挑戦", item)
         sj = json.load(open(os.path.join(site, "search.json"), encoding="utf-8"))  # 検索・お気に入り用データ
         self.assertEqual(len(sj["items"]), 3)

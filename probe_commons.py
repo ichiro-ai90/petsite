@@ -1,5 +1,5 @@
 import json, re, urllib.request, urllib.parse, unicodedata, time
-UA = {"User-Agent": "petnavi-guide/1.0 (https://petnavi.niconote.jp; contact via site) python-urllib"}
+UA = {"User-Agent": "PetnaviGuideBot/1.0 (https://petnavi.niconote.jp/; ichiro-ai90@users.noreply.github.com) python-urllib/3"}
 def get(u):
     return json.load(urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=30))
 def norm(s): return re.sub(r"[\s・()（）「」\-ー]", "", unicodedata.normalize("NFKC", s)).lower()
@@ -23,7 +23,7 @@ for g in d["guides"]:
                         lic = md.get("LicenseShortName", {}).get("value", "")
                         if ii.get("width", 0) >= 600 and re.search(r"CC|Public domain|PD", lic, re.I) and not fn.lower().endswith((".svg", ".png")):
                             fname = f"{g['slug']}-{i}.jpg"
-                            urllib.request.urlretrieve(ii["thumburl"], f"shots/img/{fname}")
+                            open(f"shots/img/{fname}","wb").write(urllib.request.urlopen(urllib.request.Request(ii["thumburl"], headers=UA), timeout=30).read())
                             res = {"file": fname, "title": fn, "artist": artist, "license": lic, "page": ii["descriptionurl"], "wiki": hit}
             out.append({"slug": g["slug"], "i": i, "name": e["name"], "c": res}); print(g["slug"], i, q, "->", hit, bool(res), flush=True)
         except Exception as ex:

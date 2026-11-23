@@ -317,6 +317,13 @@ except (OSError, ValueError):
     _TG = {"guides": [], "manners": []}
 _GUIDES, _MANNERS = _TG["guides"], _TG["manners"]
 _GBP = {g["pref"]: g for g in _GUIDES}  # 都道府県 → ガイド
+def _gcover(g):  # ガイドの表紙写真：スポットの実写（Wikimedia Commons）があればそれ、なければテーマ写真
+    for r in g["spots"]:
+        if r.get("photo"):
+            return "travel/g/" + r["photo"]["file"]
+    return f'travel/{g["photo"]}.jpg'
+def _gthumbs(g, n=3):
+    return ["travel/g/" + r["photo"]["file"] for r in g["spots"] if r.get("photo")][:n]
 
 TRAVEL_BRAND = "最安ナビ トラベル"  # 旅行ページのサブブランド（11/23 Taku）
 
@@ -1087,15 +1094,25 @@ def main():
           '<button type="submit" class="tv-go-b">宿を探す</button></form>'
           + _sh("DESTINATION", "人気の行き先")
           + '<div class="tv-pop">' + "".join(f'<button type="button" data-a="{E(p)}"><b>{E(n)}</b><small>{E(p)}</small></button>' for p, n in _popular) + '</div>'
-          + _sh("GUIDE", "ペットとおでかけガイド", "全国の都道府県ごとに、愛犬と行ける観光スポットとお店をまとめました")
-          + '<div class="tv-gl">' + "".join(f'<a href="travel-{g["slug"]}.html" data-ga="guide_open"><span class="tv-glp" style="background-image:url(travel/{g["photo"]}.jpg)"></span><span class="tv-glt"><b>{E(g["name"])}</b><small>スポット{len(g["spots"])}・お店{len(g["shops"])}</small></span></a>' for g in _GUIDES[:6]) + '</div>'
-          + '<div class="tv-ga"><p class="tv-gah">全国のガイド</p>' + "".join(f'<div class="tv-gar"><span>{E(rn)}</span><p>' + "".join(f'<a href="travel-{_GBP[p]["slug"]}.html" data-ga="guide_open">{E(p if p == "北海道" else p[:-1])}</a>' for p in ps.split() if p in _GBP) + '</p></div>' for rn, ps in _regions) + '</div>'
+          + '<section class="tv-gs" id="guide">' + _sh("GUIDE", "行き先を、写真で選ぶ", "愛犬と行けるスポットとお店を、都道府県ごとにまとめました。気になる場所から旅先を決めても")
+          + '<p class="tv-gv" id="tvgv" hidden></p>'
+          + '<div class="tv-rg tv-grg" id="tvgrg" role="tablist">' + "".join(f'<button type="button" role="tab" data-g="{k}" aria-selected="{"true" if k == 1 else "false"}">{E(n)}</button>' for k, (n, _p) in enumerate(_regions)) + '</div>'
+          + "".join(f'<div class="tv-gl" data-g="{k}"{"" if k == 1 else " hidden"}>' + "".join(
+                f'<a href="travel-{_GBP[p]["slug"]}.html" data-ga="guide_open"><span class="tv-glp" data-bg="{_gcover(_GBP[p])}"{" style=" + chr(34) + "background-image:url(" + _gcover(_GBP[p]) + ")" + chr(34) if k == 1 else ""}></span>'
+                f'<span class="tv-glt"><b>{E(_GBP[p]["name"])}</b><small>スポット{len(_GBP[p]["spots"])}・お店{len(_GBP[p]["shops"])}</small></span></a>' for p in ps.split() if p in _GBP) + '</div>'
+                for k, (_n, ps) in enumerate(_regions)) + '</section>'
+          + '<script>(function(){var R=' + json.dumps({p: k for k, (_n, ps) in enumerate(_regions) for p in ps.split()}, ensure_ascii=False) + ',tb=document.querySelectorAll("#tvgrg button"),gl=document.querySelectorAll(".tv-gl[data-g]");'
+          'function sel(k){tb.forEach(function(b){b.setAttribute("aria-selected",b.dataset.g==k?"true":"false")});gl.forEach(function(x){var on=x.dataset.g==k;x.hidden=!on;if(on)x.querySelectorAll("[data-bg]").forEach(function(s){s.style.backgroundImage="url("+s.dataset.bg+")"})})}'
+          'tb.forEach(function(b){b.onclick=function(){sel(b.dataset.g);if(window.ga)ga("guide_region",{r:+b.dataset.g})}});'
+          'var a="";try{a=localStorage.getItem("pn_tva")||""}catch(e){}if(a&&R[a]!=null)sel(R[a]);'
+          'var v=null;try{v=JSON.parse(localStorage.getItem("pn_gv")||"null")}catch(e){}var e=document.getElementById("tvgv");'
+          'if(v&&v.s&&e){e.innerHTML=\'<a href="travel-\'+v.s+\'.html" data-ga="guide_recent"><i style="background-image:url(\'+v.c+\')"></i><span><small>前に見たガイド</small><b>\'+String(v.n).replace(/[<>&"]/g,"")+\'</b></span><em>続きを見る ›</em></a>\';e.hidden=false}})()</script>'
           '<section class="tv-ar">' + _sh("AREA", "エリアから探す") + '<div class="tv-rg" id="tvrg" role="tablist">'
           + "".join(f'<button type="button" role="tab" data-r="{k}" aria-selected="{"true" if k == 2 else "false"}">{E(n)}</button>' for k, (n, _p) in enumerate(_regions)) + '</div>'
           + "".join(f'<div class="tv-pf" data-r="{k}"{"" if k == 2 else " hidden"}>' + "".join(f'<button type="button" data-a="{E(p)}">{E(p)}</button>' for p in ps.split()) + '</div>'
                     for k, (_n, ps) in enumerate(_regions)) + '</section>'
           + '<div id="tvh">' + _sh("HOTELS", "宿を選ぶ", "楽天トラベルの宿から、名前やプランに「ペット」とある宿") + '</div><p class="tv-gdl" id="tvgd" hidden></p>'
-          + '<script>window.TG=' + json.dumps({p: [g["slug"], g["name"]] for p, g in _GBP.items()}, ensure_ascii=False) + '</script>'
+          + '<script>window.TG=' + json.dumps({p: [g["slug"], g["name"], _gcover(g), len(g["spots"]), len(g["shops"]), _gthumbs(g)] for p, g in _GBP.items()}, ensure_ascii=False) + '</script>'
           '<p class="meta tv-c" id="tvc">行き先を選ぶと、ペットと泊まれる宿が出ます</p>'
           '<section class="tv-ru" id="tvru" hidden><div class="tv-ru-h"><b>迷ったら、宿ルーレット</b><span id="tvrn"></span></div>'
           '<div class="tv-wh"><div class="tv-wp" aria-hidden="true"></div><div class="tv-wl" id="tvwl"></div></div>'
@@ -1118,27 +1135,45 @@ def main():
          ((TRAVEL_BRAND, None),), canonical=(f"{origin}/travel.html" if origin else ""), og_image=(f"{origin}/travel/car.jpg" if origin else "travel/car.jpg"), brand="travel"))
     files.append("travel.html")
     for g in _GUIDES:  # 行き先ごとの「ペットとおでかけガイド」（宿は載せない）
-        def _srcname(u):
-            for k, v in (("honda.co.jp", "Honda Dog"), ("wankonowa.com", "ワンコnowa"), ("petokoto.com", "ペトコト"), ("inutome.jp", "イヌトミィ"), ("rurubu.jp", "るるぶ"), ("walkerplus.com", "ウォーカープラス"), ("hoshinoresorts.com", "星野リゾート"), ("nap-camp.com", "なっぷ"), ("instagram.com", "Instagram"), ("hotpepper.jp", "ホットペッパー"), ("tabelog.com", "食べログ")):
-                if k in u: return v
-            return "公式サイト"
-        def _items(rows, kind):
-            return "".join(f'<li class="tg-i"><span class="tg-k">{kind}</span><h3 class="tg-n">{E(n)}</h3><p class="tg-w">{E(w)}</p><p class="tg-d">{E(d)}</p>'
-                           f'<p class="tg-c"><b>同伴</b>{E(c)}</p><a class="tg-s" href="{E(u)}" target="_blank" rel="noopener nofollow">出典：{E(_srcname(u))}{"（" + E(a) + "時点の掲載）" if a else ""} ›</a></li>' for n, w, d, c, u, a in ((r["name"], r["where"], r["desc"], r["cond"], r["src"], r.get("asof", "")) for r in rows))
-        gb = ('<div class="tvx"><div class="tv-hero tg-hero"><span class="tv-ph" style="background-image:url(travel/' + g["photo"] + '.jpg)"></span><div class="tv-t"><small>PET FRIENDLY GUIDE</small>'
+        def _item(r, kind):
+            ph, ig = r.get("photo"), r.get("ig", "")
+            top = ""
+            if ph:
+                top = (f'<figure class="tg-f"><img src="travel/g/{E(ph["file"])}" alt="{E(r["name"])}" loading="lazy" decoding="async">'
+                       f'<figcaption><a href="{E(ph["page"])}" target="_blank" rel="noopener nofollow">写真：{E(ph["artist"] or "不明")}／{E(ph["license"])}（Wikimedia Commons）</a></figcaption></figure>')
+            elif ig:
+                top = f'<div class="tg-ig"><iframe src="https://www.instagram.com/{E(ig)}/embed/" loading="lazy" title="{E(r["name"])}の公式Instagram" scrolling="no"></iframe></div>'
+            lk = (f'<a href="{E(r["site"])}" target="_blank" rel="noopener nofollow" data-ga="guide_official">公式サイト ›</a>' if r.get("site") else "") + \
+                 (f'<a href="https://www.instagram.com/{E(ig)}/" target="_blank" rel="noopener nofollow" data-ga="guide_ig">公式Instagram ›</a>' if ig else "")
+            return (f'<li class="tg-i{" tg-hp" if top else ""}">{top}<div class="tg-b"><span class="tg-k">{kind}</span><h3 class="tg-n">{E(r["name"])}</h3><p class="tg-w">{E(r["where"])}</p>'
+                    f'<p class="tg-d">{E(r["desc"])}</p><p class="tg-c"><b>同伴</b>{E(r["cond"])}</p>' + (f'<p class="tg-o">{lk}</p>' if lk else "") + '</div></li>')
+        def _items(rows, kind):  # 写真のあるものを先に
+            return "".join(_item(r, kind) for r in sorted(rows, key=lambda r: 0 if (r.get("photo") or r.get("ig")) else 1))
+        _rg = next((ps.split() for _n, ps in _regions if g["pref"] in ps.split()), [])
+        _near = [_GBP[q] for q in _rg if q in _GBP and q != g["pref"]]
+        _hq = f'travel.html?area={urllib.parse.quote(g["pref"])}#tvh'
+        gb = ('<div class="tvx"><div class="tv-hero tg-hero"><span class="tv-ph" style="background-image:url(' + _gcover(g) + ')"></span><div class="tv-t"><small>PET FRIENDLY GUIDE</small>'
               f'<h1>{E(g["name"])}<br>ペットとおでかけ</h1><p>{E(g["lead"])}</p></div></div>'
+              f'<div class="tg-act"><a class="tg-a1" href="{_hq}" data-ga="guide_to_hotels_top">{E(g["pref"])}の泊まれる宿を探す ›</a><a class="tg-a2" href="#near" data-ga="guide_near_top">ほかの行き先と比べる</a></div>'
+              f'<p class="tg-sum">スポット{len(g["spots"])}・お店{len(g["shops"])}　<a href="#dining">お店へ ↓</a></p>'
               + _sh("SPOTS", "立ち寄りスポット") + '<ul class="tg-l">' + _items(g["spots"], "スポット") + '</ul>'
-              + _sh("DINING", "ペットと一緒に行けるお店", "同伴の条件（テラス席のみ／店内OK など）はお店ごとに違います") + '<ul class="tg-l">' + _items(g["shops"], "お店") + '</ul>'
-              + _sh("MANNERS", "わんこと歩くときのマナー") + '<ul class="tg-m">' + "".join(f'<li>{E(m)}</li>' for m in _MANNERS) + '</ul>'
-              + f'<a class="tg-cta" href="travel.html?area={urllib.parse.quote(g["pref"])}" data-ga="guide_to_hotels">{E(g["pref"])}のペットと泊まれる宿を探す ›</a>'
+              + '<div id="dining"></div>' + _sh("DINING", "ペットと一緒に行けるお店", "同伴の条件（テラス席のみ／店内OK など）はお店ごとに違います") + '<ul class="tg-l">' + _items(g["shops"], "お店") + '</ul>'
+              + f'<a class="tg-cta" href="{_hq}" data-ga="guide_to_hotels">{E(g["pref"])}のペットと泊まれる宿を探す ›</a>'
               + '<a class="tg-back" href="travel.html#prep">お泊まりの持ち物をそろえる ›</a>'
-              '<p class="nayami-n">同伴の条件は、それぞれの出典に載っている内容です（当サイトが出典を確認した日：2026年11月23日）。出典の掲載時期が古いものは「◯年時点の掲載」と書いています。ルール・営業時間は変わることがあり、天候や混雑でテラス席が使えない日もあります。'
-              'お出かけの前に、各施設・お店の公式サイトで最新の情報をご確認ください。</p></div>')
+              + '<section id="near">' + _sh("NEARBY", "近くの行き先", "同じ地方のガイドと比べて、旅先を決める") + '<div class="tv-gl tg-near">'
+              + "".join(f'<a href="travel-{n["slug"]}.html" data-ga="guide_near"><span class="tv-glp" style="background-image:url({_gcover(n)})"></span><span class="tv-glt"><b>{E(n["name"])}</b><small>スポット{len(n["spots"])}・お店{len(n["shops"])}</small></span></a>' for n in _near)
+              + '</div><a class="tg-back" href="travel.html#guide" data-ga="guide_all">全国のガイドから選ぶ ›</a></section>'
+              + _sh("MANNERS", "わんこと歩くときのマナー") + '<ul class="tg-m">' + "".join(f'<li>{E(m)}</li>' for m in _MANNERS) + '</ul>'
+              '<p class="nayami-n">同伴の条件は2026年11月時点で当サイトが調べた内容です。ルール・営業時間は変わることがあり、天候や混雑でテラス席が使えない日もあります。'
+              'お出かけの前に、各施設・お店の公式サイトや公式Instagramで最新の情報をご確認ください。写真はWikimedia Commonsの自由ライセンス画像（撮影者・ライセンスは各写真の下）と、各施設の公式Instagramの埋め込みです。</p></div>'
+              f'<a class="tg-stk" id="tgstk" href="{_hq}" data-ga="guide_sticky" hidden>{E(g["pref"])}の泊まれる宿を探す ›</a>'
+              '<script>(function(){try{localStorage.setItem("pn_gv",JSON.stringify(' + json.dumps({"s": g["slug"], "n": g["name"], "c": _gcover(g)}, ensure_ascii=False) + '))}catch(e){}'
+              'var k=document.getElementById("tgstk"),c=document.querySelector(".tg-cta");function f(){var r=c.getBoundingClientRect();k.hidden=!(scrollY>420&&r.top>innerHeight)}addEventListener("scroll",f,{passive:true});f()})()</script>')
         open(os.path.join(out, f'travel-{g["slug"]}.html'), "w", encoding="utf-8").write(page(
             f'{g["name"]}のペットと行ける観光スポット・お店｜{TRAVEL_BRAND}', gb,
             f'{g["name"]}で愛犬と行ける観光スポット{len(g["spots"])}か所と、ペット同伴OKのお店{len(g["shops"])}軒。同伴の条件つき。', sample,
             ((TRAVEL_BRAND, "travel.html"), (g["name"], None)), canonical=(f'{origin}/travel-{g["slug"]}.html' if origin else ""),
-            og_image=(f'{origin}/travel/{g["photo"]}.jpg' if origin else f'travel/{g["photo"]}.jpg'), brand="travel"))
+            og_image=(f'{origin}/{_gcover(g)}' if origin else _gcover(g)), brand="travel"))
         files.append(f'travel-{g["slug"]}.html')
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド<a class="h2a" href="brands.html">すべて見る</a></h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す<a class="h2a" href="nayami.html">すべて見る</a></h2><ul class="nayami-l">{"".join(nayami)}</ul>'
@@ -1184,6 +1219,10 @@ def main():
                       '<span class="bn-t"><small>製造国を確かめた</small><b>海外ブランド</b><br>を国内ショップで比べる</span><span class="bn-go">ブランドを見る</span></a>')
     slides.append('<a class="bn bn-f" href="travel.html" data-ga="bn_travel"><span class="bn-ph" style="background-image:url(travel/car.jpg)"></span>'
                   '<span class="bn-t"><small>るるぶ・楽天トラベルから</small>うちの子と<br><b>泊まれる宿</b></span><span class="bn-go">宿を探す</span></a>')
+    if _GUIDES:  # おでかけガイド（写真で旅先を選ぶ → 宿へ）
+        _gc = next((_gcover(g) for g in _GUIDES if _gcover(g).startswith("travel/g/")), "travel/mountain.jpg")
+        slides.append(f'<a class="bn bn-f" href="travel.html#guide" data-ga="bn_guide"><span class="bn-ph" style="background-image:url({_gc})"></span>'
+                      f'<span class="bn-t"><small>{len(_GUIDES)}都道府県のおでかけガイド</small>愛犬と行ける<br><b>旅先を探す</b></span><span class="bn-go">ガイドを見る</span></a>')
     hero = ('<form class="hq" action="search.html" role="search"><label class="sr" for="hq2">ペット用品を探す</label>'
             f'<input type="search" id="hq2" name="q" placeholder="{man + "件の" if man else ""}ペット用品から探す" autocomplete="off"><button type="submit" aria-label="探す">' + globals()["icon"]("search", 20) + '</button></form>'
             f'<div class="bns" id="bns">{"".join(slides)}</div><div class="bn-dots" aria-hidden="true">{"".join("<i></i>" for _ in slides)}</div>')
@@ -1556,7 +1595,7 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
    for(var j=0;j<24;j++){var fx=document.createElement("i");fx.className="gc-fx";fx.style.background=["#c2a476","#e7d7b8","#8c6a3f","#fff"][j%4];fx.style.setProperty("--x",(Math.random()*260-130)+"px");fx.style.setProperty("--y",(Math.random()*-180-20)+"px");ru.appendChild(fx);setTimeout(function(x){x.remove()}.bind(null,fx),1100)}
    ga("roulette_result",{})},4100)});
  function get(p){return fetch("/api/hotels?area="+encodeURIComponent(a.value)+"&q="+encodeURIComponent(tag)+"&page="+p).then(function(r){return r.json()})}
- function gd(){var e=document.getElementById("tvgd"),t=window.TG&&window.TG[a.value];if(!e)return;if(t){e.innerHTML='<a href="travel-'+t[0]+'.html" data-ga="guide_from_area">'+esc(t[1])+'のおでかけガイド（スポット・お店）›</a>';e.hidden=false}else{e.hidden=true}}
+ function gd(){var e=document.getElementById("tvgd"),t=window.TG&&window.TG[a.value];if(!e)return;if(t){var th=(t[5]||[]).map(function(u){return '<i style="background-image:url('+u+')"></i>'}).join("");e.innerHTML='<a class="tv-gdc" href="travel-'+t[0]+'.html" data-ga="guide_from_area"><span class="tv-gdp" style="background-image:url('+t[2]+')"></span><span class="tv-gdt"><small>宿を決めたら、旅先の過ごし方も</small><b>'+esc(t[1])+'で愛犬と行ける所</b><span>スポット'+t[3]+'・お店'+t[4]+' ›</span>'+(th?'<span class="tv-gdth">'+th+'</span>':'')+'</span></a>';e.hidden=false}else{e.hidden=true}}
  function go(){gd();if(!a.value){c.textContent="行き先を選ぶと、ペットと泊まれる宿が出ます";l.innerHTML="";ru.hidden=true;return}try{localStorage.setItem("pn_tva",a.value)}catch(e){}
   document.querySelectorAll(".tv-pf button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.a===a.value?"true":"false")});
   var my=++seq;c.textContent=a.value+"で探しています…";l.innerHTML="";ru.hidden=true;H=[];
@@ -1973,6 +2012,17 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 @media (min-width:1024px){.tv-ga{max-width:968px;margin-left:auto;margin-right:auto}.tv-gl{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-l{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-m,.tg-cta,.tg-back{max-width:968px;margin-left:auto;margin-right:auto}}
 .tv-ga{margin:20px 16px 0;padding:16px;background:#fff;border:1px solid var(--hair)}.tv-gah{margin:0 0 8px;font-size:12px;letter-spacing:.12em;color:var(--mute)}
 .tv-gar{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--hair)}.tv-gar span{flex:none;width:78px;font-size:12px;color:var(--g)}.tv-gar p{margin:0;display:flex;flex-wrap:wrap;gap:4px 12px}.tv-gar a{font-size:14px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair);line-height:1.8}
+.tv-gl[hidden]{display:none}.tv-grg{margin:0 0 14px}
+.tv-gv[hidden]{display:none}.tv-gv{margin:0}.tv-gv a{display:flex;align-items:center;gap:12px;margin:0 16px 14px;padding:10px;background:#fff;border:1px solid var(--gl);color:var(--ink);text-decoration:none}.tv-gv i{flex:none;width:56px;height:56px;background:center/cover no-repeat}.tv-gv span{flex:1;display:flex;flex-direction:column;gap:2px}.tv-gv small{font-size:11px;color:var(--g)}.tv-gv b{font-size:14px}.tv-gv em{font-style:normal;font-size:12px;color:var(--g)}
+.tv-gdl a.tv-gdc{display:flex;gap:0;padding:0;text-align:left;background:#fff;border:1px solid var(--gl);color:var(--ink);font-size:13px;overflow:hidden}.tv-gdp{flex:none;width:38%;min-height:132px;background:center/cover no-repeat}.tv-gdt{flex:1;display:flex;flex-direction:column;gap:4px;padding:12px}.tv-gdt small{font-size:11px;color:var(--g)}.tv-gdt b{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-size:16px;line-height:1.4}.tv-gdt>span{font-size:12px;color:var(--mute)}.tv-gdth{display:flex;gap:4px;margin-top:4px}.tv-gdth i{width:40px;height:40px;background:center/cover no-repeat}
+.tg-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 16px 0}.tg-act a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px;text-align:center;text-decoration:none;font-size:13px;line-height:1.4}.tg-a1{background:var(--ink);color:#fff}.tg-a2{border:1px solid var(--ink);color:var(--ink)}
+.tg-sum{margin:10px 16px 0;font-size:12px;color:var(--mute);text-align:center}.tg-sum a{color:var(--g)}
+.tg-i.tg-hp{padding:0;overflow:hidden}.tg-hp .tg-b{padding:14px 16px 16px}.tg-f{margin:0}.tg-f img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#eee}.tg-f figcaption{padding:4px 10px;font-size:10px;line-height:1.5;color:var(--mute);background:#faf7f2}.tg-f figcaption a{color:inherit;text-decoration:none}
+.tg-ig{height:420px;overflow:hidden;background:#fafafa}.tg-ig iframe{display:block;width:100%;height:100%;border:0}
+.tg-o{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0 0}.tg-o a{font-size:13px;color:var(--g);border-bottom:1px solid var(--g);text-decoration:none}
+.tg-near{margin-top:4px}
+.tg-stk{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:block;padding:14px;background:var(--ink);color:#fff;text-align:center;text-decoration:none;font-size:14px;letter-spacing:.04em;box-shadow:0 6px 20px rgba(0,0,0,.25)}.tg-stk[hidden]{display:none}
+@media (min-width:1024px){.tg-act{max-width:968px;margin-left:auto;margin-right:auto}.tg-stk{left:auto;right:24px;width:320px}}
 .tv-gdl{margin:0 16px 12px;text-align:center}.tv-gdl[hidden]{display:none}.tv-gdl a{display:inline-block;padding:10px 16px;border:1px solid var(--g);color:#5c4526;background:#f3ece1;text-decoration:none;font-size:13px}
 .tvbar{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;font-weight:700;text-decoration:none}.tvbar b{white-space:nowrap}.tvbar-g{flex:1;height:8px;border-radius:4px;background:#dcfce7;overflow:hidden}.tvbar-g i{display:block;height:100%;background:#16a34a}
 .tvbk{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:480px;margin:0 auto;padding:16px 16px 12px;border-radius:16px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);animation:tvbk .25s ease-out}

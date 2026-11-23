@@ -1075,6 +1075,8 @@ def main():
           + "".join(f'<option>{E(p)}</option>' for p in _prefs) + '</select></div>'
           '<div class="tv-fr"><span class="tv-fl">ご予算（1室1泊）</span><div class="tv-bd" id="tvbd">'
           + "".join(f'<button type="button" data-b="{v}" aria-pressed="{"true" if not v else "false"}">{E(n)}</button>' for v, n in _budgets) + '</div></div>'
+          '<div class="tv-fr"><span class="tv-fl">こだわり（選ぶと宿を絞り込みます）</span><div class="tv-tags" id="tvt">' + "".join(f'<button type="button" data-q="{E(t)}" aria-pressed="false">{E(t)}</button>' for t in _tags) + '</div>'
+          '<p class="tv-tn">例：栃木県のペットと泊まれる宿 168軒 → 「貸切」71軒・「ドッグラン」50軒・「部屋食」14軒（楽天トラベル 2026/11/23 調べ）</p></div>'
           '<button type="submit" class="tv-go-b">宿を探す</button></form>'
           + _sh("DESTINATION", "人気の行き先")
           + '<div class="tv-pop">' + "".join(f'<button type="button" data-a="{E(p)}"><b>{E(n)}</b><small>{E(p)}</small></button>' for p, n in _popular) + '</div>'
@@ -1083,7 +1085,6 @@ def main():
           + "".join(f'<div class="tv-pf" data-r="{k}"{"" if k == 2 else " hidden"}>' + "".join(f'<button type="button" data-a="{E(p)}">{E(p)}</button>' for p in ps.split()) + '</div>'
                     for k, (_n, ps) in enumerate(_regions)) + '</section>'
           + '<div id="tvh">' + _sh("HOTELS", "宿を選ぶ", "楽天トラベルの宿から、名前やプランに「ペット」とある宿") + '</div>'
-          '<div class="tv-tags" id="tvt">' + "".join(f'<button type="button" data-q="{E(t)}" aria-pressed="false">{E(t)}</button>' for t in _tags) + '</div>'
           '<p class="meta tv-c" id="tvc">行き先を選ぶと、ペットと泊まれる宿が出ます</p>'
           '<section class="tv-ru" id="tvru" hidden><div class="tv-ru-h"><b>迷ったら、宿ルーレット</b><span id="tvrn"></span></div>'
           '<div class="tv-wh"><div class="tv-wp" aria-hidden="true"></div><div class="tv-wl" id="tvwl"></div></div>'
@@ -1531,7 +1532,7 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
   function tvfail(rt){if(rt){c.textContent="楽天トラベルで探せます";l.innerHTML='<li class="tv-rt"><a href="'+esc(rt)+'" target="_blank" rel="sponsored nofollow noopener" data-ga="hotel_rt"><b>'+esc(a.value+(tag?"・"+tag:""))+'</b>のペットと泊まれる宿を<br>楽天トラベルで見る（外部サイト）›</a><small>検索条件：「'+esc(["ペット",a.value,tag].filter(Boolean).join(" "))+'」。楽天トラベルの検索結果に移動します。空室・料金・ペットの条件はリンク先で確認してください。予約できたら、下の持ち物チェックリストへ</small></li>';ga("hotel_rt_show",{area:a.value,q:tag});return}
    c.innerHTML="今は楽天トラベルの宿を出せません。<a href=\"#\" id=\"tvgo\">るるぶトラベルのペット特集</a>からお探しいただけます。";var g=document.getElementById("tvgo");if(g)g.onclick=function(e){e.preventDefault();var r=document.querySelector(".tv-rr");if(r)r.scrollIntoView({behavior:"smooth",block:"center"})}}
  f.addEventListener("submit",function(e){e.preventDefault();go();setTimeout(seen,50)});a.addEventListener("change",go);
- t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});go()});
+ t.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=tag===b.dataset.q?"":b.dataset.q;t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});if(a.value)go()});
  document.addEventListener("click",function(e){var x=e.target.closest(".tv-l a,.tv-win a");if(x)ga("hotel_click",{area:a.value,from:x.closest(".tv-win")?"roulette":"list"})});
  var th=document.querySelector(".tv-th"),pp=document.querySelector(".tv-pop"),hh=document.getElementById("tvh"),rg=document.getElementById("tvrg"),bd=document.getElementById("tvbd");
  function seen(){if(hh)hh.scrollIntoView({behavior:"smooth",block:"start"})}
@@ -1888,8 +1889,8 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tv-pf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:8px 16px 0}.tv-pf[hidden]{display:none}
 .tv-pf button{height:46px;border:0;border-bottom:1px solid var(--hair);background:none;color:var(--ink);font-size:14px;cursor:pointer}
 .tv-pf button[aria-pressed="true"]{color:var(--g);font-weight:700}
-.tv-tags{display:flex;gap:6px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none}.tv-tags::-webkit-scrollbar{display:none}
-.tv-tags button{flex:none;height:44px;padding:0 16px;border:1px solid var(--hair);border-radius:22px;background:#fff;color:var(--ink);font-size:13px;cursor:pointer}
+.tv-tags{display:flex;flex-wrap:wrap;gap:6px}.tv-tn{margin:2px 0 0;font-size:11px;line-height:1.6;color:var(--mute)}.tv-tags::-webkit-scrollbar{display:none}
+.tv-tags button{flex:none;height:40px;padding:0 14px;border:1px solid var(--hair);border-radius:2px;background:#fff;color:var(--ink);font-size:13px;cursor:pointer}
 .tv-tags button[aria-pressed="true"]{border-color:var(--g);background:#f3ece1;color:#5c4526}.tv-c{padding:0 24px;font-size:12px;color:var(--mute);text-align:center}
 .tv-l{list-style:none;margin:0;padding:8px 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:28px}@media (min-width:700px){.tv-l{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (min-width:1024px){.tv-l{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .tv-l a{display:block;color:var(--ink);text-decoration:none}.tv-im{display:block;aspect-ratio:16/10;background:#e7e2d9 center/cover no-repeat}
@@ -1910,16 +1911,16 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tv-win{margin-top:18px;text-align:left}.tv-win[hidden]{display:none}.tv-wint{margin:0 0 4px;font-size:16px;color:var(--gl);text-align:center}
 .tv-win p{color:rgba(255,255,255,.7)!important;text-align:center}.tv-win a{display:block;background:#fff;color:var(--ink);text-decoration:none;animation:gin .45s ease-out}.tv-win .tv-b{padding:12px 14px 14px}
 .tv-rr{position:relative;display:grid;grid-template-columns:38% minmax(0,1fr);margin:36px 16px 0;background:#fff;border:1px solid var(--hair);color:var(--ink);text-decoration:none}.tv-rr img{position:absolute;left:0;top:0}
-.tv-rrp{grid-row:1/3;min-height:150px;background:center/cover no-repeat}.tv-rr-t{min-width:0;display:flex;flex-direction:column;gap:4px;padding:16px 14px 6px}
+.tv-rrp{grid-row:1/3;min-height:150px;background:center 78%/cover no-repeat}.tv-rr-t{min-width:0;display:flex;flex-direction:column;gap:4px;padding:16px 14px 6px}
 .tv-rr-t small{font-size:10px;letter-spacing:.12em;color:var(--mute)}.tv-rr-t b{font-size:18px}.tv-rr-t span{font-size:11px;color:var(--mute);line-height:1.6}
-.tv-rr-go{grid-column:2;justify-self:start;margin:0 14px 14px;font-size:12px;color:var(--g);border-bottom:1px solid var(--g);white-space:nowrap}
+.tv-rr-go{grid-column:2;justify-self:start;align-self:start;padding-bottom:2px;margin:0 14px 14px;font-size:12px;color:var(--g);border-bottom:1px solid var(--g);white-space:nowrap}
 .tv-prr{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 16px 8px;font-size:12px;color:var(--mute)}.tv-prn{font-size:15px;color:var(--g);font-weight:700;white-space:nowrap}
 .tv-prb{margin:0 16px 8px;height:2px;background:var(--hair)}.tv-prb i{display:block;height:100%;width:0;background:var(--g);transition:width .3s}
 .tv-pl{list-style:none;margin:0 16px;padding:0;border-top:1px solid var(--hair)}.tv-pl li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 2px;border-bottom:1px solid var(--hair)}
 .tv-pl li.on span{color:var(--mute);text-decoration:line-through}.tv-pl label{display:flex;align-items:center;gap:12px;font-size:14px;flex:1;min-height:28px}
 .tv-pl input{width:20px;height:20px;accent-color:#8c6a3f}.tv-pl a{font-size:12px;color:var(--g);white-space:nowrap}
 .tvx .nayami-n{margin:28px 16px 8px;font-size:11px;line-height:1.8;color:var(--mute)}
-@media (min-width:1024px){.tv-hero{height:520px}.tv-t{left:64px;bottom:96px}.tvx h1{font-size:40px}.tv-f{max-width:760px;margin:-56px auto 0;display:grid;grid-template-columns:1fr 1.6fr auto;gap:20px;align-items:end}.tv-fr{border:0;margin:0;padding:0}.tv-go-b{width:180px}.tv-th{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-pop{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-pop button,.tv-pop button:nth-child(odd){border-right:1px solid var(--hair)}.tv-pf{grid-template-columns:repeat(6,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-l,.tv-pl,.tv-rr{max-width:1000px;margin-left:auto;margin-right:auto}}
+@media (min-width:1024px){.tv-hero{height:520px}.tv-t{left:64px;bottom:96px}.tvx h1{font-size:40px}.tv-f{max-width:760px;margin:-56px auto 0;display:grid;grid-template-columns:1fr 1.6fr auto;gap:20px;align-items:end}.tv-fr{border:0;margin:0;padding:0}.tv-go-b{width:180px}.tv-th{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-pop{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-pop button,.tv-pop button:nth-child(odd){border-right:1px solid var(--hair)}.tv-pf{grid-template-columns:repeat(6,minmax(0,1fr));max-width:1000px;margin:0 auto}.tv-l,.tv-pl,.tv-rr{max-width:1000px;margin-left:auto;margin-right:auto}.tv-rr{grid-template-columns:300px minmax(0,1fr)}.tv-rrp{min-height:200px}.tv-f{grid-template-columns:1fr 1.6fr;}.tv-f .tv-fr:nth-of-type(3){grid-column:1/-1}.tv-go-b{grid-column:1/-1;justify-self:center;width:280px}}
 
 .hd-tv .hd-in{align-items:baseline;gap:10px;flex-wrap:wrap}.lg-tv{text-decoration:none}.lg-tv-n{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-size:21px;font-weight:600;letter-spacing:.08em;color:#1c1c1c}
 .hd-par{font-size:11px;color:#8c6a3f;letter-spacing:.04em;text-decoration:none;border-bottom:1px solid #c2a476}.hd-tv .hd-note{margin-left:auto}

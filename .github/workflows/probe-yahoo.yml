@@ -24,7 +24,7 @@ jobs:
               b = p.chromium.launch(); pg = b.new_page(viewport={"width": 390, "height": 844})
               r = pg.goto(f"{U}/travel-saitama.html", timeout=60000); print("SAITAMA", r.status, pg.evaluate("document.querySelectorAll('.tg-i').length"))
               pg.screenshot(path="shots/q_saitama.png")
-              pg.evaluate("document.querySelectorAll('.tg-i')[20].scrollIntoView()"); pg.screenshot(path="shots/q_saitama_shop.png")
+              pg.evaluate("document.querySelectorAll('.tg-i')[8].scrollIntoView()"); pg.screenshot(path="shots/q_saitama_shop.png")
               r = pg.goto(f"{U}/travel-iwate.html", timeout=60000)
               print("IWATE", r.status, pg.evaluate("[...document.querySelectorAll('.tg-s')].map(a=>a.textContent).join(' / ')"))
               pg.evaluate("[...document.querySelectorAll('.tg-s')].find(a=>a.textContent.includes('Honda')).closest('li').scrollIntoView()"); pg.screenshot(path="shots/q_iwate.png")

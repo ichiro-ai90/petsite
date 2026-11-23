@@ -18,6 +18,7 @@ def run(data, env=None):
     shutil.copy(os.path.join(HERE, "products.json"), d)
     shutil.copy(os.path.join(HERE, "concerns.json"), d)
     shutil.copy(os.path.join(HERE, "brands.json"), d)
+    shutil.copy(os.path.join(HERE, "travel_guides.json"), d)
     os.makedirs(os.path.join(d, "data"))
     json.dump(data, open(os.path.join(d, "data", "prices.json"), "w", encoding="utf-8"), ensure_ascii=False)
     os.makedirs(os.path.join(d, "site"))

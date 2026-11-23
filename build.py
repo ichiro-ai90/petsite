@@ -311,6 +311,12 @@ def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noinde
 
 
 
+try:  # 行き先ごとの「ペットとおでかけガイド」（travel_guides.json）
+    _TG = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "travel_guides.json"), encoding="utf-8"))
+except (OSError, ValueError):
+    _TG = {"guides": [], "manners": []}
+_GUIDES, _MANNERS = _TG["guides"], _TG["manners"]
+
 TRAVEL_BRAND = "最安ナビ トラベル"  # 旅行ページのサブブランド（11/23 Taku）
 
 
@@ -1078,6 +1084,8 @@ def main():
           '<button type="submit" class="tv-go-b">宿を探す</button></form>'
           + _sh("DESTINATION", "人気の行き先")
           + '<div class="tv-pop">' + "".join(f'<button type="button" data-a="{E(p)}"><b>{E(n)}</b><small>{E(p)}</small></button>' for p, n in _popular) + '</div>'
+          + _sh("GUIDE", "ペットとおでかけガイド", "行き先ごとに、愛犬と行ける観光スポットとお店をまとめました")
+          + '<div class="tv-gl">' + "".join(f'<a href="travel-{g["slug"]}.html" data-ga="guide_open"><span class="tv-glp" style="background-image:url(travel/{g["photo"]}.jpg)"></span><span class="tv-glt"><b>{E(g["name"])}</b><small>スポット{len(g["spots"])}・お店{len(g["shops"])}</small></span></a>' for g in _GUIDES) + '</div>'
           '<section class="tv-ar">' + _sh("AREA", "エリアから探す") + '<div class="tv-rg" id="tvrg" role="tablist">'
           + "".join(f'<button type="button" role="tab" data-r="{k}" aria-selected="{"true" if k == 2 else "false"}">{E(n)}</button>' for k, (n, _p) in enumerate(_regions)) + '</div>'
           + "".join(f'<div class="tv-pf" data-r="{k}"{"" if k == 2 else " hidden"}>' + "".join(f'<button type="button" data-a="{E(p)}">{E(p)}</button>' for p in ps.split()) + '</div>'
@@ -1105,6 +1113,25 @@ def main():
          "犬・猫と泊まれる宿を都道府県から探して、楽天トラベルで予約。ドッグラン・温泉・大型犬OKなどで絞り込めます。", sample,
          ((TRAVEL_BRAND, None),), canonical=(f"{origin}/travel.html" if origin else ""), og_image=(f"{origin}/travel/car.jpg" if origin else "travel/car.jpg"), brand="travel"))
     files.append("travel.html")
+    for g in _GUIDES:  # 行き先ごとの「ペットとおでかけガイド」（宿は載せない）
+        def _items(rows, kind):
+            return "".join(f'<li class="tg-i"><span class="tg-k">{kind}</span><h3 class="tg-n">{E(n)}</h3><p class="tg-w">{E(w)}</p><p class="tg-d">{E(d)}</p>'
+                           f'<p class="tg-c"><b>同伴</b>{E(c)}</p><a class="tg-s" href="{E(u)}" target="_blank" rel="noopener nofollow">出典を見る ›</a></li>' for n, w, d, c, u in ((r["name"], r["where"], r["desc"], r["cond"], r["src"]) for r in rows))
+        gb = ('<div class="tvx"><div class="tv-hero tg-hero"><span class="tv-ph" style="background-image:url(travel/' + g["photo"] + '.jpg)"></span><div class="tv-t"><small>PET FRIENDLY GUIDE</small>'
+              f'<h1>{E(g["name"])}<br>ペットとおでかけ</h1><p>{E(g["lead"])}</p></div></div>'
+              + _sh("SPOTS", "立ち寄りスポット") + '<ul class="tg-l">' + _items(g["spots"], "スポット") + '</ul>'
+              + _sh("DINING", "ペットと一緒に行けるお店", "同伴の条件（テラス席のみ／店内OK など）はお店ごとに違います") + '<ul class="tg-l">' + _items(g["shops"], g["name"]) + '</ul>'
+              + _sh("MANNERS", "わんこと歩くときのマナー") + '<ul class="tg-m">' + "".join(f'<li>{E(m)}</li>' for m in _MANNERS) + '</ul>'
+              + f'<a class="tg-cta" href="travel.html?area={urllib.parse.quote(g["pref"])}" data-ga="guide_to_hotels">{E(g["pref"])}のペットと泊まれる宿を探す ›</a>'
+              + '<a class="tg-back" href="travel.html#prep">お泊まりの持ち物をそろえる ›</a>'
+              '<p class="nayami-n">同伴の条件は、それぞれの出典記事の内容です（2026年11月23日 確認）。ルール・営業時間は変わることがあり、天候や混雑でテラス席が使えない日もあります。'
+              'お出かけの前に、各施設・お店の公式サイトで最新の情報をご確認ください。</p></div>')
+        open(os.path.join(out, f'travel-{g["slug"]}.html'), "w", encoding="utf-8").write(page(
+            f'{g["name"]}のペットと行ける観光スポット・お店｜{TRAVEL_BRAND}', gb,
+            f'{g["name"]}で愛犬と行ける観光スポット{len(g["spots"])}か所と、ペット同伴OKのお店{len(g["shops"])}軒。同伴の条件つき。', sample,
+            ((TRAVEL_BRAND, "travel.html"), (g["name"], None)), canonical=(f'{origin}/travel-{g["slug"]}.html' if origin else ""),
+            og_image=(f'{origin}/travel/{g["photo"]}.jpg' if origin else f'travel/{g["photo"]}.jpg'), brand="travel"))
+        files.append(f'travel-{g["slug"]}.html')
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド<a class="h2a" href="brands.html">すべて見る</a></h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す<a class="h2a" href="nayami.html">すべて見る</a></h2><ul class="nayami-l">{"".join(nayami)}</ul>'
                   '<p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p></section>' if nayami else "")
@@ -1542,6 +1569,7 @@ document.addEventListener("click",function(e){var a=e.target.closest("#mres a[da
  if(th)th.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;tag=b.dataset.q;th.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
   t.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.q===tag?"true":"false")});ga("travel_theme",{q:tag});if(!a.value){c.textContent="行き先（エリア）を選んでください";document.querySelector(".tv-ar").scrollIntoView({behavior:"smooth"});return}go();seen()});
  if(pp)pp.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;a.value=b.dataset.a;ga("travel_popular",{a:b.dataset.a});go();seen()});
+ try{var pa=new URLSearchParams(location.search).get("area");if(pa&&[].some.call(a.options,function(x){return x.value===pa})){a.value=pa;setTimeout(function(){var h=document.getElementById("tvh");if(h)h.scrollIntoView({behavior:"smooth"})},300)}}catch(e){}
  if(a.value)go()})();
 function renderFav(){var l=document.getElementById("favlist");if(!l)return;data(function(d){var f=load(),by={};d.items.forEach(function(x){by[x.id]=x});
  var ids=Object.keys(f).sort(function(a,b){return f[b].t-f[a].t});
@@ -1923,6 +1951,17 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 
 .hd-tv .hd-in{align-items:baseline;gap:10px;flex-wrap:wrap}.lg-tv{text-decoration:none}.lg-tv-n{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-size:21px;font-weight:600;letter-spacing:.08em;color:#1c1c1c}
 .hd-par{font-size:11px;color:#8c6a3f;letter-spacing:.04em;text-decoration:none;border-bottom:1px solid #c2a476}.hd-tv .hd-note{margin-left:auto}
+.tv-gl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 16px}.tv-gl a{display:block;color:var(--ink);text-decoration:none;background:#fff;border:1px solid var(--hair)}
+.tv-glp{display:block;aspect-ratio:16/10;background:center/cover no-repeat}.tv-glt{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}.tv-glt b{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-size:16px;font-weight:600}.tv-glt small{font-size:11px;color:var(--mute)}
+.tg-hero{height:380px}.tg-hero .tv-t{bottom:40px}.tg-hero .tv-t p{line-height:1.8;max-width:560px}
+.tg-l{list-style:none;margin:0 16px;padding:0;display:grid;gap:12px}.tg-i{background:#fff;border:1px solid var(--hair);padding:16px}
+.tg-k{font-size:10px;letter-spacing:.2em;color:var(--g)}.tg-n{margin:4px 0 2px;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-size:18px;font-weight:600;line-height:1.5}
+.tg-w{margin:0;font-size:12px;color:var(--mute)}.tg-d{margin:8px 0 0;font-size:14px;line-height:1.8}.tg-c{margin:10px 0 0;padding:10px 12px;background:#f3ece1;font-size:13px;line-height:1.7;color:#4a3a22}.tg-c b{margin-right:8px;font-size:11px;letter-spacing:.1em;color:var(--g)}
+.tg-s{display:inline-block;margin-top:10px;font-size:12px;color:var(--g);border-bottom:1px solid var(--g)}
+.tg-m{margin:0 16px;padding:16px 16px 16px 34px;background:#fff;border:1px solid var(--hair);font-size:13px;line-height:1.9}
+.tg-cta{display:block;margin:32px 16px 0;padding:18px;background:var(--ink);color:#fff;text-align:center;text-decoration:none;font-size:15px;letter-spacing:.06em}
+.tg-back{display:block;margin:12px 16px 0;padding:14px;border:1px solid var(--ink);color:var(--ink);text-align:center;text-decoration:none;font-size:14px}
+@media (min-width:1024px){.tv-gl{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-l{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1000px;margin:0 auto}.tg-m,.tg-cta,.tg-back{max-width:968px;margin-left:auto;margin-right:auto}}
 .tvbar{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 14px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;font-weight:700;text-decoration:none}.tvbar b{white-space:nowrap}.tvbar-g{flex:1;height:8px;border-radius:4px;background:#dcfce7;overflow:hidden}.tvbar-g i{display:block;height:100%;background:#16a34a}
 .tvbk{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;max-width:480px;margin:0 auto;padding:16px 16px 12px;border-radius:16px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.22);animation:tvbk .25s ease-out}
 @keyframes tvbk{from{transform:translateY(24px);opacity:0}}.tvbk b{display:block;font-size:17px;padding-right:28px}.tvbk p{margin:4px 0 10px;font-size:13px;color:#6b7280}

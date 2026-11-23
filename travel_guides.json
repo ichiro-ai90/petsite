@@ -1,0 +1,436 @@
+{
+ "_note": "行き先ごとの「ペットとおでかけガイド」。宿は載せない（2026-11-23 Taku）。同伴条件は出典記事の記載（2026-11-23 確認）",
+ "checked": "2026-11-23",
+ "guides": [
+  {
+   "slug": "karuizawa",
+   "pref": "長野県",
+   "name": "軽井沢",
+   "photo": "mountain",
+   "lead": "町ぐるみでペット連れを受け入れている高原リゾート。テラス席だけでなく、店内まで一緒に入れるお店も多いエリアです。",
+   "spots": [
+    {
+     "name": "軽井沢タリアセン",
+     "where": "軽井沢町長倉",
+     "desc": "塩沢湖を囲む高原のリゾート公園。湖畔の散歩と、季節の花や紅葉を一緒に楽しめます。",
+     "cond": "園内はリード着用。建物の中は不可。レストラン湖水のテラス席は同伴OK",
+     "src": "https://www.mapple.net/original/349931/"
+    },
+    {
+     "name": "軽井沢町植物園",
+     "where": "軽井沢町発地",
+     "desc": "軽井沢の草木を集めたこぢんまりした植物園。休憩所で一息つきながら、のんびり歩けます。",
+     "cond": "園内は同伴OK",
+     "src": "https://hoshinoresorts.com/jp/guide/area/chubu/nagano/karuizawa/petto/"
+    },
+    {
+     "name": "鬼押出し園（浅間北麓ジオパーク）",
+     "where": "嬬恋村",
+     "desc": "浅間山の溶岩がつくった景観の中を、愛犬と散歩できます。",
+     "cond": "同伴OK。ペット用の給水所あり（冬期は使えません）",
+     "src": "https://hoshinoresorts.com/jp/guide/area/chubu/nagano/karuizawa/petto/"
+    },
+    {
+     "name": "軽井沢・プリンスショッピングプラザ",
+     "where": "軽井沢駅すぐ",
+     "desc": "駅前のアウトレット。芝生のドッグランもあり、買い物の合間に遊ばせられます。",
+     "cond": "施設内はリード必須。入店できる店は店頭のステッカーで確認",
+     "src": "https://www.mapple.net/original/349931/"
+    }
+   ],
+   "shops": [
+    {
+     "name": "つるとんたん UDON NOODLE Brasserie 軽井沢",
+     "where": "うどん",
+     "desc": "店づくりの段階から犬連れ専用席を設けたうどん店。犬用メニューもあります。",
+     "cond": "店内・テラスとも同伴OK（大型犬OK）",
+     "src": "https://wankonowa.com/column/2932/"
+    },
+    {
+     "name": "レストランカフェ キッツビュール",
+     "where": "ドイツ料理",
+     "desc": "自家製ソーセージが名物のドイツ料理店。",
+     "cond": "店内・テラスとも同伴OK（大型犬まで）",
+     "src": "https://www.inutome.jp/c/column_2-680-54774.html"
+    },
+    {
+     "name": "せきれい橋 川上庵（ハルニレテラス）",
+     "where": "そば",
+     "desc": "ハルニレテラスの人気そば店。川のせせらぎを聞きながら食事ができます。",
+     "cond": "テラス席のみ同伴OK",
+     "src": "https://hoshinoresorts.com/jp/guide/area/chubu/nagano/karuizawa/cafepet/"
+    },
+    {
+     "name": "LONGING HOUSE 軽井沢",
+     "where": "洋食",
+     "desc": "野菜料理が自慢のレストラン。軽井沢駅から近く、観光の途中に寄りやすい立地です。",
+     "cond": "サンルーフ席とテラス席で同伴OK",
+     "src": "https://wankonowa.com/column/2932/"
+    },
+    {
+     "name": "丸山珈琲 軽井沢バイパス店",
+     "where": "カフェ",
+     "desc": "2025年にできた丸山珈琲の店舗。",
+     "cond": "テラス席のみ同伴OK（大型犬まで）",
+     "src": "https://www.inutome.jp/c/column_2-680-54774.html"
+    }
+   ]
+  },
+  {
+   "slug": "nasu",
+   "pref": "栃木県",
+   "name": "那須",
+   "photo": "lake",
+   "lead": "牧場や遊園地にドッグランがそろい、店内まで同伴できるカフェも多い、関東屈指の犬連れエリアです。",
+   "spots": [
+    {
+     "name": "那須千本松牧場",
+     "where": "那須塩原市",
+     "desc": "広い牧場の中に、全面天然芝の大型ドッグラン「ドッグパーク」があります。",
+     "cond": "牧場内に同伴OKのカフェ・レストランあり",
+     "src": "https://wankonowa.com/column/2092/"
+    },
+    {
+     "name": "那須高原 南ヶ丘牧場",
+     "where": "那須町",
+     "desc": "那須野が原を見渡しながら、牧場をのんびり散歩できます。",
+     "cond": "リード着用かカートで入園OK。ジンギスカンハウスはテラス席が同伴OK",
+     "src": "https://wankonowa.com/column/2092/"
+    },
+    {
+     "name": "那須ハイランドパーク",
+     "where": "那須町",
+     "desc": "北関東最大級の遊園地。屋外・室内のドッグランと、ドッグカフェがあります。",
+     "cond": "カフェ（WON'DERFUL CAFE）は店内・テラスとも同伴OK",
+     "src": "https://wankonowa.com/column/2485/"
+    },
+    {
+     "name": "那須高原りんどう湖ファミリー牧場",
+     "where": "那須町",
+     "desc": "湖のほとりの牧場。カフェのテラスで愛犬とひと休みできます。",
+     "cond": "カフェのテラス席は同伴OK",
+     "src": "https://hoshinoresorts.com/jp/guide/area/kanto/tochigi/nasu/nasu-pet/"
+    }
+   ],
+   "shops": [
+    {
+     "name": "CAFE' こうたろう",
+     "where": "カフェ",
+     "desc": "愛犬用のケーキやおやつもそろう、那須高原のカフェ。",
+     "cond": "店内・テラスとも同伴OK（犬種・大きさの制限なし）",
+     "src": "https://naspot.nasuhai.co.jp/article/dogcafe"
+    },
+    {
+     "name": "古民家カフェ 夢屋",
+     "where": "スローフード",
+     "desc": "雑木林の中にある古民家のカフェ。",
+     "cond": "店内・テラスとも同伴OK（大型犬OK）",
+     "src": "https://wankonowa.com/column/3027/"
+    },
+    {
+     "name": "森林ノ牧場 那須",
+     "where": "カフェ",
+     "desc": "放牧のジャージー牛のミルクでつくるソフトクリームが名物。",
+     "cond": "テラス席と蔵の席で同伴OK",
+     "src": "https://wankonowa.com/column/2092/"
+    },
+    {
+     "name": "ペニーレイン 那須店",
+     "where": "ベーカリー",
+     "desc": "人気のベーカリーレストラン。",
+     "cond": "テラス席と個室で同伴OK（個室はチャージ1,000円）",
+     "src": "https://wankonowa.com/column/3027/"
+    },
+    {
+     "name": "カフェ＆ガーデン しらさぎ邸",
+     "where": "カフェ",
+     "desc": "チーズガーデンの敷地内、緑に囲まれたカフェ。",
+     "cond": "テラス席で同伴OK（大型犬OK）",
+     "src": "https://wankonowa.com/column/3027/"
+    }
+   ]
+  },
+  {
+   "slug": "izu",
+   "pref": "静岡県",
+   "name": "伊豆",
+   "photo": "beach",
+   "lead": "海辺の散歩と海鮮ランチを、愛犬と一緒に。伊豆高原には犬連れ専用の施設やお店がまとまっています。",
+   "spots": [
+    {
+     "name": "伊東マリンタウン",
+     "where": "伊東市",
+     "desc": "海沿いの道の駅。足湯もあり、伊豆高原への行き帰りに寄りやすい場所です。",
+     "cond": "テラス席が同伴OKの海鮮丼のお店あり",
+     "src": "https://traveldog.jp/wanwanmap/izu/"
+    },
+    {
+     "name": "十国峠ケーブルカー",
+     "where": "函南町・熱海市",
+     "desc": "富士山を望む十国峠へ上るケーブルカー。山頂には「天空のドッグラン」があります。",
+     "cond": "リードを着ければ一緒に乗車OK",
+     "src": "https://www.veltra.com/jp/japan/kanagawa/hakone_odawara/a/170574"
+    },
+    {
+     "name": "下田ペリーロード",
+     "where": "下田市",
+     "desc": "柳並木と石畳が続く、幕末の面影が残る散策路。",
+     "cond": "リード着用で散策OK。沿道に同伴OKのカフェも",
+     "src": "https://yadohanabusa.com/media/642"
+    }
+   ],
+   "shops": [
+    {
+     "name": "愛犬の駅 伊豆高原",
+     "where": "カフェ・ドッグラン",
+     "desc": "カフェ、屋外・屋内ドッグラン、おみやげ店がそろう犬連れのドライブイン。テラスには足湯も。",
+     "cond": "店内・テラスとも同伴OK（大型犬OK）・犬用メニューあり",
+     "src": "https://www.welovedogs.jp/station/"
+    },
+    {
+     "name": "伊豆高原ビール うまいもん処",
+     "where": "海鮮",
+     "desc": "日帰り温泉「伊豆高原の湯」の敷地内にある食事処。",
+     "cond": "店内にペット同伴OKの席が30席",
+     "src": "https://tabilmo.com/tips/travel-izu-dog/"
+    },
+    {
+     "name": "福茶's curry",
+     "where": "カレー",
+     "desc": "天然芝のドッグランがあるログハウスのカレー店。",
+     "cond": "店内・テラスとも同伴OK（小型〜大型犬）",
+     "src": "https://wankonowa.com/column/2727/"
+    },
+    {
+     "name": "食事処 ぼら納屋（城ヶ崎）",
+     "where": "海鮮",
+     "desc": "城ヶ崎海岸の駐車場の中にある海鮮料理の店。",
+     "cond": "ペット連れ専用の別棟「ぼら納屋わんこ」で店内同伴OK",
+     "src": "https://wankonowa.com/column/2993/"
+    },
+    {
+     "name": "サウスカフェ",
+     "where": "カフェ",
+     "desc": "下田の、アメリカンな雰囲気のカフェ。",
+     "cond": "店内・テラスとも同伴OK",
+     "src": "https://wankonowa.com/column/2993/"
+    }
+   ]
+  },
+  {
+   "slug": "hakone",
+   "pref": "神奈川県",
+   "name": "箱根",
+   "photo": "mountain",
+   "lead": "芦ノ湖の景色と温泉の町。愛犬用の足湯や、ケージで一緒に回れる施設もあります。",
+   "spots": [
+    {
+     "name": "箱根の森足湯",
+     "where": "箱根町",
+     "desc": "源泉の足湯で、ワンちゃんもいっしょにぽかぽかに。",
+     "cond": "ワンちゃんも入れる足湯",
+     "src": "https://www.hakonenavi.jp/feature/7616"
+    },
+    {
+     "name": "富士芦ノ湖パノラマパーク",
+     "where": "箱根町",
+     "desc": "芦ノ湖と富士山を見渡せる公園。ドッグランもあります。",
+     "cond": "ドッグラン以外ではリード着用（小型〜大型犬）",
+     "src": "https://www.inutome.jp/spots?area_code=0601"
+    },
+    {
+     "name": "箱根園水族館",
+     "where": "箱根町元箱根",
+     "desc": "芦ノ湖のほとりの水族館。",
+     "cond": "貸し出しのケージを使えば一緒に回れる",
+     "src": "https://www.hakonenavi.jp/feature/7616"
+    }
+   ],
+   "shops": [
+    {
+     "name": "FUJIMI CAFE",
+     "where": "カフェ",
+     "desc": "富士山を望むウッドテラスのカフェ。ショップには犬用のおやつも。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://www.hakonenavi.jp/feature/7616"
+    },
+    {
+     "name": "イパオドギーカフェ箱根",
+     "where": "カフェ",
+     "desc": "愛犬と泊まる宿「グアムドッグ」のカフェ。宿泊しなくても食事ができます。",
+     "cond": "店内同伴OK（大型犬もOK）",
+     "src": "https://www.inutome.jp/c/column_2-643-48081.html"
+    },
+    {
+     "name": "湖尻茶屋",
+     "where": "茶屋",
+     "desc": "芦ノ湖畔の、開放感のある茶屋。",
+     "cond": "店内同伴OK",
+     "src": "https://www.inutome.jp/c/column_2-643-48081.html"
+    },
+    {
+     "name": "一色堂茶廊（箱根強羅公園内）",
+     "where": "カフェ",
+     "desc": "強羅公園の中にある、サンドイッチが評判のカフェ。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://www.pet-inu-yado.com/know_how/column-13/"
+    },
+    {
+     "name": "アルベルゴ・バンブー",
+     "where": "イタリアン",
+     "desc": "仙石原の洋館で味わうイタリア料理。",
+     "cond": "晴れた日のみテラス席で同伴OK",
+     "src": "https://wankonowa.com/column/2933/"
+    }
+   ]
+  },
+  {
+   "slug": "fujigoko",
+   "pref": "山梨県",
+   "name": "富士五湖（河口湖）",
+   "photo": "lake",
+   "lead": "富士山を正面に、湖畔を愛犬と歩けるエリア。ほうとうを一緒に味わえるお店もあります。",
+   "spots": [
+    {
+     "name": "河口湖畔の散歩道",
+     "where": "富士河口湖町",
+     "desc": "北岸の遊歩道は整備されていて、富士山を眺めながら歩けます。",
+     "cond": "リードを着ければ自由に散歩OK",
+     "src": "https://kurashi-pet.jp/articles/dog-spot-lake-kawaguchi/"
+    },
+    {
+     "name": "大石公園",
+     "where": "富士河口湖町大石",
+     "desc": "富士山と季節の花が楽しめる湖畔の公園。",
+     "cond": "リード着用で園内を散策OK",
+     "src": "https://yamanashi-made.jp/archives/346"
+    },
+    {
+     "name": "富士大石ハナテラス",
+     "where": "富士河口湖町大石",
+     "desc": "大石公園の隣に、カフェとショップが並ぶ小さな通り。",
+     "cond": "全店舗、テラスなら同伴OK",
+     "src": "https://wankonowa.com/column/2883/"
+    },
+    {
+     "name": "ハーブ庭園 旅日記 富士河口湖庭園",
+     "where": "富士河口湖町",
+     "desc": "温室や展望デッキのあるハーブの庭園。",
+     "cond": "庭園は小型〜大型犬まで入場OK",
+     "src": "https://petokoto.com/articles/884"
+    }
+   ],
+   "shops": [
+    {
+     "name": "ほうとう研究所 河口湖本店",
+     "where": "ほうとう",
+     "desc": "愛犬用のほうとうメニューもある、海鮮ほうとうの専門店。",
+     "cond": "店内同伴OK（大型犬まで）・利用料 3頭まで550円",
+     "src": "https://www.inutome.jp/c/column_2-658-51605.html"
+    },
+    {
+     "name": "with Dog 洋食屋さん 花しのぶ",
+     "where": "洋食",
+     "desc": "西湖のほとりの洋食店。オムハヤシが看板メニュー。",
+     "cond": "店内・テラスとも同伴OK（大型犬OK）",
+     "src": "https://kurashi-pet.jp/articles/dog-spot-lake-kawaguchi/"
+    },
+    {
+     "name": "河口湖スイーツガーデン",
+     "where": "スイーツ",
+     "desc": "湖畔のチーズケーキのお店。",
+     "cond": "テラス席のみ同伴OK（ワンちゃん専用席あり・大型犬まで）",
+     "src": "https://www.inutome.jp/c/column_2-658-51605.html"
+    },
+    {
+     "name": "シスココーヒー",
+     "where": "カフェ",
+     "desc": "サンフランシスコの雰囲気の湖畔カフェ。",
+     "cond": "テラス席で同伴OK",
+     "src": "https://www.pet-inu-yado.com/know_how/column-8/"
+    },
+    {
+     "name": "LAKE BAKE",
+     "where": "ベーカリー",
+     "desc": "大石エリアのベーカリー。",
+     "cond": "ガーデンエリアとテラス席で同伴OK",
+     "src": "https://crexgroup.com/ja/travel/niche/fuji-five-lakes-dog-friendly-spots/"
+    }
+   ]
+  },
+  {
+   "slug": "boso",
+   "pref": "千葉県",
+   "name": "房総",
+   "photo": "beach2",
+   "lead": "牧場、花畑、海辺の道の駅。都心から近く、日帰りでも愛犬と楽しめる半島です。",
+   "spots": [
+    {
+     "name": "マザー牧場",
+     "where": "富津市",
+     "desc": "広い牧場と季節の花畑。ドッグランもあります。",
+     "cond": "同伴犬は1頭600円・入場時に利用規約へ署名。動物がいる一部の施設は近づけない。飲食はテラス・オープンエアのみ",
+     "src": "https://www.inutome.jp/spots/456"
+    },
+    {
+     "name": "大多喜ハーブガーデン",
+     "where": "大多喜町",
+     "desc": "ハーブの庭園とカフェ。",
+     "cond": "リード着用で園内OK、カフェはテラス席OK（小型〜大型犬）",
+     "src": "https://www.inutome.jp/spots?area_code=0506&category_id%5B%5D=6"
+    },
+    {
+     "name": "道の駅ちくら 潮風王国",
+     "where": "南房総市千倉町",
+     "desc": "海辺の道の駅。広場や海岸沿いの遊歩道を歩けます。",
+     "cond": "中庭広場・芝生広場・海岸プロムナードで同伴OK",
+     "src": "https://www.inutome.jp/spots?area_code=0506&category_id%5B%5D=6"
+    },
+    {
+     "name": "道の駅とみうら 枇杷倶楽部",
+     "where": "南房総市富浦町",
+     "desc": "名産のびわのスイーツがそろう道の駅。",
+     "cond": "カフェのテラスで同伴OK",
+     "src": "https://www.inutome.jp/spots?area_code=0506&category_id%5B%5D=6"
+    },
+    {
+     "name": "沖ノ島",
+     "where": "館山市",
+     "desc": "砂浜伝いに歩いて渡れる小さな島。洞窟や海岸林を探検できます。",
+     "cond": "愛犬と一緒に散策OK",
+     "src": "https://trip.wan-navi.com/sightseeing/5639/"
+    }
+   ],
+   "shops": [
+    {
+     "name": "SASHIRO'S CAFE",
+     "where": "カフェ・レストラン",
+     "desc": "九十九里・蓮沼の海辺のドッグカフェ。雨の日もリードを外して過ごせるエリアがあります。",
+     "cond": "店内同伴OK（リードフリーのエリアあり）",
+     "src": "https://wankonowa.com/column/3674/"
+    },
+    {
+     "name": "カフェ＆ギャラリー 豆と麦",
+     "where": "カフェ",
+     "desc": "看板犬のいる、長生郡のカフェ。",
+     "cond": "店内同伴OK",
+     "src": "https://wankonowa.com/column/1672/"
+    },
+    {
+     "name": "九十九里ハーブガーデン",
+     "where": "レストラン",
+     "desc": "150〜200種のハーブ園に、レストランとドッグランを併設。",
+     "cond": "ガーデンはリード着用、レストランはテラス席で同伴OK",
+     "src": "https://petodekake.com/withdog/bousou-dog-odekake/"
+    }
+   ]
+  }
+ ],
+ "manners": [
+  "人の多い場所ではリードを短く持ち、ほかの人と距離をとりましょう",
+  "うんちは持ち帰り、おしっこは水で流すのが基本。お散歩バッグを忘れずに",
+  "お店は「テラス席のみ」のところが多いので、入る前にひと声かけると安心です",
+  "マナーパンツ・カフェマットがあると、店内同伴のお店で喜ばれます",
+  "神社・お寺や施設の建物の中は、ペット不可のところがあります。入口の案内を確認しましょう"
+ ]
+}

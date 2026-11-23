@@ -21,36 +21,14 @@ jobs:
           U = "https://petnavi.niconote.jp"
           with sync_playwright() as p:
               b = p.chromium.launch()
-              ctx = b.new_context(viewport={"width": 390, "height": 844})
-              pg = ctx.new_page()
-              pg.goto(U + "/travel.html?v=1123a"); pg.wait_for_timeout(2500)
-              print("HDR", pg.evaluate("(document.querySelector('.hd-tv')||{}).innerText||'none'").replace("\n", " | "))
-              print("FEATURE", pg.evaluate("!!document.querySelector('.tv-th')"))
-              pg.screenshot(path="tv_top.png")
-              pg.evaluate("""(()=>{var x=[...document.querySelectorAll('.tv-pf button')].find(e=>e.textContent.trim()==='長野県');x&&x.click()})()""")
-              pg.wait_for_timeout(5000)
-              h = pg.evaluate("(document.querySelector('.tv-rt a')||{}).href||''")
-              print("RT", "hb.afl" if h.startswith("https://hb.afl.rakuten.co.jp/hgc/") else (h[:30] or "none"))
-              pg.locator("#tvh").scroll_into_view_if_needed(); pg.wait_for_timeout(500); pg.screenshot(path="tv_res.png")
-              cbs = pg.locator("[data-pk]")
-              print("PREP n", cbs.count())
-              cbs.nth(0).check(); cbs.nth(1).check()
-              print("PREP after", pg.evaluate("document.getElementById('tvprn').textContent"))
-              pg.locator("#prep").scroll_into_view_if_needed(); pg.wait_for_timeout(400); pg.screenshot(path="tv_prep.png")
-              if h:
-                  with ctx.expect_page() as np:
-                      pg.click(".tv-rt a")
-                  np.value.close()
-              pg.evaluate("()=>{var t=JSON.parse(localStorage.getItem('pn_trip')||'null');if(t){t.t=Date.now()-60000;localStorage.setItem('pn_trip',JSON.stringify(t))}}")
-              pg.goto(U + "/index.html?v=1123a"); pg.wait_for_timeout(2500)
-              print("TVBK", pg.evaluate("(document.getElementById('tvbk')||{}).innerText||'none'").replace("\n", " | "))
-              print("TVBAR", pg.evaluate("(document.getElementById('tvbar')||{}).innerText||'none'").replace("\n", " "))
-              pg.screenshot(path="top_return.png")
-              g = json.loads(pg.evaluate("document.getElementById('gdata').textContent"))
-              bad = [x["n"] for x in g if re.search(r"療法食|サポート|[cdikjlrwz]/d|プリスクリプション|ベテリナリー", x["n"], re.I)]
-              print("GACHA", len(g), "ryouhou", len(bad), bad[:3])
-              pc = b.new_page(viewport={"width": 1440, "height": 900})
-              pc.goto(U + "/travel.html?v=1123a"); pc.wait_for_timeout(2500); pc.screenshot(path="tv_pc.png")
+              import urllib.parse
+              pg = b.new_page(viewport={"width": 1280, "height": 900})
+              for q in ["ペット 栃木県", "ペット 栃木県 貸切", "ペット 栃木県 ドッグラン", "ペット 栃木県 温泉", "ペット 栃木県 大型犬", "ペット 栃木県 部屋食", "ペット 栃木県 猫"]:
+                  pg.goto("https://kw.travel.rakuten.co.jp/keyword/Search.do?charset=utf-8&f_query=" + urllib.parse.quote(q), timeout=60000); pg.wait_for_timeout(3500)
+                  t = pg.inner_text("body")
+                  m = re.search(r"([0-9,]+)\s*件", t)
+                  names = pg.evaluate("[...document.querySelectorAll('h2 a, .hotelName a, a[href*=\"/HOTEL/\"]')].map(a=>a.textContent.trim()).filter(x=>x.length>3).slice(0,4)")
+                  print("KW", q, "|", m.group(1) if m else "?", "|", names)
               b.close()
           PY
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com

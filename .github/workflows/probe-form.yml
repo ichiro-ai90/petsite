@@ -1,0 +1,13 @@
+name: probe-form
+on:
+  push:
+    branches: [dev/probe-form]
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: test submit
+        run: |
+          curl -s -o /tmp/r.json -w "%{http_code}\n" -X POST https://petnavi.niconote.jp/api/submit -H 'content-type: application/json' \
+            --data '{"kind":"spot","name":"草津温泉 湯畑（テスト投稿・一郎・削除予定）","pref":"群馬県","where":"草津町","url":"https://www.kusatsu-onsen.ne.jp/portal/","ig":"","dog":"屋外OK","big":"わからない","rel":"利用した人","note":"一郎の動作テスト","photo_ok":false}'
+          cat /tmp/r.json

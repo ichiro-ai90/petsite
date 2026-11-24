@@ -237,6 +237,7 @@ def show_name(name):
     s = re.sub(r"[【\[［][^】\]］]{0,40}[】\]］]", " ", name)
     s = re.sub(r"[★☆◆◇■□●○※!！]+", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"\s[\u3041-\u309f\u30a1-\u30ff]$", "", s)  # 販促の括弧を外した後に残る1文字のかな（例「…ワイド り」）は落とす（監査#70）
     return s or name
 
 

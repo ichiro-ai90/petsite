@@ -732,13 +732,14 @@ def product_row(p, g, fn):
             f'<a class="row" href="{fn}"><span class="pic">{pic}</span><span class="info">'
             f'<span class="nm">{E(show_name(p["name"]))}</span>{stars(p.get("reviewAverage", 0), p.get("reviewCount", 0))}'
             f'<span class="pr"><small class="scope">{len(p["offers"])}店中の最安</small><b class="pv">{o["price"]:,}</b>円 <span class="shipv">{ship(o["shipping"])}</span>{tbadge}</span>'
-            f'<span class="pt"><span class="ptv">{ptxt(o)}</span></span>{hit}' + (f'<span class="effn">ポイント分を引いた目安 約{oe["effective"]:,}円</span>' if oe["effective"] < o["price"] else '<span class="effn">ポイント不明のため価格のまま並べています</span>') + ''
+            f'<span class="pt"><span class="ptv">{ptxt(o)}</span></span>{hit}' + (f'<span class="effn">ポイント分を引いた目安 約{oe["effective"]:,}円</span>' if oe["effective"] < o["price"] else '<span class="effn">ポイント不明のため後ろに並べています</span>') + ''
             f'<span class="meta">{buy.lstrip("・")}{"・" + upt if upt else ""}</span>{gapt}</span></a></li>')
 
 
 SORT_JS = ('<script>(function(){var b=document.querySelectorAll(".sort button"),l=document.getElementById("list");'
            'b.forEach(function(x){x.addEventListener("click",function(){var k=x.dataset.k,a=[].slice.call(l.children);'
-           'a.sort(function(p,q){return k==="pop"?q.dataset.pop-p.dataset.pop:(p.dataset[k]||1e12)-(q.dataset[k]||1e12)});'
+           'function v(e){var x=+e.dataset[k]||1e12;if(k==="eff"&&x>=+e.dataset.price)x+=1e12;return x}'
+           'a.sort(function(p,q){return k==="pop"?q.dataset.pop-p.dataset.pop:v(p)-v(q)});'
            'a.forEach(function(e){l.appendChild(e)});b.forEach(function(y){y.setAttribute("aria-pressed",y===x)});l.classList.toggle("eff-on",k==="eff")})})})();</script>')
 
 
@@ -768,7 +769,7 @@ def category_body(g, prods, pet, fetched, carried):
             f'<button type="button" data-k="pop" aria-pressed="true">人気順</button>'
             f'<button type="button" data-k="price" aria-pressed="false">安い順</button>'
             f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button>'
-            f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div><p class="effnote">ポイント込み＝ショップのポイント倍率の分だけ価格から引いた目安です（SPU・クーポン・楽天カード分は含みません）。ポイントが分からない商品は価格のまま並べます</p>'
+            f'<button type="button" data-k="unit" aria-pressed="false">{LABEL[g["unit"]]}が安い順</button></div><p class="effnote">ポイント込み＝ショップのポイント倍率の分だけ価格から引いた目安です（SPU・クーポン・楽天カード分は含みません）。ポイントが分からない商品は、ポイントの分かる商品の後ろに価格順で並べます</p>'
             f'<p class="free-note" id="freenote" hidden>送料無料のショップの中での最安に切り替えています。価格はそのショップの税込価格で、送料別の最安より高いことがあります。</p>'
             f'{SHIP_RULE}<p class="h2n">※「他店より◯円安い」＝同じ内容量の他店（3店以上）の価格の中央値との差・取得時点・送料別</p><ul class="list gl" id="list">{rows}</ul>{live_sec(g["keyword"])}'
             f'<div class="note">{("<p>" + carried.replace("<br>", "") + "</p>") if carried else ""}<p>{LABEL[g["unit"]]}の価格＝税込価格 ÷ 内容量（商品名から読み取り。読み取れない商品は載せていません）。'
@@ -853,7 +854,7 @@ def item_body(p, g, fetched):
         f'<li data-price="{x["price"]}" data-eff="{x["effective"]}" data-free="{1 if x.get("shipping") == "送料無料" else 0}"><div class="shop">{mall_tag(x, offers)}<span class="sn">{E(x["shop"])}</span>{hi_tag(x["pointRate"])}'
         + ('<span class="outlet">訳あり・アウトレットの可能性（商品名より）</span>' if OUTLET.search(x["name"]) else "") +
         f'<span class="pr"><b>{x["price"]:,}</b>円 {ship(x["shipping"])}</span>'
-        f'<span class="pt">{ptxt(x)}{YPT_NOTE if is_y(x) else PT_NOTE}</span>' + (f'<span class="effn">ポイント分を引いた目安 約{x["effective"]:,}円</span>' if x["effective"] < x["price"] else '<span class="effn">ポイント不明のため価格のまま並べています</span>') + '</div>'
+        f'<span class="pt">{ptxt(x)}{YPT_NOTE if is_y(x) else PT_NOTE}</span>' + (f'<span class="effn">ポイント分を引いた目安 約{x["effective"]:,}円</span>' if x["effective"] < x["price"] else '<span class="effn">ポイント不明のため後ろに並べています</span>') + '</div>'
         f'<a class="btn" href="{E(x["url"])}" rel="sponsored nofollow" target="_blank">ショップで見る</a></li>'
         for x in offers)
     same = same_size(offers, g["unit"])
@@ -913,7 +914,7 @@ def item_body(p, g, fetched):
             f'<div class="sort" role="group" aria-label="並べ替え"><span>並べ替え</span>'
             f'<label class="free-only"><input type="checkbox" id="freeonly"> 送料無料だけ</label>'
             f'<button type="button" data-k="price" aria-pressed="true">安い順</button>'
-            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button></div><p class="effnote">ポイント込み＝ショップのポイント倍率の分だけ価格から引いた目安です（SPU・クーポン・楽天カード分は含みません）。ポイントが分からない商品は価格のまま並べます</p>'
+            f'<button type="button" data-k="eff" aria-pressed="false">ポイント込みで安い順</button></div><p class="effnote">ポイント込み＝ショップのポイント倍率の分だけ価格から引いた目安です（SPU・クーポン・楽天カード分は含みません）。ポイントが分からない商品は、ポイントの分かる商品の後ろに価格順で並べます</p>'
             f'{SHIP_RULE}<ul class="shops" id="list">{rows}</ul><p class="empty" id="freeempty" hidden>送料無料のショップは、今回の取得にはありませんでした。</p>{allshops}'
             f'<div class="note"><p>価格取得日時: {E(str(p.get("fetched_at") or fetched))}</p></div>{SORT_JS}')
 

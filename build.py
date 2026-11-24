@@ -829,7 +829,7 @@ def mall_cmp(offers):
     d = abs(a["price"] - b["price"])
     win = "同じ価格" if d == 0 else (f'{"Yahoo!" if b["price"] < a["price"] else "楽天"}が <b>{d:,}円安い</b>')
     return (f'<p class="mallcmp">楽天の最安 {a["price"]:,}円／Yahoo!の最安 {b["price"]:,}円：{win}'
-            f'<small>（取得時点・税込・送料別。ポイントは含みません）</small></p>')
+            f'<small>（比較条件：取得時点の税込価格どうし。送料とポイントは含めずに比べています）</small></p>')
 
 
 _CU = os.environ.get("RAKUTEN_CARD_URL", "").strip()
@@ -901,7 +901,7 @@ def item_body(p, g, fetched):
             f'{actions}'
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
-            f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
+            f'<p class="pr-note">税込価格・{"このショップは送料無料" if o.get("shipping") == "送料無料" else "送料は別にかかる（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{ptxt(o, "ポイント")}{PT_NOTE}</p>'
             + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いでポイントが増える場合あり<span class="card-c">（条件は楽天カード公式で確認）</span><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
                          + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")

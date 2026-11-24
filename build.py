@@ -1246,8 +1246,7 @@ def main():
               'お出かけの前に、各施設・お店の公式サイトや公式Instagramで最新の情報をご確認ください。写真はWikimedia Commonsの自由ライセンス画像（撮影者・ライセンスは各写真の下）と、各施設の公式Instagramの埋め込みです。</p></div>'
               f'<a class="tg-stk" id="tgstk" href="{_hq}" data-ga="guide_sticky" hidden>{E(g["pref"])}の泊まれる宿を探す ›</a>'
               '<script>(function(){try{localStorage.setItem("pn_gv",JSON.stringify(' + json.dumps({"s": g["slug"], "n": g["name"], "c": _gcover(g)}, ensure_ascii=False) + '))}catch(e){}'
-              'document.querySelectorAll(".tg-ig").forEach(function(b){function z(){var w=b.clientWidth;if(!w)return;var r=w/540;b.classList.add("tg-igw");b.firstChild.style.transform="scale("+r+")";b.style.height=Math.round(640*r)+"px"}z();addEventListener("resize",z)});'
-              'var k=document.getElementById("tgstk"),c=document.querySelector(".tg-cta");function f(){var r=c.getBoundingClientRect();k.hidden=!(scrollY>420&&r.top>innerHeight)}addEventListener("scroll",f,{passive:true});f()})()</script>')
+              ''var k=document.getElementById("tgstk"),c=document.querySelector(".tg-cta");function f(){var r=c.getBoundingClientRect();k.hidden=!(scrollY>420&&r.top>innerHeight)}addEventListener("scroll",f,{passive:true});f()})()</script>')
         open(os.path.join(out, f'travel-{g["slug"]}.html'), "w", encoding="utf-8").write(page(
             f'{g["name"]}のペットと行ける観光スポット・お店｜{TRAVEL_BRAND}', gb,
             f'{g["name"]}で愛犬と行ける観光スポット{len(g["spots"])}か所と、ペット同伴OKのお店{len(g["shops"])}軒。同伴の条件つき。', sample,
@@ -2136,7 +2135,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tg-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 16px 0}.tg-act a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px;text-align:center;text-decoration:none;font-size:13px;line-height:1.4}.tg-a1{background:var(--ink);color:#fff}.tg-a2{border:1px solid var(--ink);color:var(--ink)}
 .tg-sum{margin:10px 16px 0;font-size:12px;color:var(--mute);text-align:center}.tg-sum a{color:var(--g)}
 .tg-i.tg-hp{padding:0;overflow:hidden}.tg-hp .tg-b{padding:14px 16px 16px}.tg-f{margin:0}.tg-f img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#eee}.tg-f figcaption{padding:4px 10px;font-size:10px;line-height:1.5;color:var(--mute);background:#faf7f2}.tg-f figcaption a{color:inherit;text-decoration:none}
-.tg-ig{height:420px;overflow:hidden;background:#fafafa}.tg-ig iframe{display:block;width:100%;height:100%;border:0}.tg-ig.tg-igw iframe{width:540px;height:640px;transform-origin:0 0}
+.tg-ig{display:flex;justify-content:center;overflow:hidden;background:#fafafa}.tg-ig iframe{display:block;width:330px;max-width:100%;height:310px;border:0}
 .tg-o{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0 0}.tg-o a{font-size:13px;color:var(--g);border-bottom:1px solid var(--g);text-decoration:none}
 .tg-near{margin-top:4px}
 .tg-stk{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:block;padding:14px;background:var(--ink);color:#fff;text-align:center;text-decoration:none;font-size:14px;letter-spacing:.04em;box-shadow:0 6px 20px rgba(0,0,0,.25)}.tg-stk[hidden]{display:none}

@@ -478,6 +478,16 @@
      "ig": null,
      "ref": "osm+official",
      "src": "auto-a"
+    },
+    {
+     "name": "イタリア料理 デルフィーノ",
+     "where": "伊東市（城ヶ崎海岸）",
+     "desc": "城ヶ崎海岸のイタリアン",
+     "cond": "テラス席はわんちゃんOK（公式サイトの記載より）",
+     "site": "https://delfino-ito.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -637,6 +647,16 @@
      "desc": "シフォンケーキの店",
      "cond": "ウッドデッキで愛犬連れも利用可（公式サイトの記載より）",
      "site": "https://www.bearbearrei.com/about",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "カフェレストラン Shu",
+     "where": "相模原市緑区（藤野）",
+     "desc": "藤野の自然の中のカフェレストラン",
+     "cond": "テラス席ではペットOK（公式サイトの記載より）",
+     "site": "https://cafe-shu.com/about-shu/",
      "ig": null,
      "ref": "osm+official",
      "src": "auto-a"

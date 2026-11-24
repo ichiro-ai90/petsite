@@ -1,7 +1,7 @@
 """方法Aの2回目：1回目で拾えた店の判定をやり直し、開けなかった店はブラウザで開き直す。住所（都道府県・市区町村）は国土地理院の逆ジオコーダで付ける"""
 import json, re, asyncio, urllib.request, unicodedata
 from playwright.async_api import async_playwright
-exec(open("probe_kanto.py", encoding="utf-8").read().split("els = overpass()")[0].split("def overpass")[0])
+exec(open("probe_kanto.py", encoding="utf-8").read().split("els = overpass()")[0])
 POS2 = POS
 NEG2 = re.compile(r"(ペット|犬|動物|わんちゃん|ワンちゃん)[^。\n]{0,20}(不可|お断り|ご遠慮|控え|禁止|ng|できません|入れません|入店不可|持ち込み不可|お控え)", re.I)
 BAD = re.compile(r"(?i)hot\s?dog|ホットドッグ|ジャーマンドッ|チリドッグ|ドッグカフェとは|猫カフェ|ねこカフェ|保護猫")

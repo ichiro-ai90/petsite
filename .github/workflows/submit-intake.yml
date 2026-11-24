@@ -1,0 +1,59 @@
+name: submit-intake
+# 情報提供フォーム（/api/submit）が作った issue（ラベル shop-submit）を合図に、公式サイトを確かめて掲載のPRを作る（11/24 Taku）
+on:
+  issues:
+    types: [opened, labeled]
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+concurrency: { group: submit-intake, cancel-in-progress: false }
+jobs:
+  intake:
+    if: contains(github.event.issue.labels.*.name, 'shop-submit') && !contains(github.event.issue.labels.*.name, 'intake-done')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      N: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: check and add
+        run: |
+          gh api repos/${{ github.repository }}/issues/$N --jq .body > /tmp/body.md
+          python scripts/intake.py /tmp/body.md > /tmp/res.json
+          cat /tmp/res.json
+          ok=$(python -c "import json;print(json.load(open('/tmp/res.json'))['ok'])")
+          msg=$(python -c "import json;r=json.load(open('/tmp/res.json'));print('\n'.join('- '+c for c in r.get('checks',[]))+('\n\n'+r['why'] if r.get('why') else ''))")
+          gh issue edit $N --add-label intake-done
+          if [ "$ok" != "True" ]; then gh issue comment $N --body "一郎の確認：今回は自動で載せられませんでした。
+          $msg
+
+          一郎が手で確かめます。"; exit 0; fi
+          ph=$(python -c "import json;print(json.load(open('/tmp/res.json')).get('photo',''))")
+          if [ -n "$ph" ]; then
+            curl -sf "https://petnavi.niconote.jp/api/subphoto?id=$ph" -o "assets/travel/g/u-$ph.jpg" || { echo "写真を取り込めませんでした"; python - <<PY
+          import json;g=json.load(open("travel_guides.json"))
+          for x in g["guides"]:
+              for k in ("spots","shops"):
+                  for e in x[k]:
+                      if e.get("photo",{}).get("user") and e["photo"]["file"]=="u-$ph.jpg": e.pop("photo")
+          json.dump(g,open("travel_guides.json","w"),ensure_ascii=False,indent=1)
+          PY
+          }
+          fi
+          git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com
+          b="submit/issue-$N"; git checkout -b "$b"
+          git add travel_guides.json assets/travel/g
+          git commit -qm "情報提供 #$N を追加（公式サイト確認済み・利用者からの情報）"
+          git push -q origin "$b"
+          pr=$(gh pr create --base main --head "$b" --title "情報提供 #$N を追加" --body "フォームからの情報提供（#$N）。
+          $msg
+
+          掲載は「利用者からの情報」と表示。営業情報の注意書きはガイド側に常時表示。" | grep -o '[0-9]*$')
+          gh issue comment $N --body "一郎の確認：公式サイトで確かめて、掲載のPR #$pr を作りました。監査のあとで反映します。
+          $msg"
+          gh workflow run audit.yml --ref main -f pr=$pr || true

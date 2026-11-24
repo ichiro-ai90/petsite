@@ -2,7 +2,7 @@ name: submit-intake
 # 情報提供フォーム（/api/submit）が作った issue（ラベル shop-submit）を合図に、公式サイトを確かめて掲載のPRを作る（11/24 Taku）
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened]  # ラベルはissue作成と同時に付くので、opened だけで動かす（labeled も拾うと2回動く。11/24 テストで確認）
 permissions:
   contents: write
   pull-requests: write

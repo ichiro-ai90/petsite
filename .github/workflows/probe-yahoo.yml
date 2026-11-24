@@ -7,16 +7,32 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [hokkaido, tohoku, chubu, kinki, chugoku, shikoku, kyushu]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: guide links and photos
+      - name: region scan
+        env: { REGION: "${{ matrix.region }}" }
         run: |
           pip -q install playwright && python -m playwright install --with-deps chromium >/dev/null 2>&1
-          mkdir -p shots/img
-          python probe_kanto3.py
-          echo skip
+          python probe_region.py
+      - uses: actions/upload-artifact@v4
+        with: { name: "${{ matrix.region }}", path: "shots/${{ matrix.region }}.json" }
+  collect:
+    needs: probe
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dl }
+      - run: |
+          mkdir -p shots && find dl -name '*.json' -exec cp {} shots/ \;
+          ls -la shots
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com
-          git checkout -b tmp && git add shots && git commit -qm "guide data [skip ci]" && git push -q origin HEAD:dev/probe-shots --force
+          git checkout -b tmp && git add shots && git commit -qm "region data [skip ci]" && git push -q origin HEAD:dev/probe-shots --force

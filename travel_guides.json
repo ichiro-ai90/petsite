@@ -120,6 +120,16 @@
      "cond": "テラス席で同伴OK・全犬種OK",
      "ref": "https://www.honda.co.jp/dog/travel/data/epi/",
      "site": "https://www.epinopan.com/"
+    },
+    {
+     "name": "森のカフェ",
+     "where": "軽井沢町",
+     "desc": "軽井沢南ヶ丘の森の中のカフェ",
+     "cond": "テラス席でワンちゃん同伴可（強風時は利用不可の場合あり）（公式サイトの記載より）",
+     "site": "https://www.karuizawacafe.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -306,6 +316,16 @@
      "ref": "wankonowa",
      "site": "https://www.shozo.co.jp/",
      "ig": "shozonasu"
+    },
+    {
+     "name": "日光まるひで食堂 本店",
+     "where": "日光市",
+     "desc": "日光湯波とラーメンの食堂",
+     "cond": "ワンちゃん・ネコちゃんも店内で一緒に食事可（公式サイトの記載より）",
+     "site": "https://nikko-maruhide.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -428,6 +448,46 @@
      "cond": "テラス席・ログハウスで同伴OK（雨の日はテラス不可）・全犬種OK",
      "ref": "https://www.honda.co.jp/dog/travel/data/kyousen/",
      "site": "https://www.izu-kyousen.com/"
+    },
+    {
+     "name": "伊豆高原ビール本店",
+     "where": "伊東市",
+     "desc": "地ビールと海鮮丼のレストラン",
+     "cond": "ペット同伴席あり（公式サイトの記載より）",
+     "site": "https://izubeer.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "食事処 ぼら納屋",
+     "where": "伊東市（城ヶ崎海岸）",
+     "desc": "城ヶ崎海岸の門脇つり橋近くの海鮮食事処",
+     "cond": "ペット連れで利用可（公式サイトの記載より）",
+     "site": "https://boranaya.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "富士宮やきそばアンテナショップ",
+     "where": "富士宮市",
+     "desc": "屋外フードコート式の富士宮やきそばの店",
+     "cond": "ペット同伴可（席にリードでつなぐ）（公式サイトの記載より）",
+     "site": "https://prosumer-inc.com/qa/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "イタリア料理 デルフィーノ",
+     "where": "伊東市（城ヶ崎海岸）",
+     "desc": "城ヶ崎海岸のイタリアン",
+     "cond": "テラス席はわんちゃんOK（公式サイトの記載より）",
+     "site": "https://delfino-ito.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -540,6 +600,66 @@
      "cond": "全席ペット同伴OK",
      "ref": "https://petokoto.com/articles/1636",
      "ig": "hakonekaraagekaratto"
+    },
+    {
+     "name": "エバーグリーンカフェ",
+     "where": "相模原市緑区",
+     "desc": "橋本のカフェ",
+     "cond": "テラス席のみペット同伴可（公式サイトの記載より）",
+     "site": "https://evergreen-cafe.jp/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "カプリチョーザ 江ノ島店",
+     "where": "藤沢市",
+     "desc": "江ノ島のイタリアン",
+     "cond": "テラスはペット可（公式サイトの記載より）",
+     "site": "https://capricciosa.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "NAGI COFFEE",
+     "where": "横浜市神奈川区",
+     "desc": "自家焙煎のコーヒー店",
+     "cond": "テラス席（4席）はペット可（公式サイトの記載より）",
+     "site": "https://www.nagicoffee.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "CAFE PLAZA dear KOREA",
+     "where": "三浦市",
+     "desc": "三浦海岸駅近くのカフェ",
+     "cond": "外席はワンちゃんOK（公式サイトの記載より）",
+     "site": "https://dearkorea.jp/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "シフォンケーキとクッキーの店 BearBear",
+     "where": "川崎市中原区",
+     "desc": "シフォンケーキの店",
+     "cond": "ウッドデッキで愛犬連れも利用可（公式サイトの記載より）",
+     "site": "https://www.bearbearrei.com/about",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "カフェレストラン Shu",
+     "where": "相模原市緑区（藤野）",
+     "desc": "藤野の自然の中のカフェレストラン",
+     "cond": "テラス席ではペットOK（公式サイトの記載より）",
+     "site": "https://cafe-shu.com/about-shu/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -642,6 +762,26 @@
      "ref": "https://www.honda.co.jp/dog/travel/data/casserole/",
      "site": "http://www.casserole-stew.com/",
      "ig": "casserole1504"
+    },
+    {
+     "name": "パン＆ケーキ小屋 えるべてる",
+     "where": "北杜市",
+     "desc": "八ヶ岳南麓のパンとケーキの店",
+     "cond": "青空テラスはペットも利用可（公式サイトの記載より）",
+     "site": "https://www.el-bethel1143.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "CIN CIN BREWERY",
+     "where": "山中湖村",
+     "desc": "山中湖のブルワリー",
+     "cond": "ドッグフレンドリー（公式サイトの記載より）",
+     "site": "https://cincinbrewery.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -757,6 +897,56 @@
      "ref": "https://www.honda.co.jp/dog/travel/data/fairytale1/",
      "site": "https://www.fairytale1.com/",
      "ig": "fairytalenatsumi"
+    },
+    {
+     "name": "BREAD&COFFEE MORMORS",
+     "where": "袖ケ浦市",
+     "desc": "ベーカリー＆カフェ",
+     "cond": "リードフックあり。ワンちゃん連れ歓迎（公式サイトの記載より）",
+     "site": "https://mormors-sodegaura.jimdofree.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "Cafe Restaurant La Mer Bleue（BAYSIDE KANAYA）",
+     "where": "富津市金谷",
+     "desc": "海を望むガラス張りのカフェレストラン",
+     "cond": "焚火エリアでワンちゃんと一緒に食事可（公式サイトの記載より）",
+     "site": "https://www.bayside-kanaya.jp/restaurant",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "小谷流の里 ドギーズアイランド",
+     "where": "八街市",
+     "desc": "愛犬と過ごす里山のリゾート。ベーカリーやレストランも",
+     "cond": "全ての席で愛犬と一緒に食事可（公式サイトの記載より）",
+     "site": "https://doggys-island.jp/restaurant/bakery/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "サンポ珈琲 松戸八ヶ崎店",
+     "where": "松戸市",
+     "desc": "パンケーキが人気のカフェ",
+     "cond": "テラス席は全日ペット（犬）同伴可（公式サイトの記載より）",
+     "site": "https://www.sampocafe.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "カフェ Le Risa",
+     "where": "南房総市",
+     "desc": "雑貨と創作家庭料理のカフェ",
+     "cond": "ペットと一緒に食事できる部屋あり（公式サイトの記載より）",
+     "site": "https://le-risa.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -1058,6 +1248,16 @@
      "cond": "テラス席で同伴OK・全犬種OK",
      "ref": "https://www.honda.co.jp/dog/travel/data/plus/",
      "site": "https://plus-1.bz/"
+    },
+    {
+     "name": "パスタ専門店 グルービー 研究学園店",
+     "where": "つくば市",
+     "desc": "パスタ専門店",
+     "cond": "テラス席でペット連れ可（公式サイトの記載より）",
+     "site": "https://www.pasta-groovy.co.jp/shop/gakuen.html",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -1192,6 +1392,246 @@
      "ref": "https://www.honda.co.jp/dog/travel/data/greenwood/",
      "site": "https://mimi-greenwood.com/",
      "ig": "mimi_papa0419"
+    },
+    {
+     "name": "青山 川上庵",
+     "where": "港区南青山",
+     "desc": "蕎麦の名店",
+     "cond": "1階テラス（6席）はペットOK（公式サイトの記載より）",
+     "site": "https://www.kawakamian.com/shops/aoyama.php",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "庵狐 円山町店",
+     "where": "渋谷区円山町",
+     "desc": "炭火焼のダイニング",
+     "cond": "テラス席はペットの同伴可（公式サイトの記載より）",
+     "site": "https://grill-anko.jp/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "Eggs 'n Things お台場店",
+     "where": "港区台場",
+     "desc": "パンケーキのカフェ",
+     "cond": "テラス席のみペット連れ可（公式サイトの記載より）",
+     "site": "https://www.eggsnthingsjapan.com/odaiba/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "ママンカフェ",
+     "where": "昭島市",
+     "desc": "緑に囲まれた雑貨カフェ",
+     "cond": "ワンちゃん同伴OK（公式サイトの記載より）",
+     "site": "https://mamancafezakka.wixsite.com/mamancafe/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "UPMARKET PIZZA&CAFE",
+     "where": "練馬区",
+     "desc": "薪窯ピッツァのカフェ",
+     "cond": "テラスはペット同伴OK（公式サイトの記載より）",
+     "site": "https://upmarket.jp/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "THE_B 表参道",
+     "where": "港区南青山",
+     "desc": "グルテンフリーのベーカリーカフェ",
+     "cond": "DOG OK（公式サイトの記載より）",
+     "site": "https://theb.jp/store_information.html",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "TATA ～BAR RESTAURANT CAFE～",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "バー＆レストラン",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10233/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "CRAFT BEER MARKET TOKYO TORCH店",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "クラフトビールのお店",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10231/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "Bar Espanol YEBRA",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "スペインバル",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10229/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "フレンチ串揚げ BEIGNET",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "フレンチ串揚げ",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10230/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "北海道 炉端 えぞ羅",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "北海道の炉端焼き",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10234/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "MY Shokudo Hall & Kitchen",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "フードホール",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10238/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "丹波赤どり とりのや 本店",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "丹波赤どりの専門店",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10235/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "MY Shokudo Dining & Sakaba",
+     "where": "千代田区大手町（TOKYO TORCH）",
+     "desc": "ダイニング＆酒場",
+     "cond": "ペット同伴可（詳細は店舗へ）（公式サイトの記載より）",
+     "site": "https://www.marunouchi.com/tenants/10237/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "THE CITY BAKERY 赤坂アークヒルズ",
+     "where": "港区赤坂",
+     "desc": "ニューヨーク発のベーカリー",
+     "cond": "テラス席あり。ペットのお散歩の休憩にも（公式サイトの記載より）",
+     "site": "https://thecitybakery.jp/shop/akasaka",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "CLANN BY THE RIVER（PITMANS）",
+     "where": "江東区清澄",
+     "desc": "隅田川沿いのカフェ＆ブルワリー",
+     "cond": "ウッドテラスで愛犬と一緒に過ごせる（公式サイトの記載より）",
+     "site": "https://clannbytheriver.jp/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "汐待茶寮",
+     "where": "江東区豊洲",
+     "desc": "豊洲市場前のレストラン",
+     "cond": "テラス席でペット同伴可（11:30〜17:00・前日までに要予約）（公式サイトの記載より）",
+     "site": "https://shiomachi-saryo.jp/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "銀座シシリア 豊洲店",
+     "where": "江東区豊洲",
+     "desc": "イタリアン",
+     "cond": "オープンテラスでペット同伴可（公式サイトの記載より）",
+     "site": "https://www.ginza-sicilia.jp/toyosu",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "LARGO 仙川",
+     "where": "調布市仙川町",
+     "desc": "ワインとフレンチのレストラン",
+     "cond": "ペット同伴で利用可（公式サイトの記載より）",
+     "site": "https://take-and.co/largo/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "BLUE NOTE PLACE",
+     "where": "渋谷区恵比寿",
+     "desc": "音楽と食のダイニング",
+     "cond": "ペットの同伴可（スペースにより異なる）（公式サイトの記載より）",
+     "site": "https://www.bluenoteplace.jp/faq/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "BROOKS GREENLIT CAFE",
+     "where": "港区南青山",
+     "desc": "公園の緑が見えるカフェ",
+     "cond": "ペットと一緒に店内でくつろげる（公式サイトの記載より）",
+     "site": "https://www.brooks-greenlitcafe.com/about/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "ドッグカフェ Les deux Bleue ららぽーと豊洲店",
+     "where": "江東区豊洲",
+     "desc": "ドッグカフェ",
+     "cond": "愛犬と一緒に利用できるドッグカフェ（公式サイトの記載より）",
+     "site": "https://www.ccinc-love.com/lesdeuxbleue/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "biotable",
+     "where": "港区芝浦",
+     "desc": "芝浦のカフェ＆ダイニング",
+     "cond": "DOG FRIENDLY（公式サイトの記載より）",
+     "site": "https://www.biotable.jp/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "カフェダイニング LAND_A",
+     "where": "墨田区向島",
+     "desc": "隅田公園そばのカフェダイニング",
+     "cond": "愛犬連れで利用できる（公式サイトの記載より）",
+     "site": "https://land-a.jp/about/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   },
@@ -5558,6 +5998,26 @@
      "ref": "https://creattaitalian.net/",
      "site": "https://creattaitalian.net/",
      "ig": "creattaitalian"
+    },
+    {
+     "name": "忘路庵カフェ",
+     "where": "飯能市",
+     "desc": "山あいの古民家カフェ",
+     "cond": "テラス席のみペット同伴可（公式サイトの記載より）",
+     "site": "https://www.bohroan.com/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
+    },
+    {
+     "name": "ギャラリィ＆カフェ 山猫軒",
+     "where": "越生町",
+     "desc": "山の中のギャラリーとカフェ",
+     "cond": "リードを付けて入店可（庭にニワトリあり）（公式サイトの記載より）",
+     "site": "https://www.yamaneko.info/",
+     "ig": null,
+     "ref": "osm+official",
+     "src": "auto-a"
     }
    ]
   }

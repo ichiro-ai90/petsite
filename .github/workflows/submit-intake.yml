@@ -35,8 +35,15 @@ jobs:
           一郎が手で確かめます。"; exit 0; fi
           ph=$(python -c "import json;print(json.load(open('/tmp/res.json')).get('photo',''))")
           if [ -n "$ph" ]; then
-            id=$(basename "$ph" .jpg)
-            gh api "repos/${{ github.repository }}/contents/$ph?ref=submissions" --jq .content | base64 -d > "assets/travel/g/u-$id.jpg"
+            curl -sf "https://petnavi.niconote.jp/api/subphoto?id=$ph" -o "assets/travel/g/u-$ph.jpg" || { echo "写真を取り込めませんでした"; python - <<PY
+          import json;g=json.load(open("travel_guides.json"))
+          for x in g["guides"]:
+              for k in ("spots","shops"):
+                  for e in x[k]:
+                      if e.get("photo",{}).get("user") and e["photo"]["file"]=="u-$ph.jpg": e.pop("photo")
+          json.dump(g,open("travel_guides.json","w"),ensure_ascii=False,indent=1)
+          PY
+          }
           fi
           git config user.name ichiro-ai90; git config user.email ichiro-ai90@users.noreply.github.com
           b="submit/issue-$N"; git checkout -b "$b"

@@ -1,8 +1,8 @@
 // POST /api/submit … 「ペットOKのお店・スポットを教えて」フォームの受け口（11/24 Taku「サイト内に自作。登録をトリガーに一郎が作る」）
-// - 受け取った内容を GitHub の issue（ラベル shop-submit）にする。写真は submissions ブランチに保存してリンクする
+// - 受け取った内容を GitHub の issue（ラベル shop-submit）にする。写真は KV に60日だけ置き、/api/subphoto?id= で取り出す
 // - それを合図に .github/workflows/submit-intake.yml が公式サイトを確かめて、掲載のPRを作る
 // - 個人情報（メール・氏名・電話）は受け取らない。IPは保存せず、連投よけのハッシュだけ1日で消える形でKVに置く
-// - 必要な Secret：SUBMIT_GH_TOKEN（petsite の Issues・Contents だけ書ける細かいトークン）。任意：TURNSTILE_SECRET
+// - 必要な Secret：SUBMIT_GH_TOKEN（petsite の Issues だけ書ける細かいトークン）。任意：TURNSTILE_SECRET
 const REPO = "ichiro-ai90/petsite";
 function J(o, s = 200) { return new Response(JSON.stringify(o), { status: s, headers: { "content-type": "application/json; charset=utf-8" } }); }
 const T = (v, n) => String(v == null ? "" : v).replace(/[\u0000-\u001f<>]/g, " ").trim().slice(0, n);
@@ -39,8 +39,7 @@ export async function onRequestPost({ request, env }) {
   if (d.photo && o.photo_ok) {
     const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(d.photo));
     if (!m || m[1].length > 1400000) return J({ ok: false, error: "photo" }, 400);
-    try { await gh(env, "/contents/sub/" + id + ".jpg", "PUT", { message: "submission photo " + id + " [skip ci]", content: m[1], branch: "submissions" }); photo = "sub/" + id + ".jpg"; }
-    catch (e) { photo = ""; }
+    if (env.SUBS) { await env.SUBS.put("ph:" + id, m[1], { expirationTtl: 60 * 86400 }); photo = id; }  // 写真はKVに60日だけ置く（掲載時に一郎がサイトへ取り込む）
   }
   o.photo = photo; o.id = id;
   const body = "フォームからの情報提供です（自動登録）。一郎が公式サイトを確認して、掲載のPRを作ります。\n\n```json\n" + JSON.stringify(o, null, 1) + "\n```";

@@ -1,13 +1,17 @@
 import json, urllib.request, urllib.parse, time
 Q = """[out:json][timeout:180];
-area["ISO3166-1"="JP"][admin_level=2]->.jp;
 (
- nwr(area.jp)["dog"~"^(yes|leashed|outside|designated|unleashed)$"]["name"];
- nwr(area.jp)["leisure"="dog_park"];
+ nwr(24.0,122.9,45.6,146.0)["dog"~"^(yes|leashed|outside|designated|unleashed)$"]["name"];
+ nwr(24.0,122.9,45.6,146.0)["leisure"="dog_park"];
 );
 out center tags;"""
-r = urllib.request.urlopen(urllib.request.Request("https://overpass-api.de/api/interpreter", data=urllib.parse.urlencode({"data": Q}).encode(), headers={"User-Agent": "petnavi-probe (contact via github ichiro-ai90)"}), timeout=300)
-d = json.load(r)
+d = None
+for ep in ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"]:
+    try:
+        r = urllib.request.urlopen(urllib.request.Request(ep, data=urllib.parse.urlencode({"data": Q}).encode(), headers={"User-Agent": "petnavi-probe/1.0 (https://petnavi.niconote.jp)", "Accept": "application/json"}), timeout=300)
+        d = json.load(r); print("ok", ep); break
+    except Exception as e:
+        print("ng", ep, getattr(e, "code", ""), str(e)[:200]); time.sleep(5)
 els = d["elements"]
 from collections import Counter
 c = Counter(); w = 0

@@ -900,6 +900,16 @@
      "ref": "wankonowa",
      "site": "https://www.tambara.co.jp/lavenderpark/",
      "ig": "hunter_mountain_jpn"
+    },
+    {
+     "name": "草津温泉 湯畑（テスト投稿・一郎・削除予定）",
+     "where": "草津町",
+     "desc": "スポット（利用者からの情報）",
+     "cond": "屋外で犬連れ可（利用者からの情報）",
+     "site": "https://www.kusatsu-onsen.ne.jp/portal/",
+     "ig": null,
+     "ref": "user:4252c9a70041",
+     "src": "user"
     }
    ],
    "shops": [

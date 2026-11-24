@@ -237,6 +237,7 @@ def show_name(name):
     s = re.sub(r"[【\[［][^】\]］]{0,40}[】\]］]", " ", name)
     s = re.sub(r"[★☆◆◇■□●○※!！]+", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"\s[\u3041-\u309f\u30a1-\u30ff]$", "", s)  # 販促の括弧を外した後に残る1文字のかな（例「…ワイド り」）は落とす（監査#70）
     return s or name
 
 
@@ -828,7 +829,7 @@ def mall_cmp(offers):
     d = abs(a["price"] - b["price"])
     win = "同じ価格" if d == 0 else (f'{"Yahoo!" if b["price"] < a["price"] else "楽天"}が <b>{d:,}円安い</b>')
     return (f'<p class="mallcmp">楽天の最安 {a["price"]:,}円／Yahoo!の最安 {b["price"]:,}円：{win}'
-            f'<small>（取得時点・税込・送料別。ポイントは含みません）</small></p>')
+            f'<small>（比較条件：取得時点の税込価格どうし。送料とポイントは含めずに比べています）</small></p>')
 
 
 _CU = os.environ.get("RAKUTEN_CARD_URL", "").strip()
@@ -900,7 +901,7 @@ def item_body(p, g, fetched):
             f'{actions}'
             f'<div class="best"><p class="best-l">今回取得した{len(offers)}ショップ中の最安値（{E(str(p.get("fetched_at") or fetched))} 時点）</p>'
             f'<p class="pr big"><b>{o["price"]:,}</b>円 {ship(o["shipping"])}</p>'
-            f'<p class="pr-note">税込・{"送料無料" if o.get("shipping") == "送料無料" else "送料は別（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
+            f'<p class="pr-note">税込価格・{"このショップは送料無料" if o.get("shipping") == "送料無料" else "送料は別にかかる（ショップにより異なる）"}・ポイントは目安（SPU・クーポンは含みません）</p>'
             f'<p class="pt">{ptxt(o, "ポイント")}{PT_NOTE}</p>'
             + ("" if is_y(o) else f'<p class="card-pt">楽天カード払いでポイントが増える場合あり<span class="card-c">（条件は楽天カード公式で確認）</span><a class="kome" href="about.html#card" aria-label="楽天カードの注記">※</a>'
                          + (f'<a class="card-ln" href="{E(CARD_URL)}" rel="sponsored nofollow noopener" target="_blank">楽天カード（公式サイト）</a>' if CARD_URL else "")
@@ -1246,7 +1247,6 @@ def main():
               'お出かけの前に、各施設・お店の公式サイトや公式Instagramで最新の情報をご確認ください。写真はWikimedia Commonsの自由ライセンス画像（撮影者・ライセンスは各写真の下）と、各施設の公式Instagramの埋め込みです。</p></div>'
               f'<a class="tg-stk" id="tgstk" href="{_hq}" data-ga="guide_sticky" hidden>{E(g["pref"])}の泊まれる宿を探す ›</a>'
               '<script>(function(){try{localStorage.setItem("pn_gv",JSON.stringify(' + json.dumps({"s": g["slug"], "n": g["name"], "c": _gcover(g)}, ensure_ascii=False) + '))}catch(e){}'
-              'document.querySelectorAll(".tg-ig").forEach(function(b){function z(){var w=b.clientWidth;if(!w)return;var r=w/540;b.classList.add("tg-igw");b.firstChild.style.transform="scale("+r+")";b.style.height=Math.round(640*r)+"px"}z();addEventListener("resize",z)});'
               'var k=document.getElementById("tgstk"),c=document.querySelector(".tg-cta");function f(){var r=c.getBoundingClientRect();k.hidden=!(scrollY>420&&r.top>innerHeight)}addEventListener("scroll",f,{passive:true});f()})()</script>')
         open(os.path.join(out, f'travel-{g["slug"]}.html'), "w", encoding="utf-8").write(page(
             f'{g["name"]}のペットと行ける観光スポット・お店｜{TRAVEL_BRAND}', gb,
@@ -2136,7 +2136,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tg-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 16px 0}.tg-act a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px;text-align:center;text-decoration:none;font-size:13px;line-height:1.4}.tg-a1{background:var(--ink);color:#fff}.tg-a2{border:1px solid var(--ink);color:var(--ink)}
 .tg-sum{margin:10px 16px 0;font-size:12px;color:var(--mute);text-align:center}.tg-sum a{color:var(--g)}
 .tg-i.tg-hp{padding:0;overflow:hidden}.tg-hp .tg-b{padding:14px 16px 16px}.tg-f{margin:0}.tg-f img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#eee}.tg-f figcaption{padding:4px 10px;font-size:10px;line-height:1.5;color:var(--mute);background:#faf7f2}.tg-f figcaption a{color:inherit;text-decoration:none}
-.tg-ig{height:420px;overflow:hidden;background:#fafafa}.tg-ig iframe{display:block;width:100%;height:100%;border:0}.tg-ig.tg-igw iframe{width:540px;height:640px;transform-origin:0 0}
+.tg-ig{display:flex;justify-content:center;overflow:hidden;background:#fafafa}.tg-ig iframe{display:block;width:330px;max-width:100%;height:310px;border:0}
 .tg-o{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0 0}.tg-o a{font-size:13px;color:var(--g);border-bottom:1px solid var(--g);text-decoration:none}
 .tg-near{margin-top:4px}
 .tg-stk{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:block;padding:14px;background:var(--ink);color:#fff;text-align:center;text-decoration:none;font-size:14px;letter-spacing:.04em;box-shadow:0 6px 20px rgba(0,0,0,.25)}.tg-stk[hidden]{display:none}

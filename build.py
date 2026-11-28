@@ -303,7 +303,7 @@ def page(title, body, desc, sample, crumbs=(), canonical="", og_image="", noinde
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.svg" type="image/svg+xml"><meta name="google-site-verification" content="mYJrOMFA2vmJ7c0_N9cyQ9Vpia0qqpT8w31GSgfulHw">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">{head_extra(title, desc, canonical, og_image, noindex)}
-<link rel="stylesheet" href="style.css">{_TVFONT if brand == "travel" else ""}{ga_tag()}<script src="app.js" defer></script></head><body>
+<link rel="stylesheet" href="style.css">{_TVFONT if brand in ("travel", "odekake") else ""}{ga_tag()}<script src="app.js" defer></script></head><body>
 <p class="promo">本ページはプロモーション（アフィリエイト広告）が含まれています。リンク先で購入されると、当サイトに紹介料が支払われます。</p>
 {band}{header_html(brand)}
 <main>{bc}{body}</main>
@@ -360,9 +360,15 @@ def _gthumbs(g, n=3):
     return ["travel/g/" + r["photo"]["file"] for r in g["spots"] if r.get("photo")][:n]
 
 TRAVEL_BRAND = "最安ナビ トラベル"  # 旅行ページのサブブランド（11/23 Taku）
+ODEKAKE_BRAND = "最安ナビ おでかけ"  # 近所・週末のおでかけ（ペット同伴OKのお店）。11/28 Taku
+PREF_SLUG = dict(zip("北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県".split(),
+    "hokkaido aomori iwate miyagi akita yamagata fukushima ibaraki tochigi gunma saitama chiba tokyo kanagawa niigata toyama ishikawa fukui yamanashi nagano gifu shizuoka aichi mie shiga kyoto osaka hyogo nara wakayama tottori shimane okayama hiroshima yamaguchi tokushima kagawa ehime kochi fukuoka saga nagasaki kumamoto oita miyazaki kagoshima okinawa".split()))
 
 
 def header_html(brand=""):
+    if brand == "odekake":  # サブブランド（おでかけ）。旅行と同じ形で、名前を前に
+        return (f'<header class="hd hd-tv"><div class="hd-in"><a class="logo lg-tv" href="odekake.html"><span class="lg-tv-n">{ODEKAKE_BRAND}</span></a>'
+                f'<a class="hd-par" href="index.html">by {SITE}</a><span class="hd-note">楽天の公式サイトではありません</span></div></header>')
     if brand == "travel":  # サブブランド: 名前を前に、親ブランドは小さく添える。用品の検索窓は出さない（旅行ページに検索カードがあるため）
         return (f'<header class="hd hd-tv"><div class="hd-in"><a class="logo lg-tv" href="travel.html"><span class="lg-tv-n">{TRAVEL_BRAND}</span></a>'
                 f'<a class="hd-par" href="index.html">by {SITE}</a><span class="hd-note">楽天の公式サイトではありません</span></div></header>')
@@ -1255,6 +1261,63 @@ def main():
             ((TRAVEL_BRAND, "travel.html"), (g["name"], None)), canonical=(f'{origin}/travel-{g["slug"]}.html' if origin else ""),
             og_image=(f'{origin}/{_gcover(g)}' if origin else _gcover(g)), brand="travel"))
         files.append(f'travel-{g["slug"]}.html')
+    # 最安ナビ おでかけ：近所・週末に愛犬と行けるお店（11/28 Taku「別々だけど一本につながる」。ホットペッパー由来はリクルートの許可まで載せない）
+    try:
+        _OD = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "odekake.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        _OD = {"shops": [], "checked": ""}
+    _odp = {}
+    for r in _OD["shops"]:
+        _odp.setdefault(r["pref"], []).append(r)
+    _ODC = "ペット同伴の可否・条件は変わることがあります。来店前にお店やHPで事前確認をお願いします。"
+    _ods = lambda p: "odekake-" + PREF_SLUG.get(p, "x") + ".html"
+    _odgoods = [("マナーベルト", "マナーベルト 犬"), ("マナーパンツ", "マナーパンツ 犬"), ("携帯ボトル（給水）", "ペット 携帯 ボトル"), ("折りたたみボウル", "ペット 折りたたみ ボウル"),
+                ("リード", "犬 リード"), ("キャリーバッグ", "ペット キャリー"), ("テーブルマット・敷物", "ペット マット 防水"), ("ウェットティッシュ", "ペット ウェットティッシュ")]
+    def _odcard(r):
+        lk = "".join(f'<a href="{E(u)}" target="_blank" rel="noopener nofollow" data-ga="od_{k}">{t} ›</a>' for k, t, u in
+                     (("site", "公式サイト", r["site"]), ("tabelog", "食べログ", r["tabelog"]), ("gnavi", "ぐるなび", r["gnavi"]), ("ig", "Instagram", r["ig"])) if u)
+        tags = "".join(f'<span class="od-t">{E(t)}</span>' for t in [r["genre"], ("大型犬 " + r["big"]) if r.get("big") else "", "ペット用メニューあり" if r.get("menu") else ""] if t)
+        return (f'<li class="tg-i"><div class="tg-b">{tags}<h3 class="tg-n">{E(r["name"])}</h3><p class="tg-w">{E(r["pref"])} {E(r["city"])}</p>'
+                f'<p class="tg-c"><b>同伴</b>{E(r["cond"])}</p>' + (f'<p class="tg-o">{lk}</p>' if lk else "")
+                + f'<p class="od-ck">最終確認日 {E(r["checked"])}（{E(r["src"])}の記載）・来店前にお店やHPで事前確認を</p></div></li>')
+    _odtop = ('<div class="tvx"><div class="tv-hd"><span class="tv-en">ODEKAKE</span><h1 class="tv-h2">愛犬と行けるお店</h1>'
+              f'<p class="tv-sub">近所や週末のおでかけに。{len(_OD["shops"])}軒・{len(_odp)}都道府県</p></div>'
+              f'<p class="tg-warn">{_ODC}</p>')
+    for _rn, _ps in _regions:
+        _have = [p for p in _ps.split() if p in _odp]
+        if _have:
+            _odtop += f'<h2 class="od-r">{E(_rn)}</h2><ul class="od-pl">' + "".join(f'<li><a href="{_ods(p)}" data-ga="od_pref"><b>{E(p)}</b><small>{len(_odp[p])}軒</small></a></li>' for p in _have) + '</ul>'
+    _odtop += ('<a class="tg-back" href="submit.html" data-ga="submit_from_odekake">ペットOKのお店を教えてください ›</a>'
+               '<a class="tg-back" href="travel.html" data-ga="od_to_travel">泊まりで出かけるなら：ペットと泊まれる宿 ›</a></div>')
+    if _OD["shops"]:
+        open(os.path.join(out, "odekake.html"), "w", encoding="utf-8").write(page(f"愛犬と行けるお店（ペット同伴OKの飲食店）｜{ODEKAKE_BRAND}", _odtop,
+             f"ペット同伴OKのカフェ・レストランを都道府県・市区町村から探せます。テラス席のみ・店内OKなど同伴の条件つき（{len(_OD['shops'])}軒）。", sample,
+             ((ODEKAKE_BRAND, None),), canonical=(f"{origin}/odekake.html" if origin else ""), brand="odekake"))
+        files.append("odekake.html")
+    for p, rs in _odp.items():
+        _cs = {}
+        for r in rs:
+            _cs.setdefault(r["city"] or "その他", []).append(r)
+        _cl = sorted(_cs.items(), key=lambda t: -len(t[1]))
+        _g = _GBP.get(p)
+        b = ('<div class="tvx"><div class="tv-hd"><span class="tv-en">ODEKAKE</span>'
+             f'<h1 class="tv-h2">{E(p)}の愛犬と行けるお店</h1><p class="tv-sub">{len(rs)}軒・{len(_cl)}市区町村</p></div>'
+             f'<p class="tg-warn">{_ODC}</p>'
+             '<nav class="od-cl" aria-label="市区町村">' + "".join(f'<a href="#c{i}">{E(c)}<small>{len(v)}</small></a>' for i, (c, v) in enumerate(_cl)) + '</nav>')
+        for i, (c, v) in enumerate(_cl):
+            b += f'<section id="c{i}"><h2 class="od-r">{E(c)}</h2><ul class="tg-l">' + "".join(_odcard(r) for r in v) + '</ul></section>'
+        b += ('<section class="od-x"><h2 class="od-r">おでかけの持ち物</h2><ul class="od-g">'
+              + "".join(f'<li><a href="search.html?q={urllib.parse.quote(q)}" data-ga="od_goods">{E(n)}<small>最安を見る ›</small></a></li>' for n, q in _odgoods) + '</ul></section>'
+              + (f'<a class="tg-back" href="travel-{_g["slug"]}.html" data-ga="od_to_guide">{E(_g["name"])}の観光スポットも見る ›</a>' if _g else "")
+              + f'<a class="tg-back" href="travel.html?area={urllib.parse.quote(p)}#tvh" data-ga="od_to_hotels">{E(p)}のペットと泊まれる宿 ›</a>'
+              + '<a class="tg-back" href="submit.html" data-ga="submit_from_odekake">ペットOKのお店を教えてください ›</a>'
+              + '<a class="tg-back" href="odekake.html">ほかの都道府県から探す ›</a>'
+              '<p class="nayami-n">同伴の条件は、各お店の公式サイト・ぐるなびのページの記載を当サイトが確認した内容です（最終確認日はお店ごとに表示）。'
+              '天候や混雑でテラス席が使えない日もあります。来店前にお店やHPで最新の情報をご確認ください。</p></div>')
+        open(os.path.join(out, _ods(p)), "w", encoding="utf-8").write(page(f"{p}の愛犬と行けるお店・ペット同伴OKのカフェ｜{ODEKAKE_BRAND}", b,
+             f"{p}でペット同伴OKのカフェ・レストラン{len(rs)}軒。" + "・".join(c for c, _ in _cl[:4]) + "など市区町村別。テラス席のみ・店内OKなど条件つき。", sample,
+             ((ODEKAKE_BRAND, "odekake.html"), (p, None)), canonical=(f"{origin}/{_ods(p)}" if origin else ""), brand="odekake"))
+        files.append(_ods(p))
     kaigai_sec = (f'<section class="nayami"><h2 class="nayami-h">海外ブランド<a class="h2a" href="brands.html">すべて見る</a></h2><ul class="nayami-l">{"".join(kaigai)}</ul></section>' if kaigai else "")
     nayami_sec = (f'<section class="nayami"><h2 class="nayami-h">悩みから探す<a class="h2a" href="nayami.html">すべて見る</a></h2><ul class="nayami-l">{"".join(nayami)}</ul>'
                   '<p class="nayami-n">商品名に記載のあるフード（効果を示すものではありません）</p></section>' if nayami else "")
@@ -1312,6 +1375,7 @@ def main():
              + (f'<li><a href="{_ny}"><span class="qk-i qk-2">' + globals()["icon"]("cat", 22) + '</span>悩みから<br>探す</a></li>' if _ny else "")
              + (f'<li><a href="{_br}"><span class="qk-i qk-3">' + globals()["icon"]("paw", 22) + '</span>海外<br>ブランド</a></li>' if _br else "")
              + '<li><a href="shindan.html"><span class="qk-i qk-4">' + globals()["icon"]("bag", 22) + '</span>1分<br>診断</a></li>'
+             + '<li><a href="odekake.html"><span class="qk-i qk-4">' + globals()["icon"]("paw", 22) + '</span>行ける<br>お店</a></li>'
              + '<li><a href="travel.html"><span class="qk-i qk-5">' + globals()["icon"]("bed", 22) + '</span>泊まれる<br>宿</a></li></ul>')
     tiles = sorted(deal_tiles, key=lambda t: -t[0])[:10]
     tiles_sec = ('<section class="tl-sec"><h2 class="h2">カテゴリ別 お得</h2><p class="h2n">※同じ内容量の他店（3店以上の中央値）との差・取得時点・送料別</p><ul class="tls">'
@@ -2138,7 +2202,7 @@ main{max-width:960px;margin:0 auto;padding:0 0 24px}
 .tg-sum{margin:10px 16px 0;font-size:12px;color:var(--mute);text-align:center}.tg-sum a{color:var(--g)}
 .tg-i.tg-hp{padding:0;overflow:hidden}.tg-hp .tg-b{padding:14px 16px 16px}.tg-f{margin:0}.tg-f img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#eee}.tg-f figcaption{padding:4px 10px;font-size:10px;line-height:1.5;color:var(--mute);background:#faf7f2}.tg-f figcaption a{color:inherit;text-decoration:none}
 .tg-ig{display:flex;justify-content:center;overflow:hidden;background:#fafafa}.tg-ig iframe{display:block;width:330px;max-width:100%;height:310px;border:0}
-.tg-o{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0 0}.tg-o a{font-size:13px;color:var(--g);border-bottom:1px solid var(--g);text-decoration:none}
+.od-t{display:inline-block;margin:0 6px 6px 0;padding:2px 8px;border-radius:10px;background:#f3ece1;font-size:11px;color:#4a3a22}.od-ck{margin:10px 0 0;font-size:11px;line-height:1.6;color:var(--mute)}.od-r{margin:24px 16px 10px;font-size:17px}.od-pl,.od-g{list-style:none;margin:0 16px;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.od-pl a,.od-g a{display:block;padding:10px;background:#fff;border:1px solid var(--hair);border-radius:6px;color:var(--ink);text-decoration:none;font-size:14px}.od-pl small,.od-g small{display:block;font-size:11px;color:var(--mute)}.od-cl{display:flex;flex-wrap:wrap;gap:6px;margin:12px 16px}.od-cl a{padding:6px 10px;border:1px solid var(--hair);border-radius:14px;background:#fff;font-size:13px;color:var(--ink);text-decoration:none}.od-cl small{margin-left:4px;color:var(--mute)}.tg-o{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0 0}.tg-o a{font-size:13px;color:var(--g);border-bottom:1px solid var(--g);text-decoration:none}
 .tg-near{margin-top:4px}
 .tg-stk{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:block;padding:14px;background:var(--ink);color:#fff;text-align:center;text-decoration:none;font-size:14px;letter-spacing:.04em;box-shadow:0 6px 20px rgba(0,0,0,.25)}.tg-stk[hidden]{display:none}
 @media (min-width:1024px){.tg-act{max-width:968px;margin-left:auto;margin-right:auto}.tg-stk{left:auto;right:24px;width:320px}}
